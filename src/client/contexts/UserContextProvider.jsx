@@ -1,6 +1,21 @@
 import React, { useState } from "react";
 import UserContext from "./UserContext";
 import { db } from "../db";
+
+import {
+  LayoutDashboard,
+  Shapes,
+  Receipt,
+  Heart,
+  ShoppingCart,
+  MessageCircle,
+  Smile,
+  CircleHelp,
+  HelpCircle,
+  SettingsIcon
+} from "lucide-react";
+import { Setting } from "../components";
+
 function UserContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState({
     username: "",
@@ -67,7 +82,7 @@ function UserContextProvider({ children }) {
     {
       children: "Favourite",
       to: "/wishlist",
-      svg: "📜",
+      svg: <Heart />,
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
@@ -110,6 +125,24 @@ function UserContextProvider({ children }) {
     },
   ];
 
+  const secondLeftPanelItems = [
+    {
+      children: "Feedback",
+      to: "/dashboard",
+      svg: Smile,
+      showToCustomer: true,
+      showToSeller: true,
+      showToAdmin: false,
+    },
+    {
+      children: "Help",
+      to: "/",
+      svg: HelpCircle,
+      showToCustomer: true,
+      showToSeller: true,
+      showToAdmin: false,
+    }
+  ]
   return (
     <UserContext.Provider
       value={{
@@ -124,6 +157,7 @@ function UserContextProvider({ children }) {
         isLogin,
         setIsLogin,
         leftPanelItems,
+        secondLeftPanelItems,
       }}
     >
       {children}

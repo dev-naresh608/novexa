@@ -181,7 +181,7 @@ function Cart({ variant = "full" }) {
               <div>
                 <button
                   onClick={() => navigate("/allproducts")}
-                  className="flex gap-0.5 items-center text-sm text-blue-600 hover:text-green-600"
+                  className="flex gap-0.5 items-center font-semibold text-sm text-blue-600 hover:text-green-600"
                 >
                   <ArrowLeft size={17} /> <span>Continue Shoping</span>
                 </button>

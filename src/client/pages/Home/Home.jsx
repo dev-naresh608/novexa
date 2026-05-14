@@ -21,7 +21,8 @@ import { NavLink, Outlet, Route, Routes } from "react-router-dom";
 import { Cart } from "../../components/index";
 
 function Home({ productsList }) {
-  const { isLogin, leftPanelItems, currentUser } = useContext(UserContext);
+  const { isLogin, leftPanelItems, secondLeftPanelItems, currentUser } =
+    useContext(UserContext);
 
   const { setActiveTab, activeTab } = useContext(UserContext);
   const { cartItems } = useContext(CartProductContext);
@@ -115,6 +116,7 @@ function Home({ productsList }) {
           {/* left panel */}
           <div className="relative bg-white h-full pt-3">
             <div>
+              {/* <div className="p-3 space-y-1 border-b border-green-300"> */}
               <div className="p-3 space-y-1">
                 {/* for customer  */}
                 {currentUser.role === "customer" &&
@@ -169,6 +171,24 @@ function Home({ productsList }) {
                       </NavLink>
                     ))}
               </div>
+
+              {/* For both
+              <div className="p-3 space-y-1">
+                {secondLeftPanelItems.map((item, i) => (
+                  <NavLink
+                    key={i}
+                    to={item.to}
+                    // onClick={item.handleOnClick}
+                    className={({ isActive }) => {
+                      return `flex gap-2 text-sm items-center font-semibold w-full px-2 py-1.5 rounded-md hover:bg-green-800 
+                      hover:text-white  hover:shadow-md group whitespace-nowrap ${isActive ? "bg-green-800 text-white shadow-md" : "bg-none text-gray-500"}`;
+                    }}
+                  >
+                    {<item.svg className="fill-gray-500 text-white"/>}
+                    {isLeftPanelOpen && <span>{item.children}</span>}
+                  </NavLink>
+                ))}
+              </div> */}
               <div className="absolute z-50 right-0 top-0">
                 <button onClick={() => setIsLeftPanelOpen((prev) => !prev)}>
                   {isLeftPanelOpen ? "✘" : <Menu size={15} />}

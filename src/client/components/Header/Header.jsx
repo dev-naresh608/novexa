@@ -6,6 +6,19 @@ import {
   ProductContext,
 } from "../../contexts/context";
 import { defaultPP, GradientButton, greenCartLogo } from "../index";
+import {
+  LayoutDashboard,
+  Shapes,
+  Receipt,
+  Heart,
+  ShoppingCart,
+  MessageCircle,
+  Smile,
+  CircleHelp,
+  Settings,
+  HelpCircle
+} from "lucide-react";
+
 
 function Header() {
   const { isLogin, currentUser, setActiveTab, currentUserRole } =
