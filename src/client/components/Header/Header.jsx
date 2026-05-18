@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CartProductContext,
   UserContext,
@@ -16,19 +17,20 @@ import {
   Smile,
   CircleHelp,
   Settings,
-  HelpCircle
+  HelpCircle,
+  NotebookIcon,
+  MailCheck,
+  CheckCircle,
 } from "lucide-react";
-
-
 function Header() {
-  const { isLogin, currentUser, setActiveTab, currentUserRole } =
+  const { isLogin, currentUser, setActiveTab, currentUserRole,isProfileClicked,setIsProfileClicked, isNotificationClicked,setIsNotificationClicked  } =
     useContext(UserContext);
   const { productsList } = useContext(ProductContext);
 
   const { cartItems } = useContext(CartProductContext);
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-  const [isProfileClicked, setIsProfileClicked] = useState(false);
+
 
   function onSearchProduct(searchInputBoxValue) {
     if (searchInputBoxValue?.length > 0) {
@@ -82,9 +84,9 @@ function Header() {
               <input
                 className="outline-none h-6 bg-transparent px-1"
                 type="text"
-                value={searchValue}
+                // value={searchValue}
                 placeholder="Search Products..."
-                onChange={(e) => onSearchProduct(e.target.value)}
+                // onChange={(e) => onSearchProduct(e.target.value)}
               />
               <div className="border-l border-black">
                 <svg
@@ -121,21 +123,112 @@ function Header() {
       </div>
       {/* right nav  */}
       <div className="flex items-startoutline-none gap-3">
+        {/* Notification  */}
+
         <div className="relative group">
-          <button>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="27px"
-              viewBox="0 -960 960 960"
-              width="27px"
-              fill="#15803D"
-              className="absolute top-1 right-0"
+          <div>
+            <button
+              onClick={() => {
+                setIsNotificationClicked((prev) => !prev);
+                if (isProfileClicked === true) {
+                  setIsProfileClicked((prev) => !prev);
+                }
+              }}
             >
-              <path d="M180-204.62v-59.99h72.31v-298.47q0-80.69 49.81-142.69 49.8-62 127.88-79.31V-810q0-20.83 14.57-35.42Q459.14-860 479.95-860q20.82 0 35.43 14.58Q530-830.83 530-810v24.92q78.08 17.31 127.88 79.31 49.81 62 49.81 142.69v298.47H780v59.99H180Zm300-293.07Zm-.07 405.38q-29.85 0-51.04-21.24-21.2-21.24-21.2-51.07h144.62q0 29.93-21.26 51.12-21.26 21.19-51.12 21.19Zm-167.62-172.3h335.38v-298.47q0-69.46-49.11-118.57-49.12-49.12-118.58-49.12-69.46 0-118.58 49.12-49.11 49.11-49.11 118.57v298.47Z" />
-            </svg>
-          </button>
-          <span className="absolute group-hover:animate-bounce top-1 right-0 h-1 w-1 rounded-full bg-red-600"></span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="27px"
+                viewBox="0 -960 960 960"
+                width="27px"
+                fill="#15803D"
+                className="absolute top-1 right-0"
+              >
+                <path d="M180-204.62v-59.99h72.31v-298.47q0-80.69 49.81-142.69 49.8-62 127.88-79.31V-810q0-20.83 14.57-35.42Q459.14-860 479.95-860q20.82 0 35.43 14.58Q530-830.83 530-810v24.92q78.08 17.31 127.88 79.31 49.81 62 49.81 142.69v298.47H780v59.99H180Zm300-293.07Zm-.07 405.38q-29.85 0-51.04-21.24-21.2-21.24-21.2-51.07h144.62q0 29.93-21.26 51.12-21.26 21.19-51.12 21.19Zm-167.62-172.3h335.38v-298.47q0-69.46-49.11-118.57-49.12-49.12-118.58-49.12-69.46 0-118.58 49.12-49.11 49.11-49.11 118.57v298.47Z" />
+              </svg>
+            </button>
+            <span className="absolute group-hover:animate-bounce top-1 right-0 h-1 w-1 rounded-full bg-red-600"></span>
+          </div>
+          {/* Go to the Notification section */}
+          <div
+            className={`absolute shadow-md right-0 bg-white rounded-xl min-w-[230px] sm:w-[30vw] md:w-[35vw] pb-2 z-50 ${isNotificationClicked ? "block" : "hidden"}`}
+          >
+            <div className="p-2 flex items-center gap-2 border-b">
+              <div className="h-9 w-9">
+                <img
+                  loading="lazy"
+                  className="object-cover h-full w-full border border-red-500 rounded-[50%]"
+                  src={
+                    currentUser.hasOwnProperty("imageUrl")
+                      ? currentUser.imageUrl
+                      : defaultPP
+                  }
+                  alt="profile picture"
+                />
+              </div>
+              <div className="">
+                <p className="text-lg font-semibold">{currentUser.username}</p>
+                <p className="text-xs">{currentUser.email}</p>
+              </div>
+            </div>
+            <div className="min-h-[230px] flex flex-col">
+              {/* notifications  */}
+              <div className="flex-1">
+                {/* N1  */}
+                <div className=" h-full p-2">
+                  <div className="min-h-20 p-1 flex flex-col justify-between border rounded-md">
+                    <div className="text-gray-700 text-sm">
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Obcaecati, aliquid! Lorem ipsum dolor sit amet.
+                      </p>
+                    </div>
+
+                    <div className="text-gray-500 font-semibold hover:text-gray-600 flex justify-end items-end">
+                      <button className="flex  hover:fill-gray-600  items-center text-sm gap-1">
+                        <MailCheck size={17} />
+                        Mark As read
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {/* N2 */}
+                <div className=" h-full p-2">
+                  <div className="min-h-20 p-1 flex flex-col justify-between border rounded-md">
+                    <div className="text-gray-700 text-sm">
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Obcaecati, aliquid! Lorem ipsum dolor sit amet.
+                      </p>
+                    </div>
+
+                    <div className="text-gray-500 font-semibold hover:text-gray-600 flex justify-end items-end">
+                      <button className="flex  hover:fill-gray-600  items-center text-sm gap-1">
+                        <MailCheck size={17} />
+                        Mark As read
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center py-2">
+                <div className="text-xs text-gray-800/80 rounded-2xl px-2 py-1 bg-gray-100 flex items-center w-max gap-2 ">
+                  <CheckCircle size={12} className="text-green-600" />
+                  <span>All caught up!</span>
+                </div>
+              </div>
+
+              {/* no notification  */}
+              <div className="h-full items-center justify-center hidden">
+                <p className="font-semibold text-gray-500">
+                  No notification yet
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
         {/* profile  */}
         <div className="relative">
           <button onClick={() => setActiveTab("personalinformation")}>
@@ -148,15 +241,20 @@ function Header() {
                     ? currentUser.imageUrl
                     : defaultPP
                 }
-                onClick={() => setIsProfileClicked((prev) => !prev)}
+                onClick={() => {
+                  setIsProfileClicked((prev) => !prev);
+                  if (isNotificationClicked === true) {
+                    setIsNotificationClicked((prev) => !prev);
+                  }
+                }}
                 alt="profile picture"
               />
             </div>
           </button>
 
-          {/* Gp to the profile section */}
+          {/* Go to the profile section */}
           <div
-            className={`absolute right-0 bg-white rounded-xl w-max p-3 z-50 ${isProfileClicked ? "block" : "hidden"}`}
+            className={`absolute right-0 shadow-md bg-white rounded-xl w-max p-3 z-50 ${isProfileClicked ? "block" : "hidden"}`}
           >
             <ul className="text-sm">
               <li>

@@ -29,6 +29,10 @@ import {
   Category,
   Dashboard,
   ProductList,
+  ActiveDeliveries,
+  DeliveryHistory,
+  VehicleDetails,
+  Earnings,
 } from "./client/components/index";
 
 import {
@@ -69,6 +73,18 @@ function App() {
           <Route path="/allproducts" element={<AllProducts />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
           <Route path="product-list" element={<MyProducts />}></Route>
+          <Route path="activeDeliveries" element={<ActiveDeliveries />}>
+            {" "}
+          </Route>
+          <Route path="deliveryHistory" element={<DeliveryHistory />}>
+            {" "}
+          </Route>
+          <Route path="earnings" element={<Earnings />}>
+            {" "}
+          </Route>
+          <Route path="vehicleDetails" element={<VehicleDetails />}>
+            {" "}
+          </Route>
 
           <Route
             path="/categories/categoryWiseProducts/:catName"

@@ -107,6 +107,7 @@ function Home({ productsList }) {
     } else {
       setShowAllCategoryEnable(false);
     }
+    // if()
   }, [activeTab, setActiveTab]);
 
   return (
@@ -170,10 +171,28 @@ function Home({ productsList }) {
                         {isLeftPanelOpen && <span>{item.children}</span>}
                       </NavLink>
                     ))}
+
+                {/* for driver  */}
+                {currentUser.role === "driver" &&
+                  leftPanelItems
+                    .filter((item) => item.showToDriver)
+                    .map((item, i) => (
+                      <NavLink
+                        key={i}
+                        to={item.to}
+                        // onClick={item.handleOnClick}
+                        className={({ isActive }) => {
+                          return `flex gap-2 text-sm items-center font-semibold w-full  px-2 py-1.5 rounded-md hover:bg-green-800 hover:text-white hover:shadow-md group whitespace-nowrap ${isActive ? "bg-green-800 text-white shadow-md" : "bg-none text-green-800/80"}`;
+                        }}
+                      >
+                        {item.svg}
+                        {isLeftPanelOpen && <span>{item.children}</span>}
+                      </NavLink>
+                    ))}
               </div>
 
-              {/* For both
-              <div className="p-3 space-y-1">
+              {/* For both */}
+              {/* <div className="p-3 space-y-1">
                 {secondLeftPanelItems.map((item, i) => (
                   <NavLink
                     key={i}
@@ -184,7 +203,7 @@ function Home({ productsList }) {
                       hover:text-white  hover:shadow-md group whitespace-nowrap ${isActive ? "bg-green-800 text-white shadow-md" : "bg-none text-gray-500"}`;
                     }}
                   >
-                    {<item.svg className="fill-gray-500 text-white"/>}
+                    {<item.svg className="fill-gray-500 text-white" />}
                     {isLeftPanelOpen && <span>{item.children}</span>}
                   </NavLink>
                 ))}

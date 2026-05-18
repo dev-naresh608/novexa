@@ -59,7 +59,15 @@
 .Toastify {
   position: fixed !important;
   z-index: 9999 !important;
+  font-size: 12px !important;
+  line-height: 1;
+  padding: 0px !important;
 }
+.Toastify__toast-icon {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 body {
   margin: 0;
 }
@@ -132,4 +140,11 @@ p {
 }
 .animate-fade-in {
   animation: fade-in 1s ease-in-out;
+}
+
+/* Custom CSS to hide the default icon if you want to use your own SVG */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(130deg)
+    brightness(95%) contrast(80%);
+  cursor: pointer;
 }

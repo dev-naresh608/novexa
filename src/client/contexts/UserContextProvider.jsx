@@ -12,7 +12,7 @@ import {
   Smile,
   CircleHelp,
   HelpCircle,
-  SettingsIcon
+  SettingsIcon,
 } from "lucide-react";
 import { Setting } from "../components";
 
@@ -41,6 +41,8 @@ function UserContextProvider({ children }) {
 
   const [activeTab, setActiveTab] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
+  const [isProfileClicked, setIsProfileClicked] = useState(false);
+  const [isNotificationClicked, setIsNotificationClicked] = useState(false);
 
   const leftPanelItems = [
     {
@@ -62,6 +64,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: true,
     },
     {
       children: "Categories",
@@ -70,6 +73,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
+      showToDriver: false,
     },
     {
       children: "All Products",
@@ -78,6 +82,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: false,
     },
     {
       children: "Favourite",
@@ -86,6 +91,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
+      showToDriver: false,
     },
     {
       children: "Cart",
@@ -94,6 +100,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
+      showToDriver: false,
     },
 
     // for seller
@@ -105,6 +112,7 @@ function UserContextProvider({ children }) {
       showToCustomer: false,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: false,
     },
     {
       children: "Product List",
@@ -113,8 +121,8 @@ function UserContextProvider({ children }) {
       showToCustomer: false,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: false,
     },
-    //
     {
       children: "Orders",
       to: "/orders",
@@ -122,6 +130,45 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: true,
+    },
+
+    // for driver
+    {
+      children: "Active Deliveries",
+      to: "/activeDeliveries",
+      svg: "🛵",
+      showToCustomer: false,
+      showToSeller: false,
+      showToAdmin: false,
+      showToDriver: true,
+    },
+    {
+      children: " Delivery History",
+      to: "/deliveryHistory",
+      svg: "⟲",
+      showToCustomer: false,
+      showToSeller: false,
+      showToAdmin: false,
+      showToDriver: true,
+    },
+    {
+      children: "Earnings",
+      to: "/earnings",
+      svg: "💰",
+      showToCustomer: false,
+      showToSeller: false,
+      showToAdmin: false,
+      showToDriver: true,
+    },
+    {
+      children: "Vehicle Details",
+      to: "/vehicleDetails",
+      svg: "🚗",
+      showToCustomer: false,
+      showToSeller: false,
+      showToAdmin: false,
+      showToDriver: true,
     },
   ];
 
@@ -133,6 +180,7 @@ function UserContextProvider({ children }) {
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
+      showToDriver: false,
     },
     {
       children: "Help",
@@ -140,9 +188,10 @@ function UserContextProvider({ children }) {
       svg: HelpCircle,
       showToCustomer: true,
       showToSeller: true,
+      showToDriver: true,
       showToAdmin: false,
-    }
-  ]
+    },
+  ];
   return (
     <UserContext.Provider
       value={{
@@ -158,6 +207,10 @@ function UserContextProvider({ children }) {
         setIsLogin,
         leftPanelItems,
         secondLeftPanelItems,
+        isProfileClicked,
+        setIsProfileClicked,
+        isNotificationClicked,
+        setIsNotificationClicked,
       }}
     >
       {children}

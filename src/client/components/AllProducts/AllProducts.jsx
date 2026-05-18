@@ -3,16 +3,27 @@ import { Link, useLoaderData } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../contexts/context";
 import { ToastContainer } from "react-toastify";
-import { GradientButton} from "../index"
+import { GradientButton } from "../index";
 function AllProducts() {
   const [totalProducts, setTotalProducts] = useState([]);
   const { productsList } = useContext(ProductContext);
 
-  const { setActiveTab,isLogin } = useContext(UserContext);
+  const { setActiveTab, isLogin } = useContext(UserContext);
 
+  if (productsList.length === 0)
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <h2 className="text-lg font-semibold text-gray-600">
+          No Products Yet 📦
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          There is a no products available on this app.
+        </p>
+      </div>
+    );
   return (
     <>
-      <section className={`${isLogin? "" : "px-10"}`}>
+      <section className={`${isLogin ? "" : "px-10"}`}>
         <GradientButton
           // componentType="text"
           className="cursor-text mb-5 font-bold rounded-3xl"

@@ -15,10 +15,11 @@ function AddProduct() {
     product_weight: "",
     product_weight_type: "none",
     product_price: 0,
-    product_shiping_price: 0,
+    // product_shiping_price: 0,
     product_offer_price: 0,
     product_description: "",
     isProductInStock: true,
+    isOfferAvailable: false,
   };
   const [formData, setFormData] = useState(initialFormData);
 
@@ -76,7 +77,6 @@ function AddProduct() {
       [name]: value,
     }));
   };
-
   return (
     <>
       <ToastContainer autoClose={500} pauseOnHover />
@@ -85,7 +85,8 @@ function AddProduct() {
           action=""
           className="font-semibold text-sm w-full p-3 rounded-md space-y-3 border border-gray-300"
           onSubmit={handleFormData}
-        >
+          >
+          <p>Please add products related to the: {currentUser.restorent_type}</p>
           <div>
             <p>Product Image</p>
 
@@ -172,7 +173,7 @@ function AddProduct() {
                 placeholder="Type Here"
               />
             </div>
-            <div>
+            {/* <div>
               <p>Category</p>
               <select
                 name="product_category"
@@ -189,7 +190,7 @@ function AddProduct() {
                 <option value="Drinks">🥤 Cold Drinks & Juices</option>
                 <option value="Ice Creams & More">🍧 Ice Creams & More</option>
               </select>
-            </div>
+            </div> */}
           </div>
 
           <div className="flex items-center gap-5">
@@ -251,7 +252,7 @@ function AddProduct() {
                 placeholder="0"
               />
             </div>
-            <div className="min-w-[30%] w-full">
+            {/* <div className="min-w-[30%] w-full">
               <p>
                 Shiping Price <span className="text-sm text-black/60">($)</span>
               </p>
@@ -263,7 +264,7 @@ function AddProduct() {
                 className="bg-transparent w-full outline-none border border-gray-600 rounded-md py-1 px-2 text-md placeholder:text-xs [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="0"
               />
-            </div>
+            </div> */}
           </div>
 
           <div>

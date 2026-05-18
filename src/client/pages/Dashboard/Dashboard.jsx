@@ -1,6 +1,6 @@
 import React, {useContext} from 'react'
 import {UserContext} from "../../contexts/context"
-import {SellerDashboard, CustomerDashboard} from "../../components/index"
+import {SellerDashboard, CustomerDashboard, DriverDashboard} from "../../components/index"
 
 function Dashboard() {
   const {currentUser} = useContext(UserContext)
@@ -10,6 +10,9 @@ function Dashboard() {
   }
   if(currentUser.role === "seller"){
     return <SellerDashboard />
+  } 
+  if(currentUser.role === "driver"){
+    return <DriverDashboard />
   } 
   if(currentUser.role === "admin"){
     return <h2> Admin Dashboard</h2>

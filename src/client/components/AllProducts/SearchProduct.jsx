@@ -10,7 +10,7 @@ function SearchProduct() {
 
   useEffect(() => {
     const filteredProducts = productsList.filter((p) =>
-      p.product_name.toLowerCase().includes(searchValue.toLowerCase()),
+      p.product_name.toLowerCase().includes(searchValue.toLowerCase().trim()),
     );
     setTotalProducts(filteredProducts);
   }, [searchValue]);

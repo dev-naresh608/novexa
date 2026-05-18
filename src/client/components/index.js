@@ -30,14 +30,21 @@ import GradientButton from "./GradientButton";
 import MyProducts from "../pages/Seller/MyProducts";
 import AddProduct from "../pages/Seller/AddProduct";
 
+//Driver
+import ActiveDeliveries from "../pages/Driver/ActiveDeliveries";
+import DeliveryHistory from "../pages/Driver/DeliveryHistory";
+import Earnings from "../pages/Driver/Earnings";
+import VehicleDetails from "../pages/Driver/VehicleDetails";
+
 
 //Dashboard
 import Dashboard from "../pages/Dashboard/Dashboard";
 import CustomerDashboard from "../pages/Dashboard/CustomerDashboard";
 import SellerDashboard from "../pages/Dashboard/SellerDashboard";
+import DriverDashboard from "../pages/Dashboard/DriverDashboard"
 
 export {Header, Footer, Hero, AllProducts, Layout, Profile,PersonalInfo, 
-Setting,Payments,Orders, Cart,ProductList, Category, Home,Login, Signup, CategoryWiseProducts, RatingStar, ProductBuyCard, SearchProduct, AddressForm, ProductImageLoader,Wishlist, MyProducts, AddProduct, GradientButton,Dashboard, SellerDashboard, CustomerDashboard}
+Setting,Payments,Orders, Cart,ProductList, Category, Home,Login, Signup, CategoryWiseProducts, RatingStar, ProductBuyCard, SearchProduct, AddressForm, ProductImageLoader,Wishlist, MyProducts, AddProduct, GradientButton,Dashboard, SellerDashboard, CustomerDashboard, DriverDashboard, ActiveDeliveries,DeliveryHistory,Earnings,VehicleDetails}
 
 // image import export 
 import greenCartLogo from "../../assets/greenCart-logo.svg";

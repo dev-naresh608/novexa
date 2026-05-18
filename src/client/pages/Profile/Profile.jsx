@@ -81,10 +81,18 @@ function Profile() {
                 alt="profile picture"
               />
             </div>
-            <div className="border-b border-black py-2">
-              <h2 className="pb-2">
+            <div className="border-b border-black py-2 space-y-3">
+              <h2>
                 {currentUser?.username || "Unauthorized User"}
               </h2>
+              <div className="space-x-2 text-xs pb-2">
+                <span className="px-2 text-green-800 py-1 bg-green-200 rounded-2xl">
+                  Active
+                </span>
+                <span className="px-2 text-gray-800/800 py-1 bg-yellow-100 rounded-2xl">
+                  {currentUser?.role || ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="px-2">
