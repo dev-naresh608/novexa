@@ -29,6 +29,7 @@ import GradientButton from "./GradientButton";
 // seller 
 import MyProducts from "../pages/Seller/MyProducts";
 import AddProduct from "../pages/Seller/AddProduct";
+import ActiveOrders from "../pages/Seller/ActiveOrders"
 
 //Driver
 import ActiveDeliveries from "../pages/Driver/ActiveDeliveries";
@@ -43,12 +44,18 @@ import CustomerDashboard from "../pages/Dashboard/CustomerDashboard";
 import SellerDashboard from "../pages/Dashboard/SellerDashboard";
 import DriverDashboard from "../pages/Dashboard/DriverDashboard"
 
+
+import Restaurant from "./Restaurant/Restaurant";
+
 export {Header, Footer, Hero, AllProducts, Layout, Profile,PersonalInfo, 
-Setting,Payments,Orders, Cart,ProductList, Category, Home,Login, Signup, CategoryWiseProducts, RatingStar, ProductBuyCard, SearchProduct, AddressForm, ProductImageLoader,Wishlist, MyProducts, AddProduct, GradientButton,Dashboard, SellerDashboard, CustomerDashboard, DriverDashboard, ActiveDeliveries,DeliveryHistory,Earnings,VehicleDetails}
+Setting,Payments,Orders, Cart,ProductList, Category, Home,Login, Signup, CategoryWiseProducts, RatingStar, ProductBuyCard, SearchProduct, AddressForm, ProductImageLoader,Wishlist, MyProducts, AddProduct,ActiveOrders, GradientButton,Dashboard, SellerDashboard, CustomerDashboard, DriverDashboard, ActiveDeliveries,DeliveryHistory,Earnings,VehicleDetails, Restaurant}
 
 // image import export 
 import greenCartLogo from "../../assets/greenCart-logo.svg";
 import heroBannerImg from "../../assets/fruit-basket.png";
+
+import defaultPP from "../../assets/pp.jpeg";
+import defaultRest from "../../assets/defaultRest.png"
 
 
 import fruitImgUrl from "../../assets/category/fruit.png";
@@ -59,9 +66,8 @@ import milkUrl from "../../assets/category/milk.png"
 import coldDrinkUrl from "../../assets/category/cold-drinks.png"
 import footerBannerUrl from "../../assets/footer-banner.png";
 import shopingCartWithGroceryItems from "../../assets/shopping-cart-with-grocery-items.png"
-export {greenCartLogo,heroBannerImg, defaultPP, fruitImgUrl, vegetableUrl, iceCreamUrl,waferUrl, milkUrl, coldDrinkUrl, footerBannerUrl, shopingCartWithGroceryItems}
+export {greenCartLogo,heroBannerImg, defaultPP,defaultRest, fruitImgUrl, vegetableUrl, iceCreamUrl,waferUrl, milkUrl, coldDrinkUrl, footerBannerUrl, shopingCartWithGroceryItems}
 
-import defaultPP from "../../assets/pp.jpeg";
 
 //Products images url: 
 import Banana from "../../assets/products/banana.png"

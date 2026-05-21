@@ -24,7 +24,8 @@ function Cart({ variant = "full" }) {
   if (currentUserRole === "customer") {
     const navigate = useNavigate();
     const isCompact = variant === "compact";
-    const { cartItems, setCartItems } = useContext(CartProductContext);
+    const { cartItems, setCartItems, restaurantId, setRestaurantId } =
+      useContext(CartProductContext);
     const { address } = useContext(AddressContext);
 
     const { allOrderHistory, setAllOrderHistory } =
@@ -96,69 +97,92 @@ function Cart({ variant = "full" }) {
 
     const onPlaceOrder = async () => {
       let user = await db.localUserData.get(currentUser.id);
-      if (!isAddressAvailable) alert("add address");
-      else {
-        const orderPriceDetails = {
-          price: totalPrice,
-          shippingPrice: shippingPrice,
-          taxPrice: taxPrice,
-          finalPrice: finalPrice,
-        };
-
-        let updateCurrentUser = {};
-        const orderId = uuid();
-
-        updateCurrentUser = {
-          ...currentUser,
-          myOrders: currentUser.hasOwnProperty("myOrders")
-            ? [
-                ...currentUser.myOrders,
-                {
-                  items: cartItems,
-                  priceDetails: orderPriceDetails,
-                  paymentMethod: paymentMethod,
-                  orderStatus: "pending",
-                  orderId: orderId,
-                },
-              ]
-            : [
-                {
-                  items: cartItems,
-                  priceDetails: orderPriceDetails,
-                  paymentMethod: paymentMethod,
-                  orderStatus: "pending",
-                  orderId: orderId,
-                },
-              ],
-          myAddress: currentUser.hasOwnProperty("myAddress")
-            ? currentUser.myAddress
-            : address,
-        };
-        user = updateCurrentUser;
-        await db.localUserData.put(user);
-        setCurrentUser(updateCurrentUser);
-
-        const order = {
-          name: currentUser.myAddress.name,
-          phone: currentUser.myAddress.phone,
-          email: currentUser.email,
-          items: cartItems,
-          priceDetails: orderPriceDetails,
-          paymentMethod: paymentMethod,
-          orderStatus: "pending",
-          orderId: orderId,
-        };
-
-        await db.orderHistory.add(order);
-        toast.success("Order Placed Successfully");
-
-        setTimeout(async () => {
-          navigate("/orders");
-          setCartItems([]);
-          await delete user.myCart;
-          await db.localUserData.put(user);
-        }, 1000);
+      if (!isAddressAvailable) {
+        toast.error("add address");
+        return;
       }
+
+      if (user?.isAnyOrderOnProcess) {
+        alert("you can't order untill previous one is completed !!");
+        return;
+      }
+
+      const orderPriceDetails = {
+        price: totalPrice,
+        shippingPrice: shippingPrice,
+        taxPrice: taxPrice,
+        finalPrice: finalPrice,
+      };
+
+      let updateCurrentUser = {};
+      const orderId = uuid();
+
+      updateCurrentUser = {
+        ...currentUser,
+        myOrders: currentUser.hasOwnProperty("myOrders")
+          ? [
+              ...currentUser.myOrders,
+              {
+                customerId: currentUser.id,
+                items: cartItems,
+                priceDetails: orderPriceDetails,
+                paymentMethod: paymentMethod,
+                orderStatus: "pending",
+                orderId: orderId,
+              },
+            ]
+          : [
+              {
+                customerId: currentUser.id,
+                items: cartItems,
+                priceDetails: orderPriceDetails,
+                paymentMethod: paymentMethod,
+                orderStatus: "pending",
+                orderId: orderId,
+              },
+            ],
+        myAddress: currentUser.hasOwnProperty("myAddress")
+          ? currentUser.myAddress
+          : address,
+      };
+      updateCurrentUser.isAnyOrderOnProcess = true;
+      setCurrentUser(updateCurrentUser);
+      user = updateCurrentUser;
+
+      await db.localUserData.put(user);
+      const order = {
+        customerId: currentUser.id,
+        name: currentUser.myAddress.name,
+        phone: currentUser.myAddress.phone,
+        email: currentUser.email,
+        items: cartItems,
+        priceDetails: orderPriceDetails,
+        paymentMethod: paymentMethod,
+        orderStatus: "pending",
+        orderId: orderId,
+        restaurantId: restaurantId,
+      };
+      // console.log(order);
+
+      if (!restaurantId) return alert("Purchase item from the category");
+      const restaurant = await db.localUserData.get(restaurantId);
+
+      if (restaurant.hasOwnProperty("myOrders")) {
+        restaurant.myOrders = [...restaurant.myOrders, order];
+      } else {
+        restaurant.myOrders = [order];
+      }
+
+      await db.localUserData.put(restaurant);
+      await db.orderHistory.add(order);
+      toast.success("Order Placed Successfully");
+      setTimeout(async () => {
+        setRestaurantId(null);
+        navigate("/orders");
+        setCartItems([]);
+        await delete user.myCart;
+        await db.localUserData.put(user);
+      }, 1000);
     };
 
     return (

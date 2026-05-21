@@ -11,7 +11,10 @@ import {
 } from "../../contexts/context";
 import ProductImageLoader from "./ProductImageLoader";
 
+import { useParams } from "react-router-dom";
+
 function ProductBuyCard({ price, id, src, name, isProductInStock }) {
+  const { restId } = useParams();
   const { isLogin } = useContext(UserContext);
   const { productsList } = useContext(ProductContext);
   const {
@@ -22,6 +25,8 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     setUserData,
   } = useContext(UserContext);
   const { wishlist, setWishlist } = useContext(WishlistContext);
+
+  const { restaurantId, setRestaurantId} = useContext(CartProductContext)
 
   const [currentQty, setCurrentQty] = useState(0);
 
@@ -60,6 +65,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     setUserData(await db.localUserData.toArray());
     setCurrentUser(user);
 
+    setRestaurantId(restId);
     toast.success("Added");
   }
 
@@ -197,7 +203,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
 
             {currentUserRole === "customer" &&
               (currentQty > 0 ? (
-                <div className="flex items-center justify-around px-1.5 border border-green-600  rounded-md bg-green-100 text-green-700 h-7 w-16">
+                <div className="flex items-center justify-around px-1.5 border border-green-600 rounded bg-green-100 text-green-700 h-7 w-16">
                   <button
                     onClick={() => onDecreaseQty(id)}
                     className="font-bold"

@@ -25,6 +25,7 @@ import {
   AddressForm,
   MyProducts,
   AddProduct,
+  ActiveOrders,
   Wishlist,
   Category,
   Dashboard,
@@ -73,6 +74,7 @@ function App() {
           <Route path="/allproducts" element={<AllProducts />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
           <Route path="product-list" element={<MyProducts />}></Route>
+          <Route path="active-orders" element={<ActiveOrders />}></Route>
           <Route path="activeDeliveries" element={<ActiveDeliveries />}>
             {" "}
           </Route>
@@ -86,11 +88,14 @@ function App() {
             {" "}
           </Route>
 
+          <Route path="/allproducts/:restId" element={<AllProducts />} />
+
           <Route
             path="/categories/categoryWiseProducts/:catName"
             element={<CategoryWiseProducts />}
           />
         </Route>
+
         {/* ! end to show in panel  */}
 
         {/* ! profile path  */}

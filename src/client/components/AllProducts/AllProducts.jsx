@@ -1,16 +1,25 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, useLoaderData, useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../contexts/context";
 import { ToastContainer } from "react-toastify";
 import { GradientButton } from "../index";
 function AllProducts() {
+  const { restId = null } = useParams();
   const [totalProducts, setTotalProducts] = useState([]);
-  const { productsList } = useContext(ProductContext);
+  const { restaurantList, productsList } = useContext(ProductContext);
+
+  useEffect(() => {
+    const product = restaurantList.find((r) => r.id === restId);
+    setTotalProducts(product?.productList || []);
+    if (!restId) {
+      setTotalProducts(productsList);
+    }
+  }, []);
 
   const { setActiveTab, isLogin } = useContext(UserContext);
 
-  if (productsList.length === 0)
+  if (totalProducts.length === 0)
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <h2 className="text-lg font-semibold text-gray-600">
@@ -21,6 +30,7 @@ function AllProducts() {
         </p>
       </div>
     );
+
   return (
     <>
       <section className={`${isLogin ? "" : "px-10"}`}>
@@ -37,7 +47,7 @@ function AllProducts() {
             draggable
             position="bottom-right"
           />
-          {productsList?.map((p, index) => (
+          {totalProducts?.map((p, index) => (
             <ProductBuyCard
               name={p.product_name}
               src={p.product_url}

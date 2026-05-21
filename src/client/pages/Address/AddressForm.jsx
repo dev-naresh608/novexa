@@ -41,7 +41,7 @@ function AddressForm() {
     }
     setUserData(await db.localUserData.toArray());
     setTimeout(() => {
-      navigate("/profile");
+      navigate("/dashboard");
     }, 1000);
   };
 

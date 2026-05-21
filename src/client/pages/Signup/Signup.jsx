@@ -56,6 +56,7 @@ export default function Signup() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
+      restaurant_owner_name: formData.username,
       role: currentRole,
       [e.target.name]: e.target.value,
       id: userId,

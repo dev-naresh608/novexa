@@ -23,14 +23,21 @@ import {
   CheckCircle,
 } from "lucide-react";
 function Header() {
-  const { isLogin, currentUser, setActiveTab, currentUserRole,isProfileClicked,setIsProfileClicked, isNotificationClicked,setIsNotificationClicked  } =
-    useContext(UserContext);
+  const {
+    isLogin,
+    currentUser,
+    setActiveTab,
+    currentUserRole,
+    isProfileClicked,
+    setIsProfileClicked,
+    isNotificationClicked,
+    setIsNotificationClicked,
+  } = useContext(UserContext);
   const { productsList } = useContext(ProductContext);
 
   const { cartItems } = useContext(CartProductContext);
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-
 
   function onSearchProduct(searchInputBoxValue) {
     if (searchInputBoxValue?.length > 0) {
@@ -47,8 +54,8 @@ function Header() {
       <div className="flex z-40 justify-between items-center mb-5 py-3 px-10">
         <div>
           <Link to="/">
-            <span className="text-green-700 font-bold text-3xl">
-              <img src={greenCartLogo} alt="logo" />
+            <span className="text-green-700 font-bold">
+              <img className="h-10" src={greenCartLogo} alt="logo" />
             </span>
           </Link>
         </div>
@@ -86,7 +93,7 @@ function Header() {
                 type="text"
                 // value={searchValue}
                 placeholder="Search Products..."
-                // onChange={(e) => onSearchProduct(e.target.value)}
+                onChange={(e) => onSearchProduct(e.target.value)}
               />
               <div className="border-l border-black">
                 <svg
@@ -117,14 +124,13 @@ function Header() {
       <div>
         <Link to="/dashboard">
           <span className="text-green-700 font-bold text-3xl">
-            <img src={greenCartLogo} alt="logo image" />
+            <img className="h-8" src={greenCartLogo} alt="logo image" />
           </span>
         </Link>
       </div>
       {/* right nav  */}
-      <div className="flex items-startoutline-none gap-3">
+      <div className="flex outline-none gap-3">
         {/* Notification  */}
-
         <div className="relative group">
           <div>
             <button
@@ -341,6 +347,17 @@ function Header() {
             </ul>
           </div>
         </div>
+
+        {/* profile sidebar */}
+        {/* <div className="font-semibold">
+          <p className="text-sm">{currentUser.username}</p>
+          <p className="text-[10px] space-x-2">
+            <span className="bg-green-200 rounded-2xl px-1.5 text-gray-800 ">
+              active
+            </span>
+            <span className="bg-yellow-100 text-yellow-700 px-1.5 rounded-full">{currentUser.role}</span>
+          </p> 
+        </div> */}
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ function CustomerDashboard() {
     currentUserAddress = `${currentUser.myAddress.name} ${currentUser.myAddress.phone} ${currentUser.myAddress.street} ${currentUser.myAddress.city} ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode} `;
   }
   
-
   return (
     <>
       <div className="flex-1 bg-gray-100 p-5">
@@ -47,7 +46,7 @@ function CustomerDashboard() {
             <h3 className="text-gray-500 text-sm mb-2">Total Orders</h3>
 
             <h1 className="text-3xl font-bold">
-              {currentUser?.myOrders.length || "0"}
+              {currentUser?.myOrders?.length || "0"}
             </h1>
           </div>
 
@@ -60,7 +59,7 @@ function CustomerDashboard() {
           <div className="bg-white rounded-2xl shadow p-5">
             <h3 className="text-gray-500 text-sm mb-2">Wishlist Items</h3>
             <h1 className="text-3xl font-bold">
-              {currentUser?.myWishlist.length || "0"}
+              {currentUser?.myWishlist?.length || "0"}
             </h1>
           </div>
 
@@ -105,9 +104,9 @@ function CustomerDashboard() {
               <div className="mt-4 flex items-center justify-between">
                 <p className="font-medium">₹249</p>
 
-                <button className="text-green-600 font-medium">
+                {/* <button className="text-green-600 font-medium">
                   Track Order
-                </button>
+                </button> */}
               </div>
             </div>
 

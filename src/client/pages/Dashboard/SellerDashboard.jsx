@@ -7,7 +7,6 @@ function SellerDashboard() {
 
   // const localUserData = await db.localUserData.get(currentUser.id);
   // console.log(localUserData.restaurant_name);
-  console.log(currentUser)
   return (
     <>
       <div className="flex-1 bg-gray-100 p-5">

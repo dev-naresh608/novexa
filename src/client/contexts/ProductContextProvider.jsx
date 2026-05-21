@@ -32,24 +32,26 @@ import { db } from "../db";
 
 function ProductContextProvider({ children }) {
   const [productsList, setProductsList] = useState([]);
+  const [restaurantList, setRestaurantList] = useState([]);
 
   useMemo(() => {
     let localUserData = null;
     const getData = async () => {
       localUserData = await db.localUserData.toArray();
-      const products = localUserData
-      .filter(
-        (user) =>
-        user.role === "seller" && user.hasOwnProperty("productList")
-      )
-      .map((user) => user.productList)
-      .flat()
+      const products = localUserData.filter(
+        (user) => user.role === "seller" && user.hasOwnProperty("productList")
+      ).map((p) => p.productList).flat()
+
+      
       setProductsList(products);
+      
+      const restaurants = localUserData.filter((r) => r.role === "seller");
+      setRestaurantList(restaurants);
     };
     getData();
   }, []);
   return (
-    <ProductContext.Provider value={{ productsList }}>
+    <ProductContext.Provider value={{ productsList, restaurantList }}>
       {children}
     </ProductContext.Provider>
   );

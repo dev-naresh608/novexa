@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext } from "../../contexts/context";
+import { ToastContainer } from "react-toastify";
 
 function SearchProduct() {
   const { productsList } = useContext(ProductContext);
@@ -37,6 +38,7 @@ function SearchProduct() {
             ))
           )}
         </div>
+        <ToastContainer autoClose={400} />
       </section>
     </>
   );

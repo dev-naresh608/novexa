@@ -99,6 +99,7 @@ function Profile() {
             <ul className="">
               {sections.map((s, i) => (
                 <li
+                key={i}
                   onClick={s.tabToActive}
                   className="cursor-pointer hover:text-green-600"
                 >
@@ -128,7 +129,7 @@ function Profile() {
           </div>
         </div>
 
-        <div>
+        <div className="pl-5">
           {activeTab === "personalinformation" && <PersonalInfo />}
           {activeTab === "payments" && <Payments />}
           {activeTab === "setting" && <Setting />}

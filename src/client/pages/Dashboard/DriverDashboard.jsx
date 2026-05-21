@@ -6,8 +6,6 @@ import { NavLink } from "react-router-dom";
 function DriverDashboard() {
   const { currentUser, setActiveTab } = useContext(UserContext);
 
-  console.log(currentUser);
-
   return (
     <>
       <div className="flex-1 bg-gray-100 p-5">

@@ -123,6 +123,16 @@ function UserContextProvider({ children }) {
       showToAdmin: false,
       showToDriver: false,
     },
+
+    {
+      children: "Current Orders",
+      to: "/active-orders",
+      svg: "🚚",
+      showToCustomer: false,
+      showToSeller: true,
+      showToAdmin: false,
+      showToDriver: true,
+    },
     {
       children: "Orders",
       to: "/orders",

@@ -11,7 +11,7 @@ function AddProduct() {
   const initialFormData = {
     product_name: "",
     product_url: "",
-    product_category: "other",
+    // product_category: "other",
     product_weight: "",
     product_weight_type: "none",
     product_price: 0,
