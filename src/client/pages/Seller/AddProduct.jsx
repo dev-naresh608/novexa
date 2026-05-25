@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
 import { UserContext } from "../../contexts/context";
 import { v4 as uuid } from "uuid";
-import { toast, ToastContainer } from "react-toastify";
 import { db } from "../../db";
+import { toast } from "react-toastify";
 
 function AddProduct() {
   const [productImg, setProductImg] = useState(null);
@@ -20,6 +20,7 @@ function AddProduct() {
     product_description: "",
     isProductInStock: true,
     isOfferAvailable: false,
+    restaurant_id: "",
   };
   const [formData, setFormData] = useState(initialFormData);
 
@@ -50,12 +51,13 @@ function AddProduct() {
       return;
     }
 
+    const user = await db.localUserData.get(currentUser.id);
     const productData = {
       ...formData,
       product_id: uuid(),
+      restaurant_id: user.id,
     };
 
-    const user = await db.localUserData.get(currentUser.id);
 
     await db.localUserData.update(currentUser.id, {
       productList: [...(user.productList || []), productData],
@@ -79,7 +81,6 @@ function AddProduct() {
   };
   return (
     <>
-      <ToastContainer autoClose={500} pauseOnHover />
       <div className="min-w-[300px] max-w-[500px]">
         <form
           action=""

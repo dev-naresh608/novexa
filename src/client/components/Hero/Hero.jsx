@@ -2,7 +2,9 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 
 
-import {Category, GradientButton, Home,heroBannerImg} from '../index'
+import {GradientButton} from '../component'
+import {Home} from "../../pages/pages"
+import {fruit_basket} from "../../assets/assets"
 function Hero() {
 
   return (
@@ -28,7 +30,7 @@ function Hero() {
 
           {/* right content  */}
           <div>
-            <img src={heroBannerImg} alt="hero banner" />
+            <img src={fruit_basket} alt="hero banner" />
           </div>
         </div>
       </section>

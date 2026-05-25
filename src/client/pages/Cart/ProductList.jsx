@@ -54,11 +54,11 @@ function ProductList({ compact = false }) {
       </div>
 
       {cartItems.map((product, index) => (
-        <div key={index} className="grid grid-cols-[2fr_1fr_1fr]  px-2">
-          <div className="flex items-center">
-            <div className="h-24 w-24 border">
+        <div key={index} className="grid grid-cols-[2fr_1fr_1fr] px-2 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="group h-20 w-20 flex items-center justify-center rounded-2xl border bg-gray-100">
               <img
-                className="w-full h-full object-contain"
+                className="group-hover:scale-105 duration-150 w-14 h-14 object-contain"
                 src={product.product_url}
                 alt={product.product_name}
               />
@@ -76,7 +76,7 @@ function ProductList({ compact = false }) {
                 </span>{" "}
               </p>
 
-              <div className="mt-1  space-x-2">
+              <div className="mt-1 font-semibold text-gray-500 space-x-2">
                 <span>Qty:</span>
                 <select
                   className="border rounded px-1 py-0.5 text-xs bg-white outline-none"
@@ -105,7 +105,7 @@ function ProductList({ compact = false }) {
                 height="24px"
                 viewBox="0 -960 960 960"
                 width="24px"
-                className="fill-red-500 hover:fill-red-700"
+                className="fill-red-500 hover:scale-110 duration-100"
               >
                 <path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z" />
               </svg>

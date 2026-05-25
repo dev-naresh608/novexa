@@ -3,38 +3,21 @@ import { ProductContext } from "./context";
 import { v4 as uuid } from "uuid";
 
 import {
-  fruitImgUrl,
-  coldDrinkUrl,
-  milkUrl,
-  waferUrl,
-  iceCreamUrl,
-} from "../components/index";
+  category_fruit,
+  category_cold_drinks,
+  category_milk,
+  category_wafer,
+  category_ice_cream
 
-import {
-  Banana,
-  Apple,
-  Chiku,
-  CocaCola,
-  Fanta,
-  Grape,
-  IceCream,
-  Milk,
-  ButterMilk,
-  RedBull,
-  Sprite,
-  Lays,
-  MasalaMasti,
-  AmulCone,
-  ChocolateCone,
-  AlooSev,
-} from "../components/index";
+} from "../assets/assets";
+
 import { db } from "../db";
 
 function ProductContextProvider({ children }) {
   const [productsList, setProductsList] = useState([]);
   const [restaurantList, setRestaurantList] = useState([]);
 
-  useMemo(() => {
+  useEffect(() => {
     let localUserData = null;
     const getData = async () => {
       localUserData = await db.localUserData.toArray();

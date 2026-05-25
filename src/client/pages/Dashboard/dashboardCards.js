@@ -1,0 +1,124 @@
+import {
+  ShoppingBag,
+  DollarSign,
+  Package,
+  User,
+  Truck,
+  Clock,
+  Gift,
+  BadgePercent,
+  Clock3,
+  Heart,
+  Eye,
+  MapPin,
+  CheckCircle,
+} from "lucide-react";
+
+export const dashboardCards = {
+  seller: [
+    {
+      title: "Total Orders",
+      valueKey: "totalOrders",
+      info: "All time",
+      icon: ShoppingBag,
+      bg: "#fef6e8",
+      color: "#f59e0b",
+    },
+    {
+      title: "Revenue",
+      valueKey: "revenue",
+      info: "This month",
+      icon: DollarSign,
+      bg: "#e9f8f3",
+      color: "#589c7a",
+    },
+    {
+      title: "Products",
+      valueKey: "products",
+      info: "Currently listed",
+      icon: Package,
+      bg: "#6f72f2",
+      color: "#f0f1fe",
+    },
+    {
+      title: "Customers",
+      valueKey: "customers",
+      info: "Unique buyers",
+      icon: User,
+      bg: "#fdecec",
+      color: "#f04f4f",
+    },
+  ],
+
+  customer: [
+  {
+    title: "Total Orders",
+    valueKey: "orders",
+    info: "All purchases",
+    icon: Package,
+    bg: "#fff7e8",
+    color: "#f59e0b",
+  },
+
+  {
+    title: "Wishlist",
+    valueKey: "wishlist",
+    info: "Saved products",
+    icon: Heart,
+    bg: "#fdecec",
+    color: "#ef4444",
+  },
+
+  {
+  title: "Reward Points",
+  valueKey: "rewardPoints",
+  info: "Earned from orders",
+  icon: Gift,
+  bg: "#f3e8ff",
+  color: "#9333ea",
+},
+  {
+    title: "Total Savings",
+    valueKey: "savings",
+    info: "Money saved",
+    icon: BadgePercent,
+    bg: "#e8f8f1",
+    color: "#10b981",
+  },
+],
+
+  driver: [
+    {
+      title: "Assigned Orders",
+      valueKey: "assigned",
+      info: "Orders to deliver",
+      icon: Truck,
+      bg: "#eef2ff",
+      color: "#4338ca",
+    },
+    {
+      title: "Completed Orders",
+      valueKey: "completed",
+      info: "Finished deliveries",
+      icon: CheckCircle,
+      bg: "#ecfdf5",
+      color: "#16a34a",
+    },
+    {
+      title: "Total Earnings",
+      valueKey: "earnings",
+      info: "Delivery income",
+      icon: DollarSign,
+      bg: "#f0fdf4",
+      color: "#15803d",
+    },
+    {
+      title: "Active Deliveries",
+      valueKey: "active",
+      info: "Currently on route",
+      icon: ShoppingBag,
+      bg: "#fef2f2",
+      color: "#dc2626",
+    },
+  ],
+};

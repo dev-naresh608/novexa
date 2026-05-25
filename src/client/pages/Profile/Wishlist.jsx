@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { CartProductContext, UserContext } from "../../contexts/context";
-import { toast, ToastContainer } from "react-toastify";
-import { ProductBuyCard, GradientButton } from "../../components/index";
+import { ProductBuyCard, GradientButton } from "../../components/component";
 
 function Wishlist() {
   const { currentUser, setActiveTab } = useContext(UserContext);
@@ -28,12 +27,6 @@ function Wishlist() {
           </GradientButton>
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5">
-          <ToastContainer
-            autoClose={500}
-            closeOnClick
-            draggable
-            position="bottom-right"
-          />
           {currentUser.myWishlist.map((p, index) => (
             <ProductBuyCard
               name={p.product_name}

@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState, useMemo } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../contexts/context";
-import { ToastContainer } from "react-toastify";
-import { GradientButton } from "../index";
+
+import { GradientButton } from "../component";
 function AllProducts() {
   const { restId = null } = useParams();
   const [totalProducts, setTotalProducts] = useState([]);
@@ -30,7 +30,7 @@ function AllProducts() {
         </p>
       </div>
     );
-
+  
   return (
     <>
       <section className={`${isLogin ? "" : "px-10"}`}>
@@ -40,13 +40,7 @@ function AllProducts() {
         >
           All Products
         </GradientButton>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
-          <ToastContainer
-            autoClose={500}
-            closeOnClick
-            draggable
-            position="bottom-right"
-          />
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,270px))] gap-5">
           {totalProducts?.map((p, index) => (
             <ProductBuyCard
               name={p.product_name}

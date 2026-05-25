@@ -1,9 +1,9 @@
 import React, { useContext } from "react";
 import {
-  footerBannerUrl,
   GradientButton,
-  shopingCartWithGroceryItems,
-} from "../index";
+} from "../component";
+import { footer_banner, shopping_cart_with_grocery_items} from "../../assets/assets"
+
 import { UserContext } from "../../contexts/context";
 import { Link } from "react-router-dom";
 
@@ -45,7 +45,7 @@ function Footer() {
 
                 {/* right  */}
                 <div className="w-14">
-                  <img className="h-full w-full" src={footerBannerUrl} alt="" />
+                  <img className="h-full w-full" src={footer_banner} alt="" />
                 </div>
               </div>
             </div>
@@ -54,7 +54,7 @@ function Footer() {
             <div className="bg-[#efd565] sm:absolute rounded-2xl top-40 w-full">
               <div className="flex items-center justify-center space-x-10 p-5 sm:pt-24 md:pt-28 pb-10 px-6 ">
                 <div className="h-36 w-36">
-                  <img src={shopingCartWithGroceryItems} alt="cart image" />
+                  <img src={shopping_cart_with_grocery_items} alt="cart image" />
                 </div>
                 <div className="flex items-start space-x-7">
                   {/* <!-- About --> */}

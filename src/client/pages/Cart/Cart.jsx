@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import ProductList from "./ProductList";
+import { toast } from "react-toastify";
 import {
   CartProductContext,
   AddressContext,
@@ -8,12 +9,13 @@ import {
   UserContext,
 } from "../../contexts/context";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { ArrowBigLeft, ArrowLeft } from "lucide-react";
 import { db } from "../../db";
+import { channel } from "../../services/service";
 
 function Cart({ variant = "full" }) {
-  const {
+  let {
     userData,
     setUserData,
     currentUser,
@@ -23,12 +25,12 @@ function Cart({ variant = "full" }) {
   } = useContext(UserContext);
   if (currentUserRole === "customer") {
     const navigate = useNavigate();
-    const isCompact = variant === "compact";
-    const { cartItems, setCartItems, restaurantId, setRestaurantId } =
+    let isCompact = variant === "compact";
+    let { cartItems, setCartItems, restaurantId, setRestaurantId } =
       useContext(CartProductContext);
-    const { address } = useContext(AddressContext);
+    let { address } = useContext(AddressContext);
 
-    const { allOrderHistory, setAllOrderHistory } =
+    let { allOrderHistory, setAllOrderHistory } =
       useContext(OrderHistoryContext);
 
     const [totalPrice, setTotalPrice] = useState(0);
@@ -83,7 +85,7 @@ function Cart({ variant = "full" }) {
           </h2>
           <button
             onClick={() => navigate("/allproducts")}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+            className="active:scale-95 mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
           >
             Continue Shopping
           </button>
@@ -96,102 +98,205 @@ function Cart({ variant = "full" }) {
     };
 
     const onPlaceOrder = async () => {
-      let user = await db.localUserData.get(currentUser.id);
-      if (!isAddressAvailable) {
-        toast.error("add address");
-        return;
-      }
+      try {
+        //VALIDATIONS
+        if (!isAddressAvailable) {
+          toast.error("Please add delivery address");
+          return;
+        }
 
-      if (user?.isAnyOrderOnProcess) {
-        alert("you can't order untill previous one is completed !!");
-        return;
-      }
+        if (!restaurantId) {
+          toast.error("Please select products properly");
+          return;
+        }
 
-      const orderPriceDetails = {
-        price: totalPrice,
-        shippingPrice: shippingPrice,
-        taxPrice: taxPrice,
-        finalPrice: finalPrice,
-      };
+        if (!cartItems || cartItems.length === 0) {
+          toast.error("Cart is empty");
+          return;
+        }
 
-      let updateCurrentUser = {};
-      const orderId = uuid();
+        // GET USER & RESTAURANT
+        const user = await db.localUserData.get(currentUser.id);
+        const restaurant = await db.localUserData.get(restaurantId);
 
-      updateCurrentUser = {
-        ...currentUser,
-        myOrders: currentUser.hasOwnProperty("myOrders")
-          ? [
-              ...currentUser.myOrders,
-              {
-                customerId: currentUser.id,
-                items: cartItems,
-                priceDetails: orderPriceDetails,
-                paymentMethod: paymentMethod,
-                orderStatus: "pending",
-                orderId: orderId,
-              },
-            ]
-          : [
-              {
-                customerId: currentUser.id,
-                items: cartItems,
-                priceDetails: orderPriceDetails,
-                paymentMethod: paymentMethod,
-                orderStatus: "pending",
-                orderId: orderId,
-              },
-            ],
-        myAddress: currentUser.hasOwnProperty("myAddress")
-          ? currentUser.myAddress
-          : address,
-      };
-      updateCurrentUser.isAnyOrderOnProcess = true;
-      setCurrentUser(updateCurrentUser);
-      user = updateCurrentUser;
+        if (!user || !restaurant) {
+          toast.error("Something went wrong");
+          return;
+        }
 
-      await db.localUserData.put(user);
-      const order = {
-        customerId: currentUser.id,
-        name: currentUser.myAddress.name,
-        phone: currentUser.myAddress.phone,
-        email: currentUser.email,
-        items: cartItems,
-        priceDetails: orderPriceDetails,
-        paymentMethod: paymentMethod,
-        orderStatus: "pending",
-        orderId: orderId,
-        restaurantId: restaurantId,
-      };
-      // console.log(order);
+        // DATE & TIME
+        const now = new Date();
 
-      if (!restaurantId) return alert("Purchase item from the category");
-      const restaurant = await db.localUserData.get(restaurantId);
+        const todayDate = now.toLocaleDateString("en-GB");
+        const currentTime = now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-      if (restaurant.hasOwnProperty("myOrders")) {
-        restaurant.myOrders = [...restaurant.myOrders, order];
-      } else {
-        restaurant.myOrders = [order];
-      }
+        // PRICE CALCULATIONS
+        const totalPrice = cartItems.reduce((acc, item) => {
+          return acc + item.product_price * item.product_qty;
+        }, 0);
 
-      await db.localUserData.put(restaurant);
-      await db.orderHistory.add(order);
-      toast.success("Order Placed Successfully");
-      setTimeout(async () => {
-        setRestaurantId(null);
-        navigate("/orders");
+        const shippingPrice = cartItems.reduce((acc, item) => {
+          return acc + (item.product_shiping_price || 0);
+        }, 0);
+
+        const taxPrice = Number((totalPrice * 0.02).toFixed(2));
+
+        const finalPrice = totalPrice + taxPrice + shippingPrice;
+
+        // ORDER DETAILS
+        const orderId = uuid();
+
+        const orderPriceDetails = {
+          price: totalPrice,
+          shippingPrice,
+          taxPrice,
+          finalPrice,
+        };
+
+        const orderData = {
+          orderId,
+
+          customerId: currentUser.id,
+          restaurantId: restaurantId,
+
+          restaurant_name: restaurant.restaurant_name,
+          restaurant_address: restaurant.restaurant_address,
+
+          name: currentUser.myAddress.name,
+          phone: currentUser.myAddress.phone,
+          email: currentUser.email,
+
+          address: `
+        ${currentUser.myAddress.street},
+        ${currentUser.myAddress.city},
+        ${currentUser.myAddress.state},
+        ${currentUser.myAddress.pincode}
+      `,
+
+          orderDate: todayDate,
+          orderTime: currentTime,
+
+          orderStatus: "pending",
+
+          items: cartItems,
+
+          paymentMethod,
+
+          priceDetails: orderPriceDetails,
+        };
+
+        // CUSTOMER UPDATE
+        const updatedUser = {
+          ...user,
+
+          myOrders: user.myOrders ? [...user.myOrders, orderData] : [orderData],
+
+          myCurrentOrders: user.myCurrentOrders
+            ? [...user.myCurrentOrders, orderData]
+            : [orderData],
+        };
+
+        // RESTAURANT UPDATE
+        const updatedRestaurant = {
+          ...restaurant,
+
+          myOrders: restaurant.myOrders
+            ? [...restaurant.myOrders, orderData]
+            : [orderData],
+
+          myCurrentOrders: restaurant.myCurrentOrders
+            ? [...restaurant.myCurrentOrders, orderData]
+            : [orderData],
+        };
+
+        // NOTIFICATIONS
+        const customerNotification = {
+          notificationID: uuid(),
+
+          msg: `Hey ${
+            currentUser.username.split(" ")[0]
+          }, Your order has been placed successfully at ${
+            restaurant.restaurant_name
+          }.`,
+
+          isNotificationIsRead: false,
+
+          Ntime: currentTime,
+          Ndate: todayDate,
+        };
+
+        const restaurantNotification = {
+          notificationID: uuid(),
+
+          msg: `New order received from ${
+            currentUser.username
+          }. Total Amount: $${finalPrice}`,
+
+          isNotificationIsRead: false,
+
+          Ntime: currentTime,
+          Ndate: todayDate,
+        };
+
+        // ADD CUSTOMER NOTIFICATION
+        updatedUser.myNotifications = updatedUser.myNotifications
+          ? [...updatedUser.myNotifications, customerNotification]
+          : [customerNotification];
+
+        // ADD RESTAURANT NOTIFICATION
+        updatedRestaurant.myNotifications = updatedRestaurant.myNotifications
+          ? [...updatedRestaurant.myNotifications, restaurantNotification]
+          : [restaurantNotification];
+
+        // SAVE DATABASE
+        await db.localUserData.put(updatedUser);
+
+        await db.localUserData.put(updatedRestaurant);
+
+        await db.orderHistory.add(orderData);
+
+
+        // CLEAR CART
+        delete updatedUser.myCart;
+
+        await db.localUserData.put(updatedUser);
+
         setCartItems([]);
-        await delete user.myCart;
-        await db.localUserData.put(user);
-      }, 1000);
+
+        // UPDATE CONTEXT
+        setCurrentUser(updatedUser);
+        setUserData(await db.localUserData.toArray());
+
+        // REALTIME UPDATE
+        channel.postMessage({
+          type: "USER_DATA_UPDATED",
+        });
+
+
+          // SUCCESS
+        toast.success("Order placed successfully");
+        
+        setTimeout(() => {
+          navigate("/orders");
+        }, 1000);
+      } catch (error) {
+        console.error("Place Order Error:", error);
+
+        toast.error("Failed to place order");
+      }
     };
 
     return (
       <>
-        <section>
+        
+        <section className="bg-white rounded-2xl p-5">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* LEFT - CART ITEMS */}
-            <div className="flex-1 relative rounded-2xl shadow-sm">
-              <div className="flex justify-between items-end border-b pb-2 mb-3 px-2  font-semibold">
+            <div className="flex-1 relative rounded-2xl border p-2">
+              <div className="flex justify-between items-end border-b pb-2 mb-3 px-2 font-semibold">
                 <span className="text-2xl">Shopping Cart</span>
 
                 <span className="text-indigo-600 text-sm">
@@ -292,14 +397,13 @@ function Cart({ variant = "full" }) {
                 </div>
 
                 <button
-                  className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium transition"
+                  className="active:scale-95 w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium transition"
                   onClick={onPlaceOrder}
                 >
                   Place Order
                 </button>
               </div>
             )}
-            <ToastContainer autoClose={500} pauseOnHover={false} />
           </div>
         </section>
       </>

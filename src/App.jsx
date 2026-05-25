@@ -6,12 +6,10 @@ import {
   UserContextProvider,
   WishlistContextProvider,
   CategoryContextProvider,
+  OrderContext,
 } from "./client/contexts/context";
 
 import {
-  AllProducts,
-  CategoryWiseProducts,
-  Layout,
   Profile,
   PersonalInfo,
   Setting,
@@ -21,7 +19,6 @@ import {
   Home,
   Login,
   Signup,
-  SearchProduct,
   AddressForm,
   MyProducts,
   AddProduct,
@@ -30,11 +27,19 @@ import {
   Category,
   Dashboard,
   ProductList,
-  ActiveDeliveries,
   DeliveryHistory,
   VehicleDetails,
   Earnings,
-} from "./client/components/index";
+  ShowAllNotifications,
+} from "./client/pages/pages";
+
+import {
+  AllProducts,
+  CategoryWiseProducts,
+  Layout,
+  SearchProduct,
+  AllRestaurants,
+} from "./client/components/component";
 
 import {
   BrowserRouter,
@@ -44,6 +49,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { useEffect } from "react";
+import OrderProvider from "./client/contexts/OrderContext";
 
 function App() {
   const router = createBrowserRouter(
@@ -71,13 +78,14 @@ function App() {
           <Route path="wishlist" element={<Wishlist />}></Route>
           <Route path="setting" element={<Setting />}></Route>
           <Route path="/dashboard" element={<Dashboard />}></Route>
-          <Route path="/allproducts" element={<AllProducts />}></Route>
+          <Route path="/restaurants" element={<AllRestaurants />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
           <Route path="product-list" element={<MyProducts />}></Route>
           <Route path="active-orders" element={<ActiveOrders />}></Route>
-          <Route path="activeDeliveries" element={<ActiveDeliveries />}>
-            {" "}
-          </Route>
+          <Route
+            path="allnotifications"
+            element={<ShowAllNotifications />}
+          ></Route>
           <Route path="deliveryHistory" element={<DeliveryHistory />}>
             {" "}
           </Route>
@@ -118,7 +126,9 @@ function App() {
               <OrderHistoryContextProvider>
                 <WishlistContextProvider>
                   <CategoryContextProvider>
-                    <RouterProvider router={router} />
+                    <OrderProvider>
+                      <RouterProvider router={router}/>
+                    </OrderProvider>
                   </CategoryContextProvider>
                 </WishlistContextProvider>
               </OrderHistoryContextProvider>

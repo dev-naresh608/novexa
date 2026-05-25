@@ -1,12 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { ChevronDown } from "lucide-react";
 import { db } from "../../db/index";
-
+import { toast } from "react-toastify";
 import { UserContext } from "../../contexts/context";
-import { fromJSON } from "postcss";
 
 export default function Signup() {
   const { setUserData } = useContext(UserContext);
@@ -44,6 +42,7 @@ export default function Signup() {
     email: "",
     password: "",
     id: "",
+    driver_status: true,
     driver_aadhaar_number: "",
     driver_vehicle_number: "",
     driver_dob: "",
@@ -82,6 +81,7 @@ export default function Signup() {
       // delete the unwanted key of data. ex - driver is not required for resto_name.
       if (currentRole === "customer") {
         delete formData.driver_dob;
+        delete formData.driver_status;
         delete formData.driver_aadhaar_number;
         delete formData.driver_vehicle_number;
         delete formData.restaurant_name;
@@ -90,6 +90,7 @@ export default function Signup() {
         delete formData.restaurant_owner_name;
       } else if (currentRole === "seller") {
         delete formData.driver_dob;
+        delete formData.driver_status;
         delete formData.driver_aadhaar_number;
         delete formData.driver_vehicle_number;
       } else if (currentRole === "driver") {
@@ -304,7 +305,6 @@ export default function Signup() {
             </Link>
           </p>
         </form>
-        <ToastContainer autoClose={600} pauseOnHover={false}></ToastContainer>
       </div>
     </div>
   );

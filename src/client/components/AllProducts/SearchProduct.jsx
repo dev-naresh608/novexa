@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext } from "../../contexts/context";
-import { ToastContainer } from "react-toastify";
 
 function SearchProduct() {
   const { productsList } = useContext(ProductContext);
@@ -16,6 +15,18 @@ function SearchProduct() {
     setTotalProducts(filteredProducts);
   }, [searchValue]);
 
+  if (totalProducts?.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <h2 className="text-lg font-semibold text-gray-600">
+          No Products Found 📦
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          There is a no products are available.
+        </p>
+      </div>
+    );
+  }
   return (
     <>
       <section className="p-10">
@@ -23,22 +34,18 @@ function SearchProduct() {
           Products
         </p>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5">
-          {totalProducts.length === 0 ? (
-            <h2 className="text-3xl whitespace-nowrap">No Products Found !!</h2>
-          ) : (
-            totalProducts?.map((p, index) => (
-              <ProductBuyCard
-                name={p.product_name}
-                src={p.product_url}
-                price={p.product_price}
-                id={p.product_id}
-                key={index}
-                isProductInStock={p.isProductInStock}
-              />
-            ))
-          )}
+          {totalProducts?.map((p, index) => (
+            <ProductBuyCard
+              name={p.product_name}
+              src={p.product_url}
+              price={p.product_price}
+              id={p.product_id}
+              key={index}
+              isProductInStock={p.isProductInStock}
+            />
+          ))}
         </div>
-        <ToastContainer autoClose={400} />
+
       </section>
     </>
   );

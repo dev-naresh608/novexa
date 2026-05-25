@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/context";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
-  defaultPP,
   PersonalInfo,
   Orders,
   Setting,
@@ -10,7 +9,11 @@ import {
   Cart,
   MyProducts,
   Wishlist,
-} from "../../components/index";
+} from "../pages";
+
+
+import {defaultPP} from "../../assets/assets"
+import { CardSim, CreditCard, LogOut, Settings, User } from "lucide-react";
 
 function Profile() {
   const navigate = useNavigate();
@@ -46,19 +49,19 @@ function Profile() {
   const sections = [
     {
       name: "Personal Info",
-      icon: "👤",
+      icon: <User size={20}/>,
       tabToActive: () => setActiveTab("personalinformation"),
       to: "personalinformation",
     },
     {
       name: "Payments",
-      icon: "💳",
+      icon: <CreditCard size={20} />,
       tabToActive: () => setActiveTab("payments"),
       to: "payments",
     },
     {
       name: "Settings",
-      icon: "⚙️",
+      icon: <Settings size={20}/>,
       tabToActive: () => setActiveTab("setting"),
       to: "setting",
     },
@@ -66,10 +69,10 @@ function Profile() {
 
   return (
     <>
-      <div className="min-h-[90vh] m-auto w-full bg-white shadow-md rounded-2xl sm:max-w-[96vw] max-w-[90vw] font-semibold grid sm:grid-cols-[40vh,1fr]">
+      <div className="shadow-md rounded-2xl grid grid-cols-[40vh,1fr] min-h-[90vh] bg-white">
         {/* <div className="space-y-3 shadow-md rounded-2xl "> */}
-        <div className="w-full max-w-4xl mx-auto bg-white shadow-md rounded-2xl p-2 space-y-6">
-          <div className="text-center ">
+        <div className="w-full font-semibold max-w-4xl mx-auto bg-white shadow-md rounded-2xl p-2 space-y-6">
+          <div className="text-center">
             <div className="flex justify-center">
               <img
                 className="h-32 w-32 rounded-[50%] border border-green-600"
@@ -96,17 +99,17 @@ function Profile() {
             </div>
           </div>
           <div className="px-2">
-            <ul className="">
+            <ul>
               {sections.map((s, i) => (
                 <li
                 key={i}
                   onClick={s.tabToActive}
-                  className="cursor-pointer hover:text-green-600"
+                  className="cursor-pointer transition-colors duration-150 hover:text-green-600"
                 >
                   <NavLink
                     to={s.to}
                     className={({ isActive }) =>
-                      isActive ? "text-green-600" : ""
+                      `flex items-center gap-2 ${isActive ? "text-green-600" : ""}`
                     }
                   >
                     {s.icon} {s.name}
@@ -121,15 +124,15 @@ function Profile() {
                   setCurrentUserRole("customer");
                   location.reload();
                 }}
-                className="text-red-500 cursor-pointer"
+                className="text-red-500 cursor-pointer flex items-center gap-2"
               >
-                🚪 Logout
+                <LogOut size={20}/> Logout
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="pl-5">
+        <div className="px-5">
           {activeTab === "personalinformation" && <PersonalInfo />}
           {activeTab === "payments" && <Payments />}
           {activeTab === "setting" && <Setting />}

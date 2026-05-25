@@ -1,9 +1,8 @@
 import React, { useContext } from "react";
 import { AddressContext, UserContext } from "../../contexts/context";
-import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../db";
-
+import { toast } from "react-toastify";
 function AddressForm() {
   const navigate = useNavigate();
   const { address, setAddress } = useContext(AddressContext);
@@ -117,7 +116,7 @@ function AddressForm() {
           Save Address
         </button>
       </form>
-      <ToastContainer autoClose={500} pauseOnHover={false}></ToastContainer>
+
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { MapPin, Star, StarOff, StarsIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -17,11 +18,11 @@ function Restaurant({  defaultRest, name, address, productsLength, id }) {
         <div>
           <h2 className="text-lg font-semibold">{name}</h2>
 
-          <p className="text-sm text-gray-500">📍 {address}</p>
+          <p className="text-sm text-gray-500 flex items-center gap-1"><MapPin size={16} strokeWidth={2.5}/> {address}</p>
         </div>
 
         <div className="flex items-center gap-3 text-sm text-gray-600">
-          <span>⭐ 4.3</span>
+          <span className="flex items-center gap-1"><Star fill="#166534" size={16} strokeWidth={1}/> 4.3</span>
           <span>🛒 {productsLength} items</span>
         </div>
 

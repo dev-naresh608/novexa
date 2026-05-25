@@ -4,12 +4,12 @@ import { useParams } from "react-router-dom";
 import {
   GradientButton,
   ProductBuyCard,
-  defaultRest,
   Restaurant,
-} from "../index";
+} from "../component";
+import {defaultPP,defaultRest} from "../../assets/assets"
 
 import { ProductContext, CategoryContext } from "../../contexts/context";
-import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { db } from "../../db";
 import { div } from "framer-motion/client";
 
@@ -33,9 +33,9 @@ function CategoryWiseProducts() {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <img src={defaultRest} alt="" />
+          <img src={defaultRest} alt="restaurant logo image" />
           <h2 className="text-lg font-semibold text-gray-600">
-            No Restaurants Yet 📦
+            No Restaurants Yet 
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             There is a no restaurants available on this category.

@@ -1,25 +1,21 @@
 import React, { useContext, useEffect, useState } from "react";
+import { Hero, Footer, CategoryWiseProducts } from "../../components/component";
+
+import { Category, Orders, Setting, Wishlist, Cart } from "../pages";
+
 import {
-  Category,
-  Hero,
-  truckImgUrl,
-  coinImgUrl,
-  trustImgUrl,
-  leafImgUrl,
-  bottomBannerImageH,
-  bottomBannerImageV,
-  bottomBanner,
-  Footer,
-  Orders,
-  Setting,
-  Wishlist,
-  CategoryWiseProducts,
-} from "../../components/index";
+  delivery_truck,
+  trust_icon,
+  coin_icon,
+  leaf_icon,
+  bottom_banner,
+  bottom_banner_h,
+  bottom_banner_v,
+} from "../../assets/assets";
+
 import { UserContext, CartProductContext } from "../../contexts/context";
 import { Menu, X } from "lucide-react";
 import { NavLink, Outlet, Route, Routes } from "react-router-dom";
-import { Cart } from "../../components/index";
-
 function Home({ productsList }) {
   const { isLogin, leftPanelItems, secondLeftPanelItems, currentUser } =
     useContext(UserContext);
@@ -34,22 +30,22 @@ function Home({ productsList }) {
       {
         text: "Fastest Delivery",
         text_info: "Groceries delivered in under 30 minutes.",
-        src: truckImgUrl,
+        src: delivery_truck,
       },
       {
         text: "Freshness Guaranteed",
         text_info: "Fresh produce straight from the source.",
-        src: leafImgUrl,
+        src: leaf_icon,
       },
       {
         text: "Affordable Prices",
         text_info: "Quality groceries at unbeatable prices.",
-        src: coinImgUrl,
+        src: coin_icon,
       },
       {
         text: "Trusted by Thousands",
         text_info: "Loved by 10,000+ happy customers.",
-        src: trustImgUrl,
+        src: trust_icon,
       },
     ];
     return (
@@ -66,7 +62,7 @@ function Home({ productsList }) {
           <div className="sm:flex sm:gap-10 space-y-10 bg-blue-200 rounded-2xl p-5 sm:items-center">
             {/* left  */}
             <div className="w-auto sm:w-[60vw] md:w-[80vw]">
-              <img src={bottomBanner} alt="bottom banner image" />
+              <img src={bottom_banner} alt="bottom banner image" />
             </div>
             {/* right  */}
             <div className="w-full">
@@ -100,7 +96,7 @@ function Home({ productsList }) {
     );
   }
 
-  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   useEffect(() => {
     if (activeTab === "categories") {
       setShowAllCategoryEnable(true);
@@ -129,7 +125,7 @@ function Home({ productsList }) {
                         to={item.to}
                         // onClick={item.handleOnClick}
                         className={({ isActive }) => {
-                          return `relative flex gap-2 text-sm items-center font-semibold w-full  px-2 py-1.5 rounded-md hover:bg-green-800 hover:text-white hover:shadow-md group whitespace-nowrap ${isActive ? "bg-green-800 text-white shadow-md" : "bg-none text-green-800/80"}`;
+                          return `relative hover:scale-105 duration-150 flex gap-2 text-sm items-center font-semibold w-full px-2 py-1.5 rounded-md hover:bg-green-800 hover:text-white hover:shadow-md group whitespace-nowrap ${isActive ? "bg-green-800 text-white shadow-md" : "bg-none text-green-800"}`;
                         }}
                       >
                         {item.svg}

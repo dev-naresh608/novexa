@@ -1,7 +1,11 @@
 import React, { useContext } from "react";
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../components/index";
+import { defaultPP } from "../../assets/assets";
 import { NavLink } from "react-router-dom";
+import DashboardCards from "./DashboardCards.jsx";
+import { dashboardCards } from "./dashboardCards";
+import {MiniProfileContainer} from "../../components/component.js"
+import { ChevronRight, Mail, MapPin, MoveRight, Phone } from "lucide-react";
 
 function CustomerDashboard() {
   const { currentUser } = useContext(UserContext);
@@ -11,76 +15,75 @@ function CustomerDashboard() {
   if (isAddressAvailable) {
     currentUserAddress = `${currentUser.myAddress.name} ${currentUser.myAddress.phone} ${currentUser.myAddress.street} ${currentUser.myAddress.city} ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode} `;
   }
-  
+
+  // Customer stats -------------------------------
+  const customerStats = {
+    orders: currentUser?.myOrders?.length || 0,
+
+    wishlist: currentUser?.myWishlist?.length || 0,
+
+    rewardPoints:
+      currentUser?.myOrders?.reduce(
+        (total, order) =>
+          total + Math.floor(order.priceDetails?.finalPrice / 10),
+        0,
+      ) || 0,
+
+    savings: "$122",
+  };
+
+  // Common Css -----------------
+  const commonCss = "bg-white rounded-2xl border p-5 shadow";
+
   return (
     <>
-      <div className="flex-1 bg-gray-100 p-5">
+      <div className="bg-white/40 p-7 space-y-5">
         {/* ===== TOP SECTION ===== */}
 
-        <div className="bg-white rounded-2xl shadow p-6 mb-6">
+        <div className={commonCss}>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Welcome Back, {currentUser.username.split(' ')[0]}</h1>
+              <p className="text-gray-400 font-semibold text-xs">DASHBOARD</p>
+              <p className="text-3xl font-semibold">
+                Welcome back, {currentUser.username.split(" ")[0]}
+              </p>
 
               <p className="text-gray-500 mt-2">
                 Explore your orders and favorite foods.
               </p>
             </div>
 
-            <img
-              src={
-                currentUser.hasOwnProperty("imageUrl")
-                  ? currentUser.imageUrl
-                  : defaultPP
-              }
-              alt="profile picture"
-              className="w-16 h-16 rounded-full"
-            />
+            <div className="border rounded-full border-orange-200">
+              <img
+                src={
+                  currentUser.hasOwnProperty("imageUrl")
+                    ? currentUser.imageUrl
+                    : defaultPP
+                }
+                alt="profile picture"
+                className="w-16 h-16 rounded-full"
+              />
+            </div>
           </div>
         </div>
 
         {/* ===== STATS CARDS ===== */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="text-gray-500 text-sm mb-2">Total Orders</h3>
-
-            <h1 className="text-3xl font-bold">
-              {currentUser?.myOrders?.length || "0"}
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="text-gray-500 text-sm mb-2">Active Orders</h3>
-
-            <h1 className="text-3xl font-bold">2</h1>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="text-gray-500 text-sm mb-2">Wishlist Items</h3>
-            <h1 className="text-3xl font-bold">
-              {currentUser?.myWishlist?.length || "0"}
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="text-gray-500 text-sm mb-2">Recently Viewed</h3>
-
-            <h1 className="text-3xl font-bold">2</h1>
-          </div>
-        </div>
+        <DashboardCards cards={dashboardCards.customer} stats={customerStats} />
 
         {/* ===== MAIN CONTENT ===== */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* ===== RECENT ORDERS ===== */}
 
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow p-5">
+          <div className={`lg:col-span-2 ${commonCss}`}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-2xl font-semibold">Recent Orders</h2>
 
-              <NavLink to={"/orders"} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                View All
+              <NavLink
+                to="/orders"
+                className="flex items-center gap-1 text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-colors"
+              >
+                View all <ChevronRight size={13} />
               </NavLink>
             </div>
 
@@ -102,7 +105,7 @@ function CustomerDashboard() {
               </div>
 
               <div className="mt-4 flex items-center justify-between">
-                <p className="font-medium">₹249</p>
+                <p className="font-medium">$249</p>
 
                 {/* <button className="text-green-600 font-medium">
                   Track Order
@@ -128,7 +131,7 @@ function CustomerDashboard() {
               </div>
 
               <div className="mt-4 flex items-center justify-between">
-                <p className="font-medium">₹320</p>
+                <p className="font-medium">$320</p>
 
                 {/* <button className="text-green-600 font-medium">Reorder</button> */}
               </div>
@@ -137,52 +140,50 @@ function CustomerDashboard() {
 
           {/* ===== PROFILE / ADDRESS ===== */}
 
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h2 className="text-2xl font-semibold mb-5">Profile</h2>
-
-            <div className="flex flex-col items-center">
-              <img
-                src={
-                  currentUser.hasOwnProperty("imageUrl")
-                    ? currentUser.imageUrl
-                    : defaultPP
-                }
-                alt="profile picture"
-                className="w-24 h-24 rounded-full mb-4"
-              />
-
-              <h3 className="text-xl font-semibold">{currentUser.username}</h3>
-
-              <p className="text-gray-500 mt-1">{currentUser.email}</p>
+          <div className={commonCss}>
+            <div className="pb-2 border-b">
+              <MiniProfileContainer/>
             </div>
 
-            <div className="mt-6 space-y-4">
-              <div>
-                <p className="text-gray-500 text-sm">Phone Number</p>
-
-                <h4 className="font-medium">+91 {currentUser.phone}</h4>
+            {/* Info rows */}
+            <div className="space-y-4 mt-5 flex-1">
+              {/* Phone */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
+                  <Phone size={10} className="text-[#78716C]" strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-xs text-[#A8A29E]">Phone</p>
+                  <p className="text-[14px] font-semibold text-[#1C1917]">
+                    +91 {currentUser.phone}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <p className="text-gray-500 text-sm">Default Address</p>
-
-                {!isAddressAvailable ? (
-                  <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-center text-sm">
-                    <NavLink
-                    to={"/addressform"}
-                      className="font-medium hover:underline"
-                      // onClick={() => navigate("/addressform")}
-                    >
-                      + Add Address
-                    </NavLink>
-                  </div>
-                ) : (
-                  <div className="mb-5">
-                    <div className="mt-2 bg-gray-200/40 rounded-xl p-3 text-sm text-gray-700 leading-relaxed">
+              {/* Address */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <MapPin
+                    size={10}
+                    className="text-[#78716C]"
+                    strokeWidth={2}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-[#A8A29E]">Default Address</p>
+                  {isAddressAvailable ? (
+                    <p className="text-[14px] text-[#1C1917] font-medium leading-snug mt-0.5">
                       {currentUserAddress}
-                    </div>
-                  </div>
-                )}
+                    </p>
+                  ) : (
+                    <NavLink
+                      to="/addressform"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] mt-1 transition-colors"
+                    >
+                      + Add address
+                    </NavLink>
+                  )}
+                </div>
               </div>
             </div>
           </div>

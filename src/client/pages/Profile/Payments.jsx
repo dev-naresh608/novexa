@@ -6,7 +6,7 @@ function Payment() {
   useEffect(() => setActiveTab("payments"), [])
   return (
     <>
-      <div className="w-full h-full max-w-4xl mx-auto py-4 space-y-6">
+      <div className="w-full h-full mx-auto py-4 space-y-6">
         {/* Header */}
         <div>
           <h2 className="text-xl font-semibold">Payments</h2>

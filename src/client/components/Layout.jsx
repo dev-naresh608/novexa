@@ -1,8 +1,7 @@
 import React from "react";
-import { Header, Footer } from "./index";
+import { Header, Footer } from "./component";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-
 function Layout() {
 
   return (
@@ -14,6 +13,18 @@ function Layout() {
         </div>
         {/* <Footer /> */}
       </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={500}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
 
     </>
   );

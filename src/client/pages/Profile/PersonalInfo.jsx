@@ -37,7 +37,7 @@ function PersonalInfo() {
 
   return (
     <>
-      <div className="w-full h-full max-w-4xl mx-auto py-4 space-y-6">
+      <div className="w-full h-full mx-auto py-4 space-y-6">
         <div>
           <h2 className="text-xl font-semibold">Personal Information</h2>
           <p className="text-sm text-gray-500">Manage your personal details</p>

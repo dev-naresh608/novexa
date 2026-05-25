@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../components/index";
-import { toast, ToastContainer } from "react-toastify";
+import { defaultPP } from "../../assets/assets";
 import { db } from "../../db";
+import { toast } from "react-toastify";
 
 function Setting() {
   const { currentUser, userData, setCurrentUser, setUserData } =
@@ -104,7 +104,7 @@ function Setting() {
   };
 
   return (
-    <div className="w-full h-full max-w-4xl mx-auto py-4 space-y-6">
+    <div className="w-full h-full mx-auto py-4 space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-xl font-semibold">Settings</h2>
@@ -113,11 +113,7 @@ function Setting() {
 
       {/* Profile Photo */}
       <div className="bg-gray-100 p-4 rounded-xl flex items-center gap-4">
-        <ToastContainer
-          autoClose={500}
-          pauseOnHover={false}
-          position="top-right"
-        ></ToastContainer>
+       
         <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-200">
           <img
             src={

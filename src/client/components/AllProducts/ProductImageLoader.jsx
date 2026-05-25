@@ -4,7 +4,7 @@ function ProductImageLoader({ src, name }) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   return (
     <>
-      <div className="relative w-[120px] h-[120px] flex items-center justify-center">
+      <div className="relative w-[120px] h-[130px] flex items-center justify-center">
         {!isImageLoaded && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
         )}
@@ -13,7 +13,7 @@ function ProductImageLoader({ src, name }) {
           alt={name}
           loading="lazy"
           onLoad={() => setIsImageLoaded(true)}
-          className={`object-contain w-[120px] h-[120px] group-hover:scale-110 transition-all duration-300 ${isImageLoaded ? "opacity-100" : "opacity-0"} `}
+          className={`object-contain w-[110px] h-[110px] group-hover:scale-110 transition-all duration-300 ${isImageLoaded ? "opacity-100" : "opacity-0"} `}
         />
       </div>
     </>

@@ -1,19 +1,29 @@
-import React, { useContext } from "react";
-import { UserContext } from "../../contexts/context";
-import { toast, ToastContainer } from "react-toastify";
-import { db } from "../../db";
+import React, { useContext, useEffect } from "react";
+import { UserContext } from "../../../contexts/context";
+
+import { db } from "../../../db";
+import { GradientButton } from "../../../components/component";
+import { channel } from "../../../services/service";
+import {ShoppingBag} from "lucide-react"
+
+import { toast } from "react-toastify";
+
 function ActiveOrders() {
   const { currentUser, setUserData, setCurrentUser } = useContext(UserContext);
 
   const isOrderAvail = currentUser?.myOrders?.length > 0;
 
   if (!isOrderAvail) {
-    return (
-      <>
-        <p className="text-center text-gray-500">No active orders available.</p>
-      </>
+     return (
+      <div className="flex flex-col items-center text-gray-400 py-16 text-center">
+        <p><ShoppingBag size={150} strokeWidth={1}/></p>
+        <p className="text-3xl font-semibold">
+          No Orders Yet 
+        </p>
+      </div>
     );
   }
+
 
   const changeOrderStatus = (AcceptOrReject, orderId, order_status) => {
     const handleChangeOrderStatus = async () => {
@@ -31,16 +41,22 @@ function ActiveOrders() {
           customerWhoOrder?.myOrders?.length > 0 &&
           customerWhoOrder.myOrders.find((order) => order.orderId === orderId);
         trackedOrder.orderStatus = order_status;
-
+        if (AcceptOrReject === "completed" || AcceptOrReject === "reject") {
+          customerWhoOrder.isAnyOrderOnProcess = false;
+        }
         await db.localUserData.put(user);
         await db.localUserData.put(customerWhoOrder);
+        channel.postMessage({
+          type: "USER_DATA_UPDATED",
+        });
+
         setCurrentUser(await user);
         setUserData(await db.localUserData.toArray());
         toast.success("accept");
       }
     };
 
-    if (AcceptOrReject === "accept") {
+    if (AcceptOrReject === "accept" || AcceptOrReject === "completed") {
       handleChangeOrderStatus();
     } else {
       const sureToCancelOrder = confirm("Are you sure to cancel order ?");
@@ -50,17 +66,29 @@ function ActiveOrders() {
     }
   };
 
+  const handleAssignDriver = async (orderId) => {
+
+    // ! Assign Driver.
+    // console.log(orderId);
+
+  };
   const onOrderAccept = async (orderId) => {
     const order_status = "preparing";
     changeOrderStatus("accept", orderId, order_status);
+    handleAssignDriver(orderId);
   };
   const onOrderReject = async (orderId) => {
     const order_status = "rejected";
     changeOrderStatus("reject", orderId, order_status);
   };
-
+  const onOrderComplete = async (orderId) => {
+    const order_status = "completed";
+    changeOrderStatus("completed", orderId, order_status);
+  };
   return (
     <>
+     <div className="space-y-2">
+       <GradientButton componentType="text">Today's Orders</GradientButton>
       <div
         className="space-y-4 overflow-y-auto pr-2
         [&::-webkit-scrollbar]:w-2
@@ -68,7 +96,7 @@ function ActiveOrders() {
         [&::-webkit-scrollbar-thumb]:bg-gray-400
         [&::-webkit-scrollbar-thumb]:rounded-full"
       >
-        <ToastContainer autoClose={400} />
+      
         {currentUser.myOrders?.map((order) => (
           <div
             key={order.orderId}
@@ -92,7 +120,7 @@ function ActiveOrders() {
 
               {order.orderStatus !== "rejected" && (
                 <span
-                  className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : "text-red-600 bg-red-100"}`}`}
+                  className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : `${order.orderStatus === "completed" ? "font-bold text-green-800 bg-white" : "text-red-600 bg-red-100"}`}`}`}
                 >
                   {order.orderStatus}
                 </span>
@@ -176,17 +204,24 @@ function ActiveOrders() {
                 ) : (
                   <>
                     <span
-                      className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : "text-red-600 bg-red-100"}`}`}
+                      className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : `${order.orderStatus === "completed" ? "font-bold text-green-800 bg-white" : "text-red-600 bg-red-100"}`}`}`}
                     >
                       {order.orderStatus}
                     </span>
                   </>
                 )}
+                <button
+                  onClick={() => onOrderComplete(order.orderId)}
+                  className="px-5 py-2 rounded-lg font-semibold bg-green-100 border border-green-400 text-green-600 hover:bg-green-700 hover:text-white transition"
+                >
+                  Complete
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
+     </div>
     </>
   );
 }

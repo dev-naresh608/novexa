@@ -52,7 +52,7 @@ function GradientButton({
         <button
           onClick={onClick}
           size={sizes.size}
-          className={`bg-gradient-to-r font-semibold from-green-600 to-green-300 px-3 py-1 rounded-2xl whitespace-nowrap text-${sizes.size} ${className}`}
+          className={`active:scale-95 bg-gradient-to-r font-semibold from-green-600 to-green-300 px-3 py-1 rounded-2xl whitespace-nowrap text-${sizes.size} ${className}`}
         >
           {children}
         </button>

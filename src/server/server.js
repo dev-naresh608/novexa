@@ -2,10 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+const distanceRoute = require("./routes/distance")
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({extended:false}))
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('MongoDB Connected'))
@@ -14,6 +16,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/',(req,res) => {
   res.send('API Running');
 });
+
+app.use('/api', distanceRoute)
 
 const PORT = process.env.PORT || 5000;
 

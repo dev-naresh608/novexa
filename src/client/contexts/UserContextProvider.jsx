@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserContext from "./UserContext";
 import { db } from "../db";
 
 import {
-  LayoutDashboard,
   Shapes,
   Receipt,
   Heart,
@@ -13,8 +12,18 @@ import {
   CircleHelp,
   HelpCircle,
   SettingsIcon,
+  Home,
+  Scooter,
+  Bike,
+  Store,
+  Tag,
+  Tags,
+  ScrollText,
+  LucideClipboardEdit,
+  Package,
+  CopyPlus,
 } from "lucide-react";
-import { Setting } from "../components";
+import { channel } from "../services/service";
 
 function UserContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState({
@@ -44,6 +53,9 @@ function UserContextProvider({ children }) {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
   const [isNotificationClicked, setIsNotificationClicked] = useState(false);
 
+  const [distanceData, setDistanceData] = useState(null);
+  const [addressData, setAddressData] = useState(null);
+
   const leftPanelItems = [
     {
       children: "Dashboard",
@@ -69,25 +81,25 @@ function UserContextProvider({ children }) {
     {
       children: "Categories",
       to: "/categories",
-      svg: "🏷️",
+      svg: <Tags size={18} className="rotate-90"/>,
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
       showToDriver: false,
     },
     {
-      children: "All Products",
-      to: "/allproducts",
-      svg: "🛍️",
+      children: "Restaurants",
+      to: "/restaurants",
+      svg: <Store size={18}/>,
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
       showToDriver: false,
     },
     {
-      children: "Favourite",
+      children: "Wishlist",
       to: "/wishlist",
-      svg: <Heart />,
+      svg: <Heart size={18}/>,
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
@@ -96,11 +108,21 @@ function UserContextProvider({ children }) {
     {
       children: "Cart",
       to: "/cart",
-      svg: "🛒",
+      svg: <ShoppingCart size={18}/>,
       showToCustomer: true,
       showToSeller: false,
       showToAdmin: false,
       showToDriver: false,
+    },
+
+    {
+      children: "Current Orders",
+      to: "/active-orders",
+      svg: <Bike size={20}/>,
+      showToCustomer: true,
+      showToSeller: true,
+      showToAdmin: false,
+      showToDriver: true,
     },
 
     // for seller
@@ -108,7 +130,7 @@ function UserContextProvider({ children }) {
     {
       children: "Add Products",
       to: "/addproducts",
-      svg: "📋",
+      svg: <CopyPlus size={18}/>,
       showToCustomer: false,
       showToSeller: true,
       showToAdmin: false,
@@ -117,7 +139,7 @@ function UserContextProvider({ children }) {
     {
       children: "Product List",
       to: "/product-list",
-      svg: "📜",
+      svg: <ScrollText size={18}/>,
       showToCustomer: false,
       showToSeller: true,
       showToAdmin: false,
@@ -125,18 +147,9 @@ function UserContextProvider({ children }) {
     },
 
     {
-      children: "Current Orders",
-      to: "/active-orders",
-      svg: "🚚",
-      showToCustomer: false,
-      showToSeller: true,
-      showToAdmin: false,
-      showToDriver: true,
-    },
-    {
       children: "Orders",
       to: "/orders",
-      svg: "📦",
+      svg: <Package size={18}/>,
       showToCustomer: true,
       showToSeller: true,
       showToAdmin: false,
@@ -144,15 +157,15 @@ function UserContextProvider({ children }) {
     },
 
     // for driver
-    {
-      children: "Active Deliveries",
-      to: "/activeDeliveries",
-      svg: "🛵",
-      showToCustomer: false,
-      showToSeller: false,
-      showToAdmin: false,
-      showToDriver: true,
-    },
+    // {
+    //   children: "Active Deliveries",
+    //   to: "/activeDeliveries",
+    //   svg: "🛵",
+    //   showToCustomer: false,
+    //   showToSeller: false,
+    //   showToAdmin: false,
+    //   showToDriver: true,
+    // },
     {
       children: " Delivery History",
       to: "/deliveryHistory",
@@ -202,6 +215,27 @@ function UserContextProvider({ children }) {
       showToAdmin: false,
     },
   ];
+
+  useEffect(() => {
+    channel.onmessage = async (event) => {
+      if (event.data.type === "USER_DATA_UPDATED") {
+        // get fresh users from indexedDB
+        const updatedUsers = await db.localUserData.toArray();
+
+        setUserData(updatedUsers);
+
+        // refresh current logged in user
+        const freshCurrentUser = updatedUsers.find(
+          (user) => user.id === currentUser.id,
+        );
+
+        if (freshCurrentUser) {
+          setCurrentUser(freshCurrentUser);
+        }
+      }
+    };
+  }, [currentUser.id]);
+
   return (
     <UserContext.Provider
       value={{
@@ -221,6 +255,10 @@ function UserContextProvider({ children }) {
         setIsProfileClicked,
         isNotificationClicked,
         setIsNotificationClicked,
+        distanceData,
+        setDistanceData,
+        addressData,
+        setAddressData,
       }}
     >
       {children}

@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
 import { UserContext } from "../../contexts/context";
 import { db } from "../../db";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -51,11 +51,11 @@ export default function Login() {
         : false;
 
     if (isValidUser) {
+      
       setCurrentUser(user);
-      toast.success("Login successful");
 
       setCurrentUserRole(user.role);
-      
+      toast.success("Login successful");
       setTimeout(() => {
         setIsLogin(true);
         navigate("/dashboard");
@@ -68,8 +68,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center pb-5">Login</h2>
-
+    
         <form onSubmit={handleSubmit} className="space-y-4 text-white">
           <input
             type="email"
@@ -97,11 +96,7 @@ export default function Login() {
               Signup
             </Link>
           </p>
-          <ToastContainer
-            autoClose={400}
-            position="bottom-right"
-            pauseOnHover={false}
-          ></ToastContainer>
+          
         </form>
       </div>
     </div>

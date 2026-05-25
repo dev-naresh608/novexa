@@ -13,8 +13,11 @@ function MyProducts() {
     activeTab,
     setActiveTab,
   } = useContext(UserContext);
-  
-  if (currentUser?.productList?.length === 0 || !currentUser.hasOwnProperty('productList')) {
+
+  if (
+    currentUser?.productList?.length === 0 ||
+    !currentUser.hasOwnProperty("productList")
+  ) {
     return (
       <section className="flex flex-col items-center justify-center text-center py-16">
         <h2 className="text-lg font-semibold text-gray-600">Add Products</h2>
@@ -44,57 +47,56 @@ function MyProducts() {
 
   return (
     <>
-      <h2 className="text-2xl font-semibold text-gray-600">Your Products...</h2>
-      <div className="md:max-w-[800px] rounded-2xl border border-black/20">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] text-gray-500 font-semibold p-2 sm:text-md md:text-xl border-b border-black/20">
+      <h2 className="text-2xl pb-2 font-semibold text-gray-600">
+        Your Products...
+      </h2>
+      <div className="md:max-w-[650px] rounded-2xl font-semibold border border-black/20">
+        <div className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 p-2 sm:text-md md:text-xl border-b border-black/20">
           <span>Product</span>
-          <span>Category</span>
           <span>Selling Price</span>
           <span>In Stock</span>
         </div>
         {currentUser.productList.map((product, i) => (
           <div
             key={i}
-            className="grid items-center grid-cols-[2fr_1fr_1fr_1fr] p-2 my-2  sm:text-md md:text-xl"
+            className="grid items-center grid-cols-[2fr_1fr_1fr] p-2 my-2  sm:text-md md:text-xl"
           >
             <div className="flex gap-5 items-center">
-              <div className="h-20 w-20 p-2 border border-black/20">
+              <div className="group hover:scale-105 duration-100 h-20 w-20 p-2 flex justify-center items-center bg-gray-200/50 border border-black/20 rounded-2xl">
                 <img
-                  className="w-full h-full"
+                  className="h-14 w-14 group-hover:scale-105 duration-150"
                   src={product.product_url}
                   alt={product.product_name}
                 />
               </div>
               <div>
-                <span className="font-semibold capitalize">
-                  {product.product_name}{" "}
-                </span>
-                <span className="text-gray-500">
-                  {product.product_weight}
-                  {product.product_weight_type === "none" ? (
-                    <span className="text-xs"> N/A</span>
-                  ) : (
-                    <span className="text-xs">
-                      {product.product_weight_type}
-                    </span>
-                  )}
-                </span>
+                <p className="capitalize">{product.product_name}</p>
+                <p className="text-xs text-gray-500">
+                  Weight: {product.product_weight}{" "}
+                  <span className="text-[10px]">
+                    {product.product_weight_type === "none"
+                      ? "N/A"
+                      : product.product_weight_type}
+                  </span>
+                </p>
               </div>
             </div>
 
-            <div>
-              <span>{product.product_category}</span>
-            </div>
             <div className="ml-5">
               <span>{product.product_price}$</span>
             </div>
             <div className="ml-5">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-red-600"
+              <label
                 onChange={() => handleProductStockChange(product.product_id)}
-                checked={product.isProductInStock}
-              />
+                className="relative inline-flex items-center cursor-pointer"
+              >
+                <input
+                  defaultChecked={product.isProductInStock}
+                  type="checkbox"
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
             </div>
           </div>
         ))}

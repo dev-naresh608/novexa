@@ -18,9 +18,9 @@ import WishlistContextProvider from "./WishlistContextProvider";
 
 import CategoryContext from "./CategoryContext";
 import CategoryContextProvider from "./CategoryContextProvider";
+import { OrderContext } from "./OrderContext";
 
-export { CartProductContext, CartProductContextProvider, UserContext, UserContextProvider, ProductContext, ProductContextProvider, AddressContext, AddressContextProvider, OrderHistoryContext, OrderHistoryContextProvider, WishlistContext, WishlistContextProvider, CategoryContext,CategoryContextProvider };
-
+export { CartProductContext, CartProductContextProvider, UserContext, UserContextProvider, ProductContext, ProductContextProvider, AddressContext, AddressContextProvider, OrderHistoryContext, OrderHistoryContextProvider, WishlistContext, WishlistContextProvider, CategoryContext,CategoryContextProvider,OrderContext};
 
 // import UserContext from "./UserContext";
 // import UserContextProvider from "./UserContextProvider";

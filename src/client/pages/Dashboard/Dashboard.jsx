@@ -1,6 +1,6 @@
 import React, {useContext} from 'react'
 import {UserContext} from "../../contexts/context"
-import {SellerDashboard, CustomerDashboard, DriverDashboard} from "../../components/index"
+import {SellerDashboard, CustomerDashboard, DriverDashboard} from "../../pages/pages"
 
 function Dashboard() {
   const {currentUser} = useContext(UserContext)
