@@ -1,4 +1,4 @@
-import GradientButton from "./GradientButton.jsx";
+import GradientButton from "./common/GradientButton.jsx";
 import Layout from "./Layout.jsx";
 
 // AllProducts Components
@@ -21,11 +21,11 @@ import MiniProfileContainer from "./Header/MiniProfileContainer.jsx"
 import Hero from "./Hero/Hero.jsx";
 
 // RatingStar Components
-import RatingStar from "./RatingStar/RatingStar.jsx";
+import RatingStar from "../components/common/RatingStar/RatingStar.jsx";
 
-// Restaurant Components
-import Restaurant from "./Restaurant/Restaurant.jsx";
-import AllRestaurants from "./Restaurant/AllRestaurants.jsx"
+// Store Components
+import Store from "./Store/Store.jsx";
+import AllStores from "./Store/AllStores.jsx"
 
 export {
   GradientButton,
@@ -42,6 +42,6 @@ export {
   MiniProfileContainer,
   Hero,
   RatingStar,
-  Restaurant,
-  AllRestaurants,
+  Store,
+  AllStores,
 };

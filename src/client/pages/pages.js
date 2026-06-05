@@ -26,6 +26,7 @@ import Login from "./Login/Login.jsx";
 
 // Profile Components
 import Orders from "./OrderManagement/Orders.jsx";
+import OrderDetail from "./OrderManagement/OrderDetail.jsx";
 import Payments from "./Profile/Payments.jsx";
 import PersonalInfo from "./Profile/PersonalInfo.jsx";
 import Profile from "./Profile/Profile.jsx";
@@ -64,6 +65,7 @@ export {
   Home,
   Login,
   Orders,
+  OrderDetail,
   Payments,
   PersonalInfo,
   Profile,

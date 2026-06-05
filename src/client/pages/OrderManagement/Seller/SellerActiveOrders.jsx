@@ -1,227 +1,352 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../../contexts/context";
 
 import { db } from "../../../db";
-import { GradientButton } from "../../../components/component";
 import { channel } from "../../../services/service";
-import {ShoppingBag} from "lucide-react"
+
+import { CreditCard, Phone, ShoppingBag, Timer, User } from "lucide-react";
 
 import { toast } from "react-toastify";
 
 function ActiveOrders() {
   const { currentUser, setUserData, setCurrentUser } = useContext(UserContext);
 
-  const isOrderAvail = currentUser?.myOrders?.length > 0;
+  const [sortedOrders, setSortedOrders] = useState([]);
+
+  // ================= COMMON STYLE =================
+  const commonCss =
+    "flex items-center text-xs gap-1.5 text-gray-600 font-semibold";
+
+  // ================= TODAY DATE =================
+  const today = new Date().toLocaleDateString("en-GB");
+
+  // ================= CONVERT DATE TIME =================
+  const convertDateAndTime = (orderDate, orderTime) => {
+    const [day, month, year] = orderDate.split("/");
+
+    return new Date(`${year}-${month}-${day} ${orderTime}`).getTime();
+  };
+
+  // ================= SORT ORDERS =================
+  const sortOrders = async () => {
+    try {
+      const user = await db.localUserData.get(currentUser.id);
+
+      const todayOrders =
+        user?.myCurrentOrders?.filter((order) => order.orderDate === today) ||
+        [];
+
+      const sorted = [...todayOrders].sort(
+        (a, b) =>
+          convertDateAndTime(b.orderDate, b.orderTime) -
+          convertDateAndTime(a.orderDate, a.orderTime),
+      );
+
+      setSortedOrders(sorted);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    sortOrders();
+  }, [currentUser]);
+
+  // ================= ORDER STATUS STYLE =================
+  const getOrderStatusStyle = (status) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "preparing":
+        return "text-green-600 bg-green-100";
+
+      case "completed":
+        return "font-bold text-green-800 bg-white";
+
+      case "rejected":
+        return "text-red-600 bg-red-100";
+
+      default:
+        return "";
+    }
+  };
+
+  // ================= VALIDATION =================
+  const isOrderAvail = sortedOrders.length > 0;
 
   if (!isOrderAvail) {
-     return (
+    return (
       <div className="flex flex-col items-center text-gray-400 py-16 text-center">
-        <p><ShoppingBag size={150} strokeWidth={1}/></p>
-        <p className="text-3xl font-semibold">
-          No Orders Yet 
+        <p>
+          <ShoppingBag size={150} strokeWidth={1} />
         </p>
+
+        <p className="text-3xl font-semibold">No Orders Yet</p>
       </div>
     );
   }
 
-
-  const changeOrderStatus = (AcceptOrReject, orderId, order_status) => {
-    const handleChangeOrderStatus = async () => {
+  // ================= CHANGE ORDER STATUS =================
+  const changeOrderStatus = async (actionType, orderId, orderStatus) => {
+    try {
       const user = await db.localUserData.get(currentUser.id);
-      const allUseData = await db.localUserData.toArray();
 
-      const order = user.myOrders.find((order) => order.orderId === orderId);
-      if (order) {
-        order.orderStatus = order_status;
-        const customerWhoOrder = allUseData.find(
-          (customer) => customer.id === order.customerId,
-        );
+      const allUserData = await db.localUserData.toArray();
 
-        const trackedOrder =
-          customerWhoOrder?.myOrders?.length > 0 &&
-          customerWhoOrder.myOrders.find((order) => order.orderId === orderId);
-        trackedOrder.orderStatus = order_status;
-        if (AcceptOrReject === "completed" || AcceptOrReject === "reject") {
-          customerWhoOrder.isAnyOrderOnProcess = false;
-        }
-        await db.localUserData.put(user);
-        await db.localUserData.put(customerWhoOrder);
-        channel.postMessage({
-          type: "USER_DATA_UPDATED",
-        });
+      // ================= UPDATE STORE ORDER =================
+      const updatedStoreOrders = user.myOrders.map((order) =>
+        order.orderId === orderId
+          ? {
+              ...order,
+              orderStatus,
+            }
+          : order,
+      );
 
-        setCurrentUser(await user);
-        setUserData(await db.localUserData.toArray());
-        toast.success("accept");
+      // ================= FIND ORDER =================
+      const currentOrder = updatedStoreOrders.find(
+        (order) => order.orderId === orderId,
+      );
+
+      // ================= FIND CUSTOMER =================
+      const customerWhoOrder = allUserData.find(
+        (customer) => customer.id === currentOrder.customerId,
+      );
+
+      // ================= UPDATE CUSTOMER ORDER =================
+      const updatedCustomerOrders = customerWhoOrder?.myOrders?.map((order) =>
+        order.orderId === orderId
+          ? {
+              ...order,
+              orderStatus,
+            }
+          : order,
+      );
+
+      // ================= CUSTOMER PROCESS STATUS =================
+      if (actionType === "completed" || actionType === "reject") {
+        customerWhoOrder.isAnyOrderOnProcess = false;
       }
-    };
 
-    if (AcceptOrReject === "accept" || AcceptOrReject === "completed") {
-      handleChangeOrderStatus();
-    } else {
-      const sureToCancelOrder = confirm("Are you sure to cancel order ?");
-      if (sureToCancelOrder) {
-        handleChangeOrderStatus();
-      }
+      // ================= UPDATE DATABASE =================
+      await db.localUserData.put({
+        ...user,
+        myOrders: updatedStoreOrders,
+      });
+
+      await db.localUserData.put({
+        ...customerWhoOrder,
+        myOrders: updatedCustomerOrders,
+      });
+
+      // ================= BROADCAST =================
+      channel.postMessage({
+        type: "USER_DATA_UPDATED",
+      });
+
+      // ================= UPDATE CONTEXT =================
+      setCurrentUser(await db.localUserData.get(currentUser.id));
+
+      setUserData(await db.localUserData.toArray());
+
+      toast.success(`Order ${orderStatus}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update order status");
     }
   };
 
+  // ================= ASSIGN DRIVER =================
   const handleAssignDriver = async (orderId) => {
-
-    // ! Assign Driver.
-    // console.log(orderId);
-
+    // Assign driver logic here
   };
+
+  // ================= ACCEPT =================
   const onOrderAccept = async (orderId) => {
-    const order_status = "preparing";
-    changeOrderStatus("accept", orderId, order_status);
+    const orderStatus = "preparing";
+
+    await changeOrderStatus("accept", orderId, orderStatus);
+
     handleAssignDriver(orderId);
   };
+
+  // ================= REJECT =================
   const onOrderReject = async (orderId) => {
-    const order_status = "rejected";
-    changeOrderStatus("reject", orderId, order_status);
+    const sureToCancelOrder = confirm("Are you sure to cancel order ?");
+
+    if (!sureToCancelOrder) return;
+
+    const orderStatus = "rejected";
+
+    changeOrderStatus("reject", orderId, orderStatus);
   };
+
+  // ================= COMPLETE =================
   const onOrderComplete = async (orderId) => {
-    const order_status = "completed";
-    changeOrderStatus("completed", orderId, order_status);
+    const orderStatus = "completed";
+
+    changeOrderStatus("completed", orderId, orderStatus);
   };
+
   return (
     <>
-     <div className="space-y-2">
-       <GradientButton componentType="text">Today's Orders</GradientButton>
-      <div
-        className="space-y-4 overflow-y-auto pr-2
-        [&::-webkit-scrollbar]:w-2
-        [&::-webkit-scrollbar-track]:bg-gray-100
-        [&::-webkit-scrollbar-thumb]:bg-gray-400
-        [&::-webkit-scrollbar-thumb]:rounded-full"
-      >
-      
-        {currentUser.myOrders?.map((order) => (
-          <div
-            key={order.orderId}
-            className="border border-gray-300 rounded-xl p-4 bg-white shadow-sm"
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between border-b pb-3">
-              <div>
-                <h2 className="font-semibold text-lg">
-                  Order #{order.orderId.slice(0, 8)}
-                </h2>
+      <div className="space-y-2">
+        {/* TODAY ORDERS */}
+        <div className="bg-white rounded-xl border font-semibold border border-gray-300 shadow p-3">
+          <p className="text-xl">Today Orders</p>
 
-                <p className="text-sm text-gray-500">Customer: {order.name}</p>
+          <p>{sortedOrders.length}</p>
+        </div>
 
-                <p className="text-sm text-gray-500">Phone: {order.phone}</p>
+        {/* ORDERS */}
+        <div
+          className="space-y-4 overflow-y-auto pr-2
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:bg-gray-100
+          [&::-webkit-scrollbar-thumb]:bg-gray-400
+          [&::-webkit-scrollbar-thumb]:rounded-full"
+        >
+          {sortedOrders.map((order) => (
+            <div
+              key={order.orderId}
+              className="border border-gray-300 rounded-xl p-4 bg-white shadow-sm"
+            >
+              {/* HEADER */}
+              <div className="flex items-start justify-between border-b pb-3">
+                {/* ORDER INFO */}
+                <div>
+                  <p className="flex gap-2 mb-1 text-gray-600 items-center font-semibold text-xl">
+                    <span>Order #{order.orderId.slice(0, 8)}</span>
+                  </p>
 
-                <p className="text-sm text-gray-500">
-                  Payment: {order.paymentMethod}
-                </p>
-              </div>
+                  <div className="space-y-0.5">
+                    <span className={commonCss}>
+                      <Timer size={18} />
+                      {order.orderTime}
+                    </span>
 
-              {order.orderStatus !== "rejected" && (
-                <span
-                  className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : `${order.orderStatus === "completed" ? "font-bold text-green-800 bg-white" : "text-red-600 bg-red-100"}`}`}`}
-                >
-                  {order.orderStatus}
-                </span>
-              )}
-            </div>
+                    <span className={commonCss}>
+                      <Phone size={16} />
+                      {order.phone}
+                    </span>
 
-            {/* Products */}
-            <div className="mt-4 space-y-4">
-              {order.items.map((product, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between border rounded-lg p-3"
-                >
-                  {/* Left */}
-                  <div className="flex items-center gap-3">
-                    <div className="h-20 w-20 border rounded-md overflow-hidden">
-                      <img
-                        className="w-full h-full object-contain"
-                        src={product.product_url}
-                        alt={product.product_name}
-                      />
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold capitalize">
-                        {product.product_name}
-                      </h3>
-
-                      <p className="text-sm text-gray-500">
-                        Qty: {product.product_qty}
-                      </p>
-
-                      <p className="text-sm text-gray-500">
-                        Weight: {product.product_weight}{" "}
-                        {product.product_weight_type === "none"
-                          ? ""
-                          : product.product_weight_type}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right */}
-                  <div className="text-right">
-                    <p className="font-semibold text-lg">
-                      ${product.product_price}
-                    </p>
+                    <span className={commonCss}>
+                      <User size={18} />
+                      {order.name}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-4">
-              <div>
-                <p className="text-sm text-gray-500">Total Amount</p>
-
-                <p className="font-bold text-xl">
-                  ${order.priceDetails.finalPrice}
-                </p>
+                {order.orderStatus !== "rejected" && (
+                  <span
+                    className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${getOrderStatusStyle(
+                      order.orderStatus,
+                    )}`}
+                  >
+                    {order.orderStatus}
+                  </span>
+                )}
               </div>
 
-              <div className="flex items-center gap-3">
-                {order.orderStatus !== "rejected" ? (
-                  <>
-                    <button
-                      onClick={() => onOrderReject(order.orderId)}
-                      className="px-5 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-50 transition"
-                    >
-                      ✘
-                    </button>
+              {/* ORDER ITEMS */}
+              <div className="mt-4 space-y-4">
+                {order.items.map((product, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border rounded-lg p-3"
+                  >
+                    {/* LEFT */}
+                    <div className="flex items-center gap-3">
+                      <div className="h-15 w-15 hover:scale-105 duration-150 flex items-center justify-center bg-gray-200/50 border rounded-md overflow-hidden">
+                        <img
+                          className="h-12 w-12 object-contain"
+                          src={product.product_url}
+                          alt={product.product_name}
+                        />
+                      </div>
 
-                    {order.orderStatus !== "preparing" && (
+                      <div>
+                        <p className="font-semibold capitalize">
+                          {product.product_name}
+                        </p>
+
+                        <p className="text-sm font-semibold">
+                          ${product.product_price}
+                          {" ⨯ "}
+                          {product.product_qty}
+                          {" = $"}
+                          {(
+                            product.product_price * product.product_qty
+                          ).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="text-right">
+                      <p className="font-semibold text-lg"></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* FOOTER */}
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <span className={commonCss}>
+                    <CreditCard size={18} />
+                    {order.paymentMethod}
+                  </span>
+
+                  <p className="text-sm text-gray-500">Total Amount</p>
+
+                  <p className="font-bold text-xl">
+                    ${order.priceDetails.finalPrice}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {order.orderStatus !== "rejected" ? (
+                    <>
                       <button
-                        onClick={() => onOrderAccept(order.orderId)}
-                        className="px-5 py-2 rounded-lg bg-green-200 border border-green-400 text-green-600 hover:bg-green-700 hover:text-white transition"
+                        onClick={() => onOrderReject(order.orderId)}
+                        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-50 transition"
                       >
-                        ✔
+                        ✘
                       </button>
-                    )}
-                  </>
-                ) : (
-                  <>
+
+                      {order.orderStatus !== "preparing" && (
+                        <button
+                          onClick={() => onOrderAccept(order.orderId)}
+                          className="px-5 py-2 rounded-lg bg-green-200 border border-green-400 text-green-600 hover:bg-green-700 hover:text-white transition"
+                        >
+                          ✔
+                        </button>
+                      )}
+                    </>
+                  ) : (
                     <span
-                      className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${order.orderStatus === "pending" ? "bg-yellow-100 text-yellow-700" : `${order.orderStatus === "preparing" ? "text-green-600 bg-green-100" : `${order.orderStatus === "completed" ? "font-bold text-green-800 bg-white" : "text-red-600 bg-red-100"}`}`}`}
+                      className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${getOrderStatusStyle(
+                        order.orderStatus,
+                      )}`}
                     >
                       {order.orderStatus}
                     </span>
-                  </>
-                )}
-                <button
-                  onClick={() => onOrderComplete(order.orderId)}
-                  className="px-5 py-2 rounded-lg font-semibold bg-green-100 border border-green-400 text-green-600 hover:bg-green-700 hover:text-white transition"
-                >
-                  Complete
-                </button>
+                  )}
+
+                  <button
+                    onClick={() => onOrderComplete(order.orderId)}
+                    className="px-5 py-2 rounded-lg font-semibold bg-green-100 border border-green-400 text-green-600 hover:bg-green-700 hover:text-white transition"
+                  >
+                    Complete
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-     </div>
     </>
   );
 }

@@ -7,7 +7,7 @@ function CartProductContextProvider({ children }) {
   const { currentUser } = useContext(UserContext);
 
   const [cartItems, setCartItems] = useState([]);
-  const [restaurantId,setRestaurantId] = useState(null);
+  const [storeId,setStoreId] = useState(null);
   useEffect(() => {
     const getCartItems = async () => {
       const user = await db.localUserData.get(currentUser?.id);
@@ -21,7 +21,7 @@ function CartProductContextProvider({ children }) {
   }, [currentUser]);
 
   return (
-    <CartProductContext.Provider value={{ cartItems, setCartItems,restaurantId, setRestaurantId }}>
+    <CartProductContext.Provider value={{ cartItems, setCartItems,storeId, setStoreId }}>
       {children}
     </CartProductContext.Provider>
   );

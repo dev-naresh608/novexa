@@ -12,7 +12,7 @@ function SellerDashboard() {
   const { currentUser } = useContext(UserContext);
 
   // const localUserData = await db.localUserData.get(currentUser.id);
-  // console.log(localUserData.restaurant_name);
+  // console.log(localUserData.store_name);
 
   // Set Seller Stats -------------------
   const sellerStats = {
@@ -39,7 +39,7 @@ function SellerDashboard() {
              SELLER DASHBOARD
             </p>
             <p className="text-2xl font-serif font-semibold">
-              {currentUser?.restaurant_name}
+              {currentUser?.store_name}
             </p>
           </div>
         </div>

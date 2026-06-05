@@ -7,17 +7,17 @@ import { GradientButton } from "../component";
 function AllProducts() {
   const { restId = null } = useParams();
   const [totalProducts, setTotalProducts] = useState([]);
-  const { restaurantList, productsList } = useContext(ProductContext);
+  const { storeLisst, productsList } = useContext(ProductContext);
+  const { setActiveTab, isLogin, currentUser, userData } =
+    useContext(UserContext);
 
   useEffect(() => {
-    const product = restaurantList.find((r) => r.id === restId);
+    const product = storeLisst.find((r) => r.id === restId);
     setTotalProducts(product?.productList || []);
     if (!restId) {
       setTotalProducts(productsList);
     }
-  }, []);
-
-  const { setActiveTab, isLogin } = useContext(UserContext);
+  }, [currentUser,userData, productsList]);
 
   if (totalProducts.length === 0)
     return (
@@ -30,7 +30,7 @@ function AllProducts() {
         </p>
       </div>
     );
-  
+
   return (
     <>
       <section className={`${isLogin ? "" : "px-10"}`}>
@@ -49,6 +49,8 @@ function AllProducts() {
               id={p.product_id}
               key={index}
               isProductInStock={p.isProductInStock}
+              isOfferAvailable={p.isOfferAvailable}
+              offer_price={p.product_offer_price}
             />
           ))}
         </div>

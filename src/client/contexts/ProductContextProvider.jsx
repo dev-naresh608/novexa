@@ -15,7 +15,7 @@ import { db } from "../db";
 
 function ProductContextProvider({ children }) {
   const [productsList, setProductsList] = useState([]);
-  const [restaurantList, setRestaurantList] = useState([]);
+  const [storeLisst, setStoreList] = useState([]);
 
   useEffect(() => {
     let localUserData = null;
@@ -28,13 +28,13 @@ function ProductContextProvider({ children }) {
       
       setProductsList(products);
       
-      const restaurants = localUserData.filter((r) => r.role === "seller");
-      setRestaurantList(restaurants);
+      const stores = localUserData.filter((r) => r.role === "seller");
+      setStoreList(stores);
     };
     getData();
   }, []);
   return (
-    <ProductContext.Provider value={{ productsList, restaurantList }}>
+    <ProductContext.Provider value={{ productsList, storeLisst }}>
       {children}
     </ProductContext.Provider>
   );

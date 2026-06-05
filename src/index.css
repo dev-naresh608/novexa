@@ -4,84 +4,116 @@
 
 :root {
   --text: #252526;
-  --text-h: #08060d;
-
   --text-h: #201f21;
 
   --bg: #edebeb;
   --border: #1b1a1c;
+
   --code-bg: #f4f3ec;
+
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
+
   --social-bg: rgba(244, 243, 236, 0.5);
+
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
-  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --sans:
+    system-ui,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 
-  font: 18px/145% var(--sans);
+  --heading:
+    system-ui,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+
+  --mono:
+    ui-monospace,
+    Consolas,
+    monospace;
+
+  font:
+    18px/145%
+    var(--sans);
+
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
-  @media (max-width: 1024px) {
+  color-scheme: light dark;
+
+  color: var(--text);
+
+  background: var(--bg);
+
+  font-synthesis: none;
+
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 1024px) {
+  :root {
     font-size: 16px;
   }
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* ================= TOASTIFY ================= */
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-} */
 .Toastify {
-  /* position: fixed !important; */
   z-index: 9999 !important;
+
   font-size: 12px !important;
+
   line-height: 1;
-  padding: 0px !important;
+
+  padding: 0 !important;
 }
+
 .Toastify__toast-icon {
   width: 16px !important;
+
   height: 16px !important;
 }
+
+/* ================= GLOBAL ================= */
+
+@layer utilities {
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #aeb7c6 inset !important;
+    -webkit-text-fill-color: white !important;
+    caret-color: white;
+  }
+}
+
 
 body {
   margin: 0;
 }
 
 #root {
-  /* width: 1126px; */
   max-width: 100%;
+
   margin: 0 auto;
-  /* border-inline: 1px solid var(--border); */
+
   min-height: 100svh;
+
   display: flex;
+
   flex-direction: column;
+
   box-sizing: border-box;
 }
+
+/* ================= RESET ================= */
+
 h1,
 h2,
 h3,
@@ -89,61 +121,188 @@ h4,
 h5,
 h6,
 ul,
-li{
-  padding-inline: 0;
-  padding-block: 0;
-  margin-inline: 0;
-  margin-block: 0;
+li {
+  padding: 0;
+
   margin: 0 !important;
 }
+
+p {
+  margin: 0;
+}
+
+/* ================= HEADINGS ================= */
+
 h1,
 h2 {
   font-family: var(--heading);
+
   font-weight: 500;
+
   color: var(--text-h);
 }
 
 h1 {
   font-size: 50px;
+
   line-height: 1;
+
   letter-spacing: -1.68px;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-  }
 }
+
 h2 {
   font-size: 24px;
+
   line-height: 118%;
+
   letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
+
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
     font-size: 20px;
   }
 }
-p {
-  margin: 0;
-}
+
+/* ================= RATING STAR ================= */
 
 .star-icon-container svg:not(:last-child) {
-  /* star color */
   fill: rgb(15, 91, 15);
 }
+
+/* ================= FADE IN ================= */
 
 @keyframes fade-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
+
 .animate-fade-in {
   animation: fade-in 1s ease-in-out;
 }
 
-/* Custom CSS to hide the default icon if you want to use your own SVG */
+/* ================= DATE INPUT ================= */
+
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(130deg)
-    brightness(95%) contrast(80%);
+  filter:
+    invert(48%)
+    sepia(13%)
+    saturate(3207%)
+    hue-rotate(130deg)
+    brightness(95%)
+    contrast(80%);
+
   cursor: pointer;
+}
+
+/* ================= OFFER LABEL ================= */
+
+.offer-label {
+  position: absolute;
+
+  top: 20px;
+  left: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 80px;
+  height: 30px;
+
+  color: white;
+
+  border: 1px solid white;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 10px 20px
+    rgba(0, 0, 0, 0.35);
+
+  animation:
+    swing 3s
+    ease-in-out
+    infinite;
+}
+
+.offer-label::before {
+  content: "";
+
+  position: absolute;
+
+  top: -10px;
+  right: 10px;
+
+  width: 33px;
+  height: 2px;
+
+  rotate: 45deg;
+
+  background-color: red;
+
+  border-radius: 50%;
+}
+
+.offer-label::after {
+  content: "";
+
+  position: absolute;
+
+  top: -10px;
+  left: 10px;
+
+  width: 33px;
+  height: 2px;
+
+  rotate: -45deg;
+
+  background-color: red;
+
+  border-radius: 50%;
+}
+
+.offer-label-circle {
+  position: absolute;
+
+  top: -23px;
+
+  width: 5px;
+  height: 5px;
+
+  background-color: red;
+
+  border-radius: 50%;
+
+  box-shadow:
+    10px 10px 20px
+    rgba(0, 0, 0, 0.35);
+}
+
+/* ================= SWING ================= */
+
+@keyframes swing {
+  0% {
+    transform: rotate(-47deg);
+  }
+
+  50% {
+    transform: rotate(-42deg);
+  }
+
+  100% {
+    transform: rotate(-47deg);
+  }
 }

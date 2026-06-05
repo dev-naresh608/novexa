@@ -4,35 +4,20 @@ import { ProductContext, CategoryContext } from "../../contexts/context";
 import { ProductImageLoader, GradientButton } from "../../components/component";
 
 function Category() {
-  const [showCategoriesAsScreen, setShowCategoriesAsScreen] = useState([]);
-
-  const [showAllCategoryEnable, setShowAllCategoryEnable] = useState(false);
-  const [showCatBtnText, setShowCatBtnText] = useState("Show All");
-
-  const { categories } = useContext(CategoryContext);
-
-  const [screenWidth, setScreenWidth] = useState(0);
-
-  const navigate = useNavigate();
-  const html = document.documentElement;
-
-  useEffect(() => {
-    const width = Math.floor(html.clientWidth / 250);
-    setScreenWidth(width);
-
-    if (showAllCategoryEnable) {
-      setShowCategoriesAsScreen(categories);
-      setShowCatBtnText("Show Less");
-    } else {
-      if (categories?.length > 0) {
-        setShowCatBtnText("Show All");
-        setShowCategoriesAsScreen(categories.slice(0, screenWidth));
-      }
-    }
-  }, [categories, showAllCategoryEnable, setScreenWidth, screenWidth]);
+  const {
+    categories,
+    showAllCategoryEnable,
+    setScreenWidth,
+    screenWidth,
+    showCategoriesAsScreen,
+    setShowCategoriesAsScreen,
+    setShowAllCategoryEnable,
+    showCatBtnText,
+    setShowCatBtnText,
+  } = useContext(CategoryContext);
   return (
     <>
-      <section className="pb-10 m-auto">
+      <section className="p-10 m-auto bg-gray-200/80 rounded-2xl">
         <div>
           <GradientButton componentType="text" className="w-max mb-3 ">
             Categories

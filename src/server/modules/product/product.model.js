@@ -1,13 +1,17 @@
 const mongoose = require("mongoose");
-
 const productSchema = new mongoose.Schema({
   product_name: {
     type: String,
-    require: true,
+    required: true,
+  },
+  store_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Store",
+    required: true,
   },
   product_url: {
     type: String,
-    require: true,
+    required: true,
   },
   product_category: {
     type: String,
@@ -15,7 +19,7 @@ const productSchema = new mongoose.Schema({
   },
   product_weight: {
     type: Number,
-    require: true,
+    required: true,
   },
   product_weight_type: {
     type: String,
@@ -23,7 +27,7 @@ const productSchema = new mongoose.Schema({
   },
   product_price: {
     type: Number,
-    require: true,
+    required: true,
   },
   product_offer_price: {
     type: Number,
@@ -31,16 +35,16 @@ const productSchema = new mongoose.Schema({
   },
   product_description: {
     type: String,
-    require: true,
+    required: true,
   },
-  product_id: {
-    type: String,
-    require: true,
-    unique: true,
-  },
-  isProductInStock: {
+
+  is_product_in_stock: {
     type: Boolean,
     default: true,
+  },
+  is_offer_available: {
+    type: Boolean,
+    default: false,
   },
 });
 

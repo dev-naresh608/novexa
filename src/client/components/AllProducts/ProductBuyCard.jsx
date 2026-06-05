@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import RatingStart from "../RatingStar/RatingStar";
+import { RatingStar } from "../component";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../db";
@@ -14,7 +14,15 @@ import ProductImageLoader from "./ProductImageLoader";
 import { useParams } from "react-router-dom";
 import { Heart, ShoppingCartIcon } from "lucide-react";
 
-function ProductBuyCard({ price, id, src, name, isProductInStock }) {
+function ProductBuyCard({
+  price,
+  id,
+  src,
+  name,
+  isProductInStock,
+  isOfferAvailable,
+  offer_price,
+}) {
   const { restId } = useParams();
   const { isLogin } = useContext(UserContext);
   const { productsList } = useContext(ProductContext);
@@ -27,10 +35,11 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
   } = useContext(UserContext);
   const { wishlist, setWishlist } = useContext(WishlistContext);
 
-  const { restaurantId, setRestaurantId } = useContext(CartProductContext);
+  const { storeId, setStoreId } = useContext(CartProductContext);
 
   const [currentQty, setCurrentQty] = useState(0);
 
+  // ============== ADD TO CART ====================
   async function onAddToCart(itemId) {
     if (!isLogin) {
       return toast.error("Login To Buy Items");
@@ -46,15 +55,16 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     const newProduct = {
       ...productToAdd,
       product_qty: 1,
-      restaurant_id: restId,
+      store_id: restId,
     };
 
+    // ============== VALIDATION ====================
     const handleUserCanItemInCartFromOnlyOneStore = () => {
       // todo:
       // ! USER CAN ADD 1 ITEM FROM S1 STORE
       // ! AND SECOND ITEM FROM S2 STORE.
       const currentRestId = restId;
-      const prevRestId = user.myCart[0]?.restaurant_id;
+      const prevRestId = user.myCart[0]?.store_id;
 
       if (prevRestId === currentRestId) {
         return true;
@@ -75,7 +85,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
         }
         user.myCart = [...user.myCart, newProduct];
       } else {
-        alert("first clear previous restaurants cart");
+        alert("first clear previous stores cart");
         return;
       }
     } else {
@@ -87,10 +97,11 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     setUserData(await db.localUserData.toArray());
     setCurrentUser(user);
 
-    setRestaurantId(restId);
+    setStoreId(restId);
     toast.success("Added");
   }
 
+  // ============== INCREASE QUANTITY ====================
   const onIncreaseQty = async (itemId) => {
     const user = await db.localUserData.get(currentUser.id);
 
@@ -105,6 +116,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     setCurrentUser(user);
   };
 
+  // ==============DEINCREASE QUANTITY ====================
   const onDecreaseQty = async (itemId) => {
     const user = await db.localUserData.get(currentUser.id);
     user.myCart = user.myCart
@@ -121,6 +133,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     setCurrentUser(user);
   };
 
+  // ============== WISHLIST =======================
   const onAddToWishlist = async (itemId, name) => {
     if (!isLogin) {
       return toast.error("Login To Add Items in Wishlist");
@@ -147,6 +160,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
       user.myWishlist = [productToAdd];
     }
 
+    toast.success("added in wishlist");
     // console.log(user.hasOwnProperty("myWishlist") && user.myWishlist);
     await db.localUserData.put(user);
     setUserData(await db.localUserData.toArray());
@@ -178,14 +192,44 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
     );
   }
 
-  return (
-    <>
-      <div className="relative border rounded-2xl shadow-md p-2 group">
+  // ============ OFFER LABEL ================
+  const getOfferOffPercentage = (price, offerPrice) => {
+    const [offerBackgrounColor, setOfferBackgrounColor] = useState("");
+    const result = `-${(((price - offer_price) / price) * 100).toFixed(0)}% `;
+    useEffect(() => {
+      if (result >= 50) {
+        setOfferBackgrounColor("bg-red-600");
+      } else if (result < 50 && result >= 30) {
+        setOfferBackgrounColor("bg-blue-600");
+      } else {
+        setOfferBackgrounColor("bg-red-600");
+      }
+    }, [result]);
+
+    return (
+      <>
+        <div className={`offer-label ${offerBackgrounColor}`}>
+          <div className="offer-label-circle"></div>
+          <span className="text-xs font-bold">OFFER</span>
+        </div>
+        <div
+          className={`absolute top-0 right-0 text-white p-2 rounded-[0px_10px_0] ${offerBackgrounColor}`}
+        >
+          <span>{result}</span>
+        </div>
+      </>
+    );
+  };
+
+  // ================ WISHLIST COMPONENT =================
+  const WishlistComponent = (isItemInWishlist) => {
+    return (
+      <>
         {currentUserRole === "customer" && isLogin && (
           // Whishlist
           <div
             className={`${isItemInWishlist ? "bg-[#f3d8d9]" : ""} z-[50] transition-all w-max h-max absolute rounded-full p-2 items-center justify-center 
-          hidden group-hover:flex right-3 duration-300`}
+          hidden group-hover:flex ${isOfferAvailable ? "right-3 bottom-12" : "right-3"} duration-300`}
           >
             <button
               className="active:scale-95"
@@ -201,6 +245,14 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
             </button>
           </div>
         )}
+      </>
+    );
+  };
+
+  return (
+    <>
+      <div className="relative border rounded-2xl shadow-md p-2 group overflow-hidden">
+        {WishlistComponent(isItemInWishlist)}
 
         <div className="flex bg-gray-200 rounded-2xl items-center justify-center">
           <ProductImageLoader src={src} alt={name} />
@@ -211,14 +263,31 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
             {name}
           </p>
 
-          <RatingStart />
+          <RatingStar />
 
           <div className="flex items-center justify-between">
             <p className="w-28 font-semibold">
               {/* <span className="text-xl text-blue-700">${price} </span>
               <del className="text-gray-500">{(price + Math.ceil((price/10)))}</del> */}
-              <span className="text-md text-blue-700">${price}</span>
-              <span className="text-gray-500 text-sm">/pre kg</span>
+
+              {isOfferAvailable ? (
+                <>
+                  {/* =====OFFER LABEL ======= */}
+                  {getOfferOffPercentage(price, offer_price)}
+                  <span>
+                    <span className="text-md text-blue-700">
+                      ${offer_price}
+                    </span>{" "}
+                    <del className="text-sm text-gray-600">${price}</del>
+                  </span>
+                  <span className="text-gray-500 text-sm">/pre kg</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-md text-blue-700">${price}</span>
+                  <span className="text-gray-500 text-sm">/pre kg</span>
+                </>
+              )}
             </p>
 
             {currentUserRole === "customer" &&
@@ -260,7 +329,7 @@ function ProductBuyCard({ price, id, src, name, isProductInStock }) {
                   className="flex items-center cursor-pointer justify-center gap-1  border border-green-600 h-7 w-16 text-sm px-1.5 py-1 text-green-700 bg-green-100 rounded"
                   onClick={() => onAddToCart(id)}
                 >
-                  <ShoppingCartIcon size={18}/>
+                  <ShoppingCartIcon size={18} />
                   Add
                 </button>
               ) : (

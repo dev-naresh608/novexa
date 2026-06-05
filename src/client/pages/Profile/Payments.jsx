@@ -1,22 +1,40 @@
-import React, {useContext, useEffect} from "react";
-import { OrderHistoryContext, UserContext } from "../../contexts/context";
+import React, { useContext, useEffect } from "react";
+import { UserContext } from "../../contexts/context";
+import { CreditCard, Clock } from "lucide-react";
 
 function Payment() {
-    const { setActiveTab} = useContext(UserContext);
-  useEffect(() => setActiveTab("payments"), [])
+  const { setActiveTab } = useContext(UserContext);
+
+  // ── Sync sidebar active state ──────────────────────────────────────────────
+  useEffect(() => {
+    setActiveTab("payments");
+  }, []);
+
   return (
-    <>
-      <div className="w-full h-full mx-auto py-4 space-y-6">
-        {/* Header */}
-        <div>
-          <h2 className="text-xl font-semibold">Payments</h2>
-          <p className="text-sm text-gray-500">Manage your Payment details</p>
+    <div className="bg-white h-full rounded-2xl border border-[#E7E5E4] p-6 font-sans space-y-6">
+
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold text-[#1C1917]">Payments</h2>
+        <p className="text-xs text-[#A8A29E] mt-0.5">Manage your payment details</p>
+      </div>
+
+      {/* Coming soon */}
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-[#F5F5F4] flex items-center justify-center mx-auto mb-4">
+          <CreditCard size={28} className="text-[#A8A29E]" strokeWidth={1.5} />
         </div>
-        <div className="flex justify-center">
-          <h2 className="text-3xl">COMING SOON...</h2>
+        <h3 className="text-base font-semibold text-[#1C1917]">Coming Soon</h3>
+        <p className="text-sm text-[#78716C] mt-1.5 max-w-xs">
+          Payment management is under development. You'll be able to manage cards
+          and view transaction history here.
+        </p>
+        <div className="flex items-center gap-1.5 mt-5 text-xs font-medium text-[#A8A29E] bg-[#F5F5F4] px-3 py-1.5 rounded-full">
+          <Clock size={12} strokeWidth={2} />
+          In development
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

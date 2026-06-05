@@ -1,16 +1,26 @@
-# React + Vite
+# Version - 1.1
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+In V1.1 i have implemented the indexDB.
 
-Currently, two official plugins are available:
+# Version - 1.2
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+In V1.2 i have implemented the Many functionality.
 
-## React Compiler
+  -Place order.
+  
+  -Seller Accept/Reject order.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+  -Seller/Customer both notify.
 
-## Expanding the ESLint configuration
+  -If user added cart item form s1 store he can't add another item from any of other store until clear the cart.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+  ### Also create two API's
+  - For getting longitude and latitude from the user location string.
+
+  - Calculate the distance between two place and return the Km and ETA.
+  For distance it takes four values : latitude-1,2, longitude-1,2. Also another argument as a avgKmSpeed default - 25km/h
+
+  
+# Version - 1.3
+
+In V1.3 i implement backend api's.

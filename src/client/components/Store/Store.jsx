@@ -2,7 +2,7 @@ import { MapPin, Star, StarOff, StarsIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Restaurant({  defaultRest, name, address, productsLength, id }) {
+function Store({  defaultRest, name, address, productsLength, id }) {
 
   return (
     <div
@@ -10,7 +10,7 @@ function Restaurant({  defaultRest, name, address, productsLength, id }) {
     >
       <img
         src={defaultRest}
-        alt="restaurant image"
+        alt="store image"
         className="w-28 h-28 rounded-xl object-cover"
       />
 
@@ -37,4 +37,4 @@ function Restaurant({  defaultRest, name, address, productsLength, id }) {
   );
 }
 
-export default Restaurant;
+export default Store;

@@ -24,7 +24,7 @@ function NotificationToggle() {
     const clickedNotification = allNotifications.find(
       (n) => n.notificationID === notificationID,
     );
-    ((clickedNotification.isNotificationIsRead = false), setCurrentUser(user));
+    ((clickedNotification.isNotificationIsRead = true), setCurrentUser(user));
     await db.localUserData.put(user);
     setUserData(await db.localUserData.toArray());
   };
@@ -34,7 +34,7 @@ function NotificationToggle() {
       const user = await db.localUserData.get(currentUser?.id);
       const allNotifications = user?.myNotifications;
       const isThereIsAnUnReadedNotificationAvail = allNotifications?.some(
-        (n) => n?.isNotificationIsRead,
+        (n) => !n?.isNotificationIsRead,
       );
       setIsAllNotificationsRead(isThereIsAnUnReadedNotificationAvail);
     };
@@ -91,13 +91,13 @@ function NotificationToggle() {
           {isAllNotificationsRead ? (
             <>
               <div className="flex-1 min-h-[230px]">
-                {currentUser?.myNotifications?.filter((n) => n?.isNotificationIsRead)
+                {currentUser?.myNotifications?.filter((n) => !n?.isNotificationIsRead)
                   .map((n, i) => {
                     return (
                       <div key={i} className=" h-full p-2">
                         <div className="min-h-20 p-1 flex flex-col justify-between border rounded-md">
                           <div
-                            className={`text-sm ${n.isNotificationIsRead ? "text-gray-600" : "text-gray-400"}`}
+                            className={`text-sm ${!n.isNotificationIsRead ? "text-gray-600" : "text-gray-400"}`}
                           >
                             <p>{n.msg}</p>
                           </div>

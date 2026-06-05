@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   CartProductContext,
@@ -30,9 +30,22 @@ function Header() {
     }
   }
 
+  // useEffect(() => {
+
+  //   const api1 = `http://localhost:5000/api/distance?lat1=${23.022}lon1=&${72.572}lat2=&${19.076}lon2=&${72.877}`;
+
+  //   const api2 = `http://localhost:5000/api/address?=Ahmedabad`;
+  //   fetch(api2).then(async (res) => {
+  //     console.log(await res.json());
+  //   });
+
+  // }, []);
+
+
+
   if (!isLogin) {
     return (
-      <div className="flex z-40 justify-between items-center mb-5 py-3 px-10">
+      <div className="flex z-40 justify-between items-center py-2.5 px-10">
         <div>
           <Link to="/">
             <span className="text-green-700 font-bold">
@@ -44,34 +57,34 @@ function Header() {
         {/* right nav */}
         <div className="flex items-center gap-5">
           <div>
-            <ul className="gap-5 font-semibold sm:flex hidden">
-              <li className="md:block hidden">
+            <ul className="gap-5 font-semibold text-sm sm:flex hidden">
+              <li className="md:block hidden ">
                 <NavLink
                   className={({ isActive }) =>
                     isActive ? "text-green-700" : "text-black"
                   }
                   to="/"
                 >
-                  Home
+                  HOME
                 </NavLink>
               </li>
               <li>
                 <NavLink
                   className={({ isActive }) =>
-                    isActive ? "text-green-700" : "text-black"
+                    `${isActive ? "text-green-700" : "text-black"}`
                   }
                   to="/allproduct"
                 >
-                  All Products
+                  ALL PRODUCTS
                 </NavLink>
               </li>
             </ul>
           </div>
 
           <div className="flex items-center gap-5">
-            <div className="border-black border h-6 overflow-hidden rounded-xl pl-2 items-center sm:flex hidden">
+            <div className="border-gray-700 border h-6 overflow-hidden rounded-xl pl-2 items-center sm:flex hidden">
               <input
-                className="outline-none h-6 bg-transparent px-1"
+                className="outline-none h-6 bg-transparent px-1 font-semibold text-xs"
                 type="text"
                 value={searchValue}
                 placeholder="Search Products..."

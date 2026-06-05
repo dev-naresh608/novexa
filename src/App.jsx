@@ -15,6 +15,7 @@ import {
   Setting,
   Payments,
   Orders,
+  OrderDetail,
   Cart,
   Home,
   Login,
@@ -38,7 +39,7 @@ import {
   CategoryWiseProducts,
   Layout,
   SearchProduct,
-  AllRestaurants,
+  AllStores,
 } from "./client/components/component";
 
 import {
@@ -72,13 +73,18 @@ function App() {
         <Route path="/" element={<Home />}>
           {/* <Route path="" element={<Dashboard />}></Route> */}
           <Route path="categories" element={<Category />}></Route>
+          <Route
+            path="categories/categoryWiseProducts/:catName"
+            element={<CategoryWiseProducts />}
+          />
           <Route path="favourite" element={<Wishlist />}></Route>
           <Route path="orders" element={<Orders />}></Route>
+          <Route path="/orders/:orderId" element={<OrderDetail />} />
           <Route path="cart" element={<Cart />}></Route>
           <Route path="wishlist" element={<Wishlist />}></Route>
           <Route path="setting" element={<Setting />}></Route>
-          <Route path="/dashboard" element={<Dashboard />}></Route>
-          <Route path="/restaurants" element={<AllRestaurants />}></Route>
+          <Route path="dashboard" element={<Dashboard />}></Route>
+          <Route path="stores" element={<AllStores />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
           <Route path="product-list" element={<MyProducts />}></Route>
           <Route path="active-orders" element={<ActiveOrders />}></Route>
@@ -86,24 +92,12 @@ function App() {
             path="allnotifications"
             element={<ShowAllNotifications />}
           ></Route>
-          <Route path="deliveryHistory" element={<DeliveryHistory />}>
-            {" "}
-          </Route>
-          <Route path="earnings" element={<Earnings />}>
-            {" "}
-          </Route>
-          <Route path="vehicleDetails" element={<VehicleDetails />}>
-            {" "}
-          </Route>
+          <Route path="deliveryHistory" element={<DeliveryHistory />}></Route>
+          <Route path="earnings" element={<Earnings />}></Route>
+          <Route path="vehicleDetails" element={<VehicleDetails />}></Route>
 
           <Route path="/allproducts/:restId" element={<AllProducts />} />
-
-          <Route
-            path="/categories/categoryWiseProducts/:catName"
-            element={<CategoryWiseProducts />}
-          />
         </Route>
-
         {/* ! end to show in panel  */}
 
         {/* ! profile path  */}
@@ -127,7 +121,7 @@ function App() {
                 <WishlistContextProvider>
                   <CategoryContextProvider>
                     <OrderProvider>
-                      <RouterProvider router={router}/>
+                      <RouterProvider router={router} />
                     </OrderProvider>
                   </CategoryContextProvider>
                 </WishlistContextProvider>

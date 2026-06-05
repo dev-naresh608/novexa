@@ -223,7 +223,7 @@ function DriverDashboard() {
 
 {/* ===== NEW ORDER REQUEST MODAL ===== */}
 
-<div className="fixed inset-0 bg-black/40 flex items-center justify-center p-3 z-50">
+<div className="fixed hidden inset-0 bg-black/40 flex items-center justify-center p-3 z-50">
 
   {/* ===== MODAL ===== */}
 

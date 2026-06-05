@@ -88,8 +88,8 @@ function UserContextProvider({ children }) {
       showToDriver: false,
     },
     {
-      children: "Restaurants",
-      to: "/restaurants",
+      children: "Stores",
+      to: "/stores",
       svg: <Store size={18}/>,
       showToCustomer: true,
       showToSeller: true,

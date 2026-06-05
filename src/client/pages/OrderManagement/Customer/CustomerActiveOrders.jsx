@@ -1,27 +1,30 @@
 import React, { useContext } from "react";
 import { UserContext } from "../../../contexts/context";
 import { GradientButton } from "../../../components/component";
-import { Calendar, Store, TimerIcon, User } from "lucide-react";
+import {
+  Banknote,
+  Calendar,
+  Clock,
+  CreditCard,
+  Store,
+  TimerIcon,
+  User,
+} from "lucide-react";
+import { EmptyOrders } from "../index";
 
 function CustomerActiveOrders() {
   const { currentUser } = useContext(UserContext);
 
-  if (!currentUser.myCurrentOrders || currentUser.myCurrentOrders.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <h2 className="text-lg font-semibold text-gray-600">
-          No Orders Yet 📦
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Start shopping to see your orders here
-        </p>
-      </div>
-    );
+  if (
+    !currentUser.myCurrentOrders ||
+    currentUser.myCurrentOrders.length === 0
+  ) {
+    return <EmptyOrders />;
   }
-  // --------- Style --------------------------------
 
+  // --------- Style --------------------------------
   const styleFlex =
-    "flex items-center gap-1 text-nowrap bg-blue-100 px-2 py-1 rounded-2xl ";
+    "text-xs flex items-center gap-1 text-nowrap bg-gray-100 px-2 py-1 rounded-2xl ";
   const formatDate = (rawDateStr) => {
     if (!rawDateStr) return "";
 
@@ -39,7 +42,7 @@ function CustomerActiveOrders() {
       .replace(/ (\d{4})$/, ", $1"); // Injects the comma before the year
   };
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* HEADER CARD */}
       <div>
         <GradientButton componentType="text">Current Orders</GradientButton>
@@ -49,23 +52,22 @@ function CustomerActiveOrders() {
       {currentUser?.myCurrentOrders?.map((order, index) => (
         <div
           key={index}
-          className="bg-white rounded-2xl shadow-md border overflow-hidden"
+          className="bg-white rounded-2xl hover:shadow-md duration-150 transition-all border overflow-hidden"
         >
           {/* TOP */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b p-4">
-            <div className="font-medium w-[40vw] md:w-[50vw] lg:w-[50vw]">
-              <div className="text-sm flex flex-wrap gap-2 justify-between w-full text-blue-400">
+            <div className="font-medium">
+              <div className="text-sm flex flex-wrap gap-3 w-full text-gray-600">
                 <span className={styleFlex}>
-                  {" "}
-                  <Store className="text-blue-400" />
-                  {order.restaurant_name}
+                  <Store size={17}/>
+                  {order.store_name}
                 </span>
                 <span className={styleFlex}>
-                  <TimerIcon />
+                  <Clock size={17}/>
                   {order?.orderTime}
                 </span>
                 <span className={styleFlex}>
-                  <Calendar />
+                  <Calendar size={17}/>
                   {formatDate(order?.orderDate)}
                 </span>
                 <span
@@ -76,7 +78,7 @@ function CustomerActiveOrders() {
               </div>
 
               <p className="text-xs/5 text-gray-500">
-                📍{order.restaurant_address}
+                📍{order.store_address}
               </p>
             </div>
           </div>
@@ -89,11 +91,11 @@ function CustomerActiveOrders() {
                 className="flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden p-2">
+                  <div className="w-14 h-14 border cursor-pointer rounded-xl bg-gray-100 overflow-hidden group p-1.5 hover:scale-105 duration-100">
                     <img
                       src={item.product_url}
                       alt={item.product_name}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain group-hover:scale-105 duration-150"
                     />
                   </div>
 
@@ -128,9 +130,17 @@ function CustomerActiveOrders() {
           {/* FOOTER */}
           <div className="border-t p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <p className="text-sm text-gray-500">Payment</p>
-
-              <p className="font-medium text-gray-700">{order.paymentMethod}</p>
+              <div className="font-semibold text-gray-700 text-sm [&>p]:flex [&>p]:gap-1 [&>p]:items-center">
+                {order.paymentMethod === "cashOnDelivery" ? (
+                  <p>
+                    <Banknote size={20} /> <span>Cash</span>
+                  </p>
+                ) : (
+                  <p>
+                    <CreditCard size={20} /> <span>Online</span>
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -143,8 +153,6 @@ function CustomerActiveOrders() {
           </div>
         </div>
       ))}
-
-     
     </div>
   );
 }

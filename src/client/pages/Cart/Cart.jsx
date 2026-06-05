@@ -26,7 +26,7 @@ function Cart({ variant = "full" }) {
   if (currentUserRole === "customer") {
     const navigate = useNavigate();
     let isCompact = variant === "compact";
-    let { cartItems, setCartItems, restaurantId, setRestaurantId } =
+    let { cartItems, setCartItems, storeId, setStoreId } =
       useContext(CartProductContext);
     let { address } = useContext(AddressContext);
 
@@ -84,7 +84,7 @@ function Cart({ variant = "full" }) {
             Your Cart is Empty 🛒
           </h2>
           <button
-            onClick={() => navigate("/allproducts")}
+            onClick={() => navigate("/stores")}
             className="active:scale-95 mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
           >
             Continue Shopping
@@ -105,7 +105,7 @@ function Cart({ variant = "full" }) {
           return;
         }
 
-        if (!restaurantId) {
+        if (!storeId) {
           toast.error("Please select products properly");
           return;
         }
@@ -115,11 +115,11 @@ function Cart({ variant = "full" }) {
           return;
         }
 
-        // GET USER & RESTAURANT
+        // GET USER & STORE
         const user = await db.localUserData.get(currentUser.id);
-        const restaurant = await db.localUserData.get(restaurantId);
+        const store = await db.localUserData.get(storeId);
 
-        if (!user || !restaurant) {
+        if (!user || !store) {
           toast.error("Something went wrong");
           return;
         }
@@ -160,10 +160,10 @@ function Cart({ variant = "full" }) {
           orderId,
 
           customerId: currentUser.id,
-          restaurantId: restaurantId,
+          storeId: storeId,
 
-          restaurant_name: restaurant.restaurant_name,
-          restaurant_address: restaurant.restaurant_address,
+          store_name: store.store_name,
+          store_address: store.store_address,
 
           name: currentUser.myAddress.name,
           phone: currentUser.myAddress.phone,
@@ -199,16 +199,16 @@ function Cart({ variant = "full" }) {
             : [orderData],
         };
 
-        // RESTAURANT UPDATE
-        const updatedRestaurant = {
-          ...restaurant,
+        // STORE UPDATE
+        const updatedStore = {
+          ...store,
 
-          myOrders: restaurant.myOrders
-            ? [...restaurant.myOrders, orderData]
+          myOrders: store.myOrders
+            ? [...store.myOrders, orderData]
             : [orderData],
 
-          myCurrentOrders: restaurant.myCurrentOrders
-            ? [...restaurant.myCurrentOrders, orderData]
+          myCurrentOrders: store.myCurrentOrders
+            ? [...store.myCurrentOrders, orderData]
             : [orderData],
         };
 
@@ -219,7 +219,7 @@ function Cart({ variant = "full" }) {
           msg: `Hey ${
             currentUser.username.split(" ")[0]
           }, Your order has been placed successfully at ${
-            restaurant.restaurant_name
+            store.store_name
           }.`,
 
           isNotificationIsRead: false,
@@ -228,7 +228,7 @@ function Cart({ variant = "full" }) {
           Ndate: todayDate,
         };
 
-        const restaurantNotification = {
+        const storeNotification = {
           notificationID: uuid(),
 
           msg: `New order received from ${
@@ -246,25 +246,17 @@ function Cart({ variant = "full" }) {
           ? [...updatedUser.myNotifications, customerNotification]
           : [customerNotification];
 
-        // ADD RESTAURANT NOTIFICATION
-        updatedRestaurant.myNotifications = updatedRestaurant.myNotifications
-          ? [...updatedRestaurant.myNotifications, restaurantNotification]
-          : [restaurantNotification];
+        // ADD STORE NOTIFICATION
+        updatedStore.myNotifications = updatedStore.myNotifications
+          ? [...updatedStore.myNotifications, storeNotification]
+          : [storeNotification];
 
         // SAVE DATABASE
         await db.localUserData.put(updatedUser);
 
-        await db.localUserData.put(updatedRestaurant);
+        await db.localUserData.put(updatedStore);
 
         await db.orderHistory.add(orderData);
-
-
-        // CLEAR CART
-        delete updatedUser.myCart;
-
-        await db.localUserData.put(updatedUser);
-
-        setCartItems([]);
 
         // UPDATE CONTEXT
         setCurrentUser(updatedUser);
@@ -275,13 +267,18 @@ function Cart({ variant = "full" }) {
           type: "USER_DATA_UPDATED",
         });
 
-
-          // SUCCESS
+        // SUCCESS
         toast.success("Order placed successfully");
-        
+
         setTimeout(() => {
+          setCartItems([]);
           navigate("/orders");
         }, 1000);
+        setTimeout(async () => {
+          // CLEAR CART
+          delete updatedUser.myCart;
+          await db.localUserData.put(updatedUser);
+        }, 0);
       } catch (error) {
         console.error("Place Order Error:", error);
 
@@ -291,7 +288,6 @@ function Cart({ variant = "full" }) {
 
     return (
       <>
-        
         <section className="bg-white rounded-2xl p-5">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* LEFT - CART ITEMS */}

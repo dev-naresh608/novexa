@@ -100,7 +100,7 @@ function CustomerDashboard() {
                 </div>
 
                 <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
-                  Preparing
+                  preparing
                 </span>
               </div>
 

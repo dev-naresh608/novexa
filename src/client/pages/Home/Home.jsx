@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Hero, Footer, CategoryWiseProducts } from "../../components/component";
+import { Hero, Footer } from "../../components/component";
 
 import { Category, Orders, Setting, Wishlist, Cart } from "../pages";
 
@@ -13,17 +13,20 @@ import {
   bottom_banner_v,
 } from "../../assets/assets";
 
-import { UserContext, CartProductContext } from "../../contexts/context";
+import {
+  UserContext,
+  CartProductContext,
+} from "../../contexts/context";
 import { Menu, X } from "lucide-react";
-import { NavLink, Outlet, Route, Routes } from "react-router-dom";
+import { NavLink, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 function Home({ productsList }) {
   const { isLogin, leftPanelItems, secondLeftPanelItems, currentUser } =
     useContext(UserContext);
+  const navigate = useNavigate();
 
   const { setActiveTab, activeTab } = useContext(UserContext);
   const { cartItems } = useContext(CartProductContext);
-  // useEffect(() => setActiveTab("personalinformation"), []);
-  const [showAllCategoryEnable, setShowAllCategoryEnable] = useState(false);
+
 
   if (!isLogin) {
     const items = [
@@ -51,13 +54,7 @@ function Home({ productsList }) {
     return (
       <>
         <Hero />
-        <div className="w-[90vw] m-auto pt-10">
-          <Category
-            productsList={productsList}
-            showAllCategoryEnable={showAllCategoryEnable}
-            setShowAllCategoryEnable={setShowAllCategoryEnable}
-          />
-        </div>
+        <Category />
         <section className="p-5 py-10">
           <div className="sm:flex sm:gap-10 space-y-10 bg-blue-200 rounded-2xl p-5 sm:items-center">
             {/* left  */}
@@ -97,14 +94,6 @@ function Home({ productsList }) {
   }
 
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
-  useEffect(() => {
-    if (activeTab === "categories") {
-      setShowAllCategoryEnable(true);
-    } else {
-      setShowAllCategoryEnable(false);
-    }
-    // if()
-  }, [activeTab, setActiveTab]);
 
   return (
     <>
