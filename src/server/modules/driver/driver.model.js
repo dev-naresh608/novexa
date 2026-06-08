@@ -8,19 +8,19 @@ const driverSchema = new mongoose.Schema({
   phone: {
     type: String,
   },
-  driver_dob: {
+  dob: {
     type: String,
     required: true,
   },
-  driver_status: {
+  status: {
     type: Boolean,
     default: true,
   },
-  driver_aadhaar_number: {
+  aadhaar_number: {
     type: Number,
     required: true,
   },
-  driver_vehicle_number: {
+  vehicle_number: {
     type: String,
     required: true,
   },

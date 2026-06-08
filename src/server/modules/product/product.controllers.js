@@ -10,7 +10,8 @@ const handleGetAllProducts = async (req, res) => {
 };
 
 const handleAddProduct = async (req, res) => {
-  return res.json({ msg: "order created" });
+  const payload = req.body;
+  return res.json({ msg: "Product added successfully" });
 };
 
 const handleFindProductById = async (req, res) => {

@@ -6,13 +6,14 @@ import { toast } from "react-toastify";
 import { defaultPP } from "../../assets/assets";
 import { ArrowLeftIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function AddProduct() {
   const [productImg, setProductImg] = useState(null);
 
   const { currentUser, setUserData, setCurrentUser } = useContext(UserContext);
 
-  const navigate =  useNavigate()
+  const navigate = useNavigate();
   const initialFormData = {
     product_name: "",
     product_url: "",
@@ -97,8 +98,6 @@ function AddProduct() {
     }
 
     try {
-      // ================= GET USER =================
-      const user = await db.localUserData.get(currentUser.id);
 
       // ================= PRODUCT DATA =================
       const productData = {
@@ -106,7 +105,7 @@ function AddProduct() {
 
         product_id: uuid(),
 
-        store_id: user.id,
+        store_id: currentUser.id,
 
         product_name: formData.product_name.trim(),
 
@@ -122,19 +121,22 @@ function AddProduct() {
       };
 
       // ================= UPDATE DATABASE =================
-      await db.localUserData.update(currentUser.id, {
-        productList: [...(user.productList || []), productData],
-      });
+      const payload = productData;
+      axios
+        .post("http://localhost:5000/product/add-product", payload)
+        .then((res) => {
+          console.log(res.data || "nothing")
+          toast.success("Product Added");
+        });
 
       // ================= UPDATE CONTEXT =================
-      setCurrentUser(await db.localUserData.get(currentUser.id));
+      // setCurrentUser();
 
-      setUserData(await db.localUserData.toArray());
+      // setUserData();
 
-      toast.success("Product Added");
 
       // ================= RESET FORM =================
-      resetForm();
+      // resetForm();
     } catch (error) {
       console.error(error);
       toast.error("Failed to add product");
@@ -147,16 +149,16 @@ function AddProduct() {
         onSubmit={handleSubmit}
         className="font-semibold text-sm w-full p-3 rounded-md space-y-3 border border-gray-300"
       >
-      <div>
-        <button
-        type="button"
-          onClick={() => navigate("/product-list")}
-          className="flex items-center gap-1 text-gray-700 hover:text-green-800 font-semibold duration-100"
-        >
-          <ArrowLeftIcon size={18} strokeWidth={2.5} />
-          <span className="text-sm">Back to Orders</span>
-        </button>
-      </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => navigate("/product-list")}
+            className="flex items-center gap-1 text-gray-700 hover:text-green-800 font-semibold duration-100"
+          >
+            <ArrowLeftIcon size={18} strokeWidth={2.5} />
+            <span className="text-sm">Back to Orders</span>
+          </button>
+        </div>
         <p>Please add products related to the: {currentUser.store_type}</p>
 
         {/* ================= PRODUCT IMAGE ================= */}

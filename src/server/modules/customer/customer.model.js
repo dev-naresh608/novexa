@@ -8,7 +8,6 @@ const customerSchema = new mongoose.Schema({
   customer_address: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Address",
-    required: true,
   }
 });
 

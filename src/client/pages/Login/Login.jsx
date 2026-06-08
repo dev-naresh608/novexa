@@ -28,52 +28,32 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // if (formData.username == "" || formData.password == "") {
-    //   toast.warning("Please Enter data");
-    //   return;
-    // }
+    if (formData.username == "" || formData.password == "") {
+      toast.warning("Please Enter data");
+      return;
+    }
 
-    // const user = await db.localUserData
-    //   .where("email")
-    //   .equals(formData.email)
-    //   .first();
-
-    // if (!user) {
-    //   toast.error("Invalid credentials");
-    //   return;
-    // }
-
-    // // ! CHECK VALID USER
-    // const isValidUser =
-    //   user.email === formData.email && user.password === formData.password
-    //     ? true
-    //     : false;
-
-    // if (isValidUser) {
-    //   setCurrentUser(user);
-
-    //   setCurrentUserRole(user.role);
-    //   toast.success("Login successful");
     const payload = formData;
 
     const sendLoginData = async () => {
       await axios
         .post("http://localhost:5000/login", payload)
         .then((res) => {
-          
-          console.log(res.data);
+          if (res.data.isLoginSuccess) {
+            toast.success("Login successful");
+            setCurrentUser(res.data.user);
+            setCurrentUserRole(res.data.user.role);
+            setTimeout(() => {
+              setIsLogin(true);
+              navigate("/dashboard");
+            }, 1000);
+          } else {
+            toast.error(res.data.msg);
+          }
         })
         .catch((err) => console.log("Error:", err));
     };
     sendLoginData();
-
-    // setTimeout(() => {
-    //   setIsLogin(true);
-    //   navigate("/dashboard");
-    // }, 1000);
-    // } else {
-    //   toast.error("Invalid credentials");
-    // }
   };
 
   const handleShowPassword = () => {

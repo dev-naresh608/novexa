@@ -8,10 +8,8 @@ const {
   handleUpdateProductById,
 } = require("./product.controllers");
 
-router
-.route("/")
-.get(handleGetAllProducts)
-.post(handleAddProduct);
+router.get("/allproducts",handleGetAllProducts);
+router.post("/add-product",handleAddProduct);
 
 router
   .route("/:productId")

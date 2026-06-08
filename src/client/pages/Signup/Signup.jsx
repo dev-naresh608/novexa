@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { db } from "../../db/index";
 import { toast } from "react-toastify";
+import axios from "axios";
 import { UserContext } from "../../contexts/context";
 
 export default function Signup() {
@@ -22,7 +23,6 @@ export default function Signup() {
   const [isSeller, setIsSeller] = useState(false);
   const [isCustomer, setIsCustomer] = useState(true);
   const [isDriver, setIsDriver] = useState(false);
-  const [userId, setUserId] = useState(uuid());
   const [currentRole, setCurrentRole] = useState("customer");
   const [isPassVisible, setIsPassVisible] = useState(false);
 
@@ -52,7 +52,6 @@ export default function Signup() {
     username: "",
     email: "",
     password: "",
-    id: "",
     driver_status: true,
     driver_aadhaar_number: "",
     driver_vehicle_number: "",
@@ -69,27 +68,11 @@ export default function Signup() {
       store_owner_name: formData.username,
       role: currentRole,
       [e.target.name]: e.target.value,
-      id: userId,
     });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData) {
-      const currentEmail = formData.email;
-      const isMailExist = async () => {
-        return await db.localUserData
-          .where("email")
-          .equals(currentEmail)
-          .first();
-      };
-
-      if (await isMailExist()) {
-        toast.info("This email is  already exist");
-        return;
-      }
-      // toast.success("account created successfully");
-
-      // delete the unwanted key of data. ex - driver is not required for resto_name.
       if (currentRole === "customer") {
         delete formData.driver_dob;
         delete formData.driver_status;
@@ -111,13 +94,24 @@ export default function Signup() {
         delete formData.store_address;
       }
 
-      toast.success("account created successfully");
-      // ! indexDB :
-      await db.localUserData.add(formData);
-      setUserData(await db.localUserData.toArray());
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      const payload = formData;
+
+      const sendSignupData = async () => {
+        await axios
+          .post("http://localhost:5000/signup", payload)
+          .then((res) => {
+            if (res.data.isSignupSuccess) {
+              toast.success(`Signup successful as a ${res.data.role}`);
+              setTimeout(() => {
+                navigate("/login");
+              }, 1000);
+            } else {
+              toast.error(res.data.msg);
+            }
+          })
+          .catch((err) => console.log("Error:", err));
+      };
+      sendSignupData();
     } else {
       toast.warning("enter data");
     }
@@ -142,315 +136,310 @@ export default function Signup() {
           </div>
         </div>
 
-        <form
-  onSubmit={handleSubmit}
-  className="space-y-4 text-black"
->
-  {/* ROLE SELECTOR */}
-  <div>
-    <p className="text-[#989da4] text-sm">I am a...</p>
+        <form onSubmit={handleSubmit} className="space-y-4 text-black">
+          {/* ROLE SELECTOR */}
+          <div>
+            <p className="text-[#989da4] text-sm">I am a...</p>
 
-    <div className="flex gap-2 items-center font-semibold text-xs">
-      <div
-        className={`px-4 py-2 rounded-xl flex-1 ${
-          isCustomer
-            ? "bg-[#1c1917] text-white border"
-            : "bg-gray-200 text-gray-500 border border-gray-400"
-        }`}
-      >
-        <button
-          name="role"
-          className="flex w-full justify-center items-center gap-1"
-          onClick={() => {
-            setIsCustomer(true);
-            setIsSeller(false);
-            setIsDriver(false);
-          }}
-          type="button"
-        >
-          <User size={15} />
-          <span>Customer</span>
-        </button>
-      </div>
+            <div className="flex gap-2 items-center font-semibold text-xs">
+              <div
+                className={`px-4 py-2 rounded-xl flex-1 ${
+                  isCustomer
+                    ? "bg-[#1c1917] text-white border"
+                    : "bg-gray-200 text-gray-500 border border-gray-400"
+                }`}
+              >
+                <button
+                  name="role"
+                  className="flex w-full justify-center items-center gap-1"
+                  onClick={() => {
+                    setIsCustomer(true);
+                    setIsSeller(false);
+                    setIsDriver(false);
+                  }}
+                  type="button"
+                >
+                  <User size={15} />
+                  <span>Customer</span>
+                </button>
+              </div>
 
-      <div
-        className={`px-4 py-2 rounded-xl flex-1 ${
-          isDriver
-            ? "bg-[#1c1917] text-white border"
-            : "bg-gray-200 text-gray-500 border border-gray-400"
-        }`}
-      >
-        <button
-          name="role"
-          className="flex w-full justify-center items-center gap-1"
-          onClick={() => {
-            setIsCustomer(false);
-            setIsSeller(false);
-            setIsDriver(true);
-          }}
-          type="button"
-        >
-          <Car size={15} />
-          <span>Driver</span>
-        </button>
-      </div>
+              <div
+                className={`px-4 py-2 rounded-xl flex-1 ${
+                  isDriver
+                    ? "bg-[#1c1917] text-white border"
+                    : "bg-gray-200 text-gray-500 border border-gray-400"
+                }`}
+              >
+                <button
+                  name="role"
+                  className="flex w-full justify-center items-center gap-1"
+                  onClick={() => {
+                    setIsCustomer(false);
+                    setIsSeller(false);
+                    setIsDriver(true);
+                  }}
+                  type="button"
+                >
+                  <Car size={15} />
+                  <span>Driver</span>
+                </button>
+              </div>
 
-      <div
-        className={`px-4 py-2 rounded-xl flex-1 ${
-          isSeller
-            ? "bg-[#1c1917] text-white border"
-            : "bg-gray-200 text-gray-500 border border-gray-400"
-        }`}
-      >
-        <button
-          name="role"
-          className="flex w-full justify-center items-center gap-1"
-          onClick={() => {
-            setIsCustomer(false);
-            setIsSeller(true);
-            setIsDriver(false);
-          }}
-          type="button"
-        >
-          <Store size={15} />
-          <span>Seller</span>
-        </button>
-      </div>
-    </div>
-  </div>
+              <div
+                className={`px-4 py-2 rounded-xl flex-1 ${
+                  isSeller
+                    ? "bg-[#1c1917] text-white border"
+                    : "bg-gray-200 text-gray-500 border border-gray-400"
+                }`}
+              >
+                <button
+                  name="role"
+                  className="flex w-full justify-center items-center gap-1"
+                  onClick={() => {
+                    setIsCustomer(false);
+                    setIsSeller(true);
+                    setIsDriver(false);
+                  }}
+                  type="button"
+                >
+                  <Store size={15} />
+                  <span>Seller</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
-  {/* USERNAME */}
-  <div>
-    <p className="text-[#989da4] text-sm font-semibold">Username</p>
+          {/* USERNAME */}
+          <div>
+            <p className="text-[#989da4] text-sm font-semibold">Username</p>
 
-    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-      <User className="text-gray-400" size={20} />
+            <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+              <User className="text-gray-400" size={20} />
 
-      <input
-        required
-        type="text"
-        name="username"
-        placeholder="Username..."
-        onChange={handleChange}
-        className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-      />
-    </div>
-  </div>
+              <input
+                required
+                type="text"
+                name="username"
+                placeholder="Username..."
+                onChange={handleChange}
+                className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+              />
+            </div>
+          </div>
 
-  {/* EMAIL */}
-  <div>
-    <p className="text-[#989da4] text-sm font-semibold">Email</p>
+          {/* EMAIL */}
+          <div>
+            <p className="text-[#989da4] text-sm font-semibold">Email</p>
 
-    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-      <User className="text-gray-400" size={20} />
+            <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+              <User className="text-gray-400" size={20} />
 
-      <input
-        required
-        type="email"
-        name="email"
-        placeholder="Email..."
-        onChange={handleChange}
-        className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-      />
-    </div>
-  </div>
+              <input
+                required
+                type="email"
+                name="email"
+                placeholder="Email..."
+                onChange={handleChange}
+                className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+              />
+            </div>
+          </div>
 
-  {/* PASSWORD */}
-  <div>
-    <p className="text-[#989da4] text-sm font-semibold">Password</p>
+          {/* PASSWORD */}
+          <div>
+            <p className="text-[#989da4] text-sm font-semibold">Password</p>
 
-    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-      <Lock className="text-gray-400" size={20} />
+            <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+              <Lock className="text-gray-400" size={20} />
 
-      <input
-        type={isPassVisible ? "text" : "password"}
-        name="password"
-        required
-        placeholder="Password..."
-        onChange={handleChange}
-        className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-      />
+              <input
+                type={isPassVisible ? "text" : "password"}
+                name="password"
+                required
+                placeholder="Password..."
+                onChange={handleChange}
+                className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+              />
 
-      <button
-        onClick={handleShowPassword}
-        type="button"
-        className="text-[#989da4]"
-      >
-        {isPassVisible ? <Eye size={19} /> : <EyeOff size={19} />}
-      </button>
-    </div>
-  </div>
+              <button
+                onClick={handleShowPassword}
+                type="button"
+                className="text-[#989da4]"
+              >
+                {isPassVisible ? <Eye size={19} /> : <EyeOff size={19} />}
+              </button>
+            </div>
+          </div>
 
-  {/* PHONE */}
-  <div>
-    <p className="text-[#989da4] text-sm font-semibold">Phone</p>
+          {/* PHONE */}
+          <div>
+            <p className="text-[#989da4] text-sm font-semibold">Phone</p>
 
-    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-      <Phone className="text-gray-400" size={20} />
+            <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+              <Phone className="text-gray-400" size={20} />
 
-      <input
-        required
-        type="tel"
-        name="phone"
-        placeholder="Enter phone number..."
-        onChange={handleChange}
-        className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-      />
-    </div>
-  </div>
+              <input
+                required
+                type="tel"
+                name="phone"
+                placeholder="Enter phone number..."
+                onChange={handleChange}
+                className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+              />
+            </div>
+          </div>
 
-  {/* SELLER FIELDS */}
-  {isSeller && (
-    <div className="space-y-4">
-      {/* STORE NAME */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Store Name
-        </p>
+          {/* SELLER FIELDS */}
+          {isSeller && (
+            <div className="space-y-4">
+              {/* STORE NAME */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Store Name
+                </p>
 
-        <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-          <Store className="text-gray-400" size={20} />
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+                  <Store className="text-gray-400" size={20} />
 
-          <input
-            required
-            type="text"
-            name="store_name"
-            placeholder="Enter store name..."
-            onChange={handleChange}
-            className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-          />
-        </div>
-      </div>
+                  <input
+                    required
+                    type="text"
+                    name="store_name"
+                    placeholder="Enter store name..."
+                    onChange={handleChange}
+                    className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+                  />
+                </div>
+              </div>
 
-      {/* STORE CATEGORY */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Store Category
-        </p>
+              {/* STORE CATEGORY */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Store Category
+                </p>
 
-        <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-          <ChevronDown className="text-gray-400" size={20} />
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+                  <ChevronDown className="text-gray-400" size={20} />
 
-          <select
-            name="store_type"
-            onChange={handleChange}
-            required
-            className="w-full bg-transparent outline-none text-gray-600 text-sm"
+                  <select
+                    name="store_type"
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-transparent outline-none text-gray-600 text-sm"
+                  >
+                    <option value="">Select Category</option>
+
+                    {categories.map((category, index) => (
+                      <option key={index} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* STORE ADDRESS */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Store Address
+                </p>
+
+                <div className="rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-3">
+                  <textarea
+                    required
+                    name="store_address"
+                    placeholder="Enter store address..."
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full resize-none bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DRIVER FIELDS */}
+          {isDriver && (
+            <div className="space-y-4">
+              {/* DOB */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Date of Birth
+                </p>
+
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+                  <User className="text-gray-400" size={20} />
+
+                  <input
+                    required
+                    type="date"
+                    name="driver_dob"
+                    onChange={handleChange}
+                    className="w-full bg-transparent outline-none text-gray-600 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* VEHICLE NUMBER */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Vehicle Number
+                </p>
+
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+                  <Car className="text-gray-400" size={20} />
+
+                  <input
+                    required
+                    type="text"
+                    name="driver_vehicle_number"
+                    placeholder="Ex: GJ-01-AB-1234"
+                    onChange={handleChange}
+                    className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* AADHAAR */}
+              <div>
+                <p className="text-[#989da4] text-sm font-semibold">
+                  Aadhaar Number
+                </p>
+
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
+                  <User className="text-gray-400" size={20} />
+
+                  <input
+                    required
+                    type="number"
+                    name="driver_aadhaar_number"
+                    placeholder="Enter aadhaar number..."
+                    onChange={handleChange}
+                    className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUBMIT BUTTON */}
+          <button
+            type="submit"
+            className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold"
           >
-            <option value="">Select Category</option>
+            <UserPlus2Icon size={20} />
+            Create Account
+          </button>
 
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* STORE ADDRESS */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Store Address
-        </p>
-
-        <div className="rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-3">
-          <textarea
-            required
-            name="store_address"
-            placeholder="Enter store address..."
-            onChange={handleChange}
-            rows={3}
-            className="w-full resize-none bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* DRIVER FIELDS */}
-  {isDriver && (
-    <div className="space-y-4">
-      {/* DOB */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Date of Birth
-        </p>
-
-        <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-          <User className="text-gray-400" size={20} />
-
-          <input
-            required
-            type="date"
-            name="driver_dob"
-            onChange={handleChange}
-            className="w-full bg-transparent outline-none text-gray-600 text-sm"
-          />
-        </div>
-      </div>
-
-      {/* VEHICLE NUMBER */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Vehicle Number
-        </p>
-
-        <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-          <Car className="text-gray-400" size={20} />
-
-          <input
-            required
-            type="text"
-            name="driver_vehicle_number"
-            placeholder="Ex: GJ-01-AB-1234"
-            onChange={handleChange}
-            className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-          />
-        </div>
-      </div>
-
-      {/* AADHAAR */}
-      <div>
-        <p className="text-[#989da4] text-sm font-semibold">
-          Aadhaar Number
-        </p>
-
-        <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-[#eef0f4] px-4 py-2">
-          <User className="text-gray-400" size={20} />
-
-          <input
-            required
-            type="number"
-            name="driver_aadhaar_number"
-            placeholder="Enter aadhaar number..."
-            onChange={handleChange}
-            className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* SUBMIT BUTTON */}
-  <button className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold">
-    <UserPlus2Icon size={20} />
-    Create Account
-  </button>
-
-  {/* LOGIN */}
-  <p className="text-center text-sm">
-    <span className="text-gray-600">
-      Already have an account?
-    </span>{" "}
-    <Link
-      to="/login"
-      className="text-[#1c1917] font-semibold"
-    >
-      Sign in
-    </Link>
-  </p>
-</form>
+          {/* LOGIN */}
+          <p className="text-center text-sm">
+            <span className="text-gray-600">Already have an account?</span>{" "}
+            <Link to="/login" className="text-[#1c1917] font-semibold">
+              Sign in
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   );
