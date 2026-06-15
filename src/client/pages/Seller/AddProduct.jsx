@@ -103,9 +103,9 @@ function AddProduct() {
       const productData = {
         ...formData,
 
-        product_id: uuid(),
+        // product_id: uuid(),
 
-        store_id: currentUser.id,
+        store_id: currentUser._id,
 
         product_name: formData.product_name.trim(),
 

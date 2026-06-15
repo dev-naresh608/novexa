@@ -1,5 +1,5 @@
 const Product = require("./product.model");
-
+const {addProduct} = require('./product.service');
 const handleGetAllProducts = async (req, res) => {
   const allProducts = (await Product.find({})) || [];
 
@@ -11,6 +11,8 @@ const handleGetAllProducts = async (req, res) => {
 
 const handleAddProduct = async (req, res) => {
   const payload = req.body;
+  const result = await addProduct(payload);
+  
   return res.json({ msg: "Product added successfully" });
 };
 
