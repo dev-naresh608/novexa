@@ -1,23 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
 import { defaultRest } from "../../assets/assets";
-import {UserContext} from "../../contexts/context"
-import {Store} from "../component"
+import { UserContext } from "../../contexts/context";
+import { Store } from "../component";
 import { db } from "../../db";
-
+import axios from "axios";
 
 function AllStores() {
   const [AllStores, setAllStores] = useState([]);
-  const {currentUser,userData} = useContext(UserContext)
+  const { currentUser, userData } = useContext(UserContext);
   useEffect(() => {
-    const getStores = async () => {
-      const allUsers = await db.localUserData.toArray();
-      const AllStores =
-        allUsers.filter((user) => user.role === "seller") || [];
-
-      setAllStores(AllStores);
-    };
-    getStores();
-  }, [currentUser,userData]);
+    try {
+      const getStores = async () => {
+        const { data } = await axios.get("http://localhost:5000/stores");
+        
+        if (!data.success) {
+          toast.error(data.message);
+          return;
+        }
+        setAllStores(data.result);
+      };
+      getStores();
+    } catch (error) {
+      console.log(error);
+    }
+  }, [currentUser, userData]);
 
   return (
     <>
@@ -29,8 +35,7 @@ function AllStores() {
               defaultRest={defaultRest}
               name={r.store_name}
               address={r.store_address}
-              productsLength={r.productList?.length || 0}
-              id={r.id}
+              id={r._id}
             />
           );
         })}

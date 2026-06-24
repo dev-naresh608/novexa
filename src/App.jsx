@@ -96,7 +96,7 @@ function App() {
           <Route path="earnings" element={<Earnings />}></Route>
           <Route path="vehicleDetails" element={<VehicleDetails />}></Route>
 
-          <Route path="/allproducts/:restId" element={<AllProducts />} />
+          <Route path="/stores/allproducts/:restId" element={<AllProducts />} />
         </Route>
         {/* ! end to show in panel  */}
 

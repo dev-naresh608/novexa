@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require('multer');
+const {upload} = require('../../middlewares/multer.middleware');
+
 const router = express.Router();
 const {
   handleGetAllProducts,
@@ -9,12 +12,12 @@ const {
 } = require("./product.controllers");
 
 router.get("/allproducts",handleGetAllProducts);
-router.post("/add-product",handleAddProduct);
+router.post("/add-product",upload.single('product_img'), handleAddProduct);
 
 router
   .route("/:productId")
   .get(handleFindProductById)
+  .patch(handleUpdateProductById)
   .delete(handleDeleteProductById)
-  .patch(handleUpdateProductById);
 
 module.exports = router;

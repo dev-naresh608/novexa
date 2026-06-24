@@ -4,7 +4,6 @@ import { ProductBuyCard, GradientButton } from "../../components/component";
 
 function Wishlist() {
   const { currentUser, setActiveTab } = useContext(UserContext);
-
   if (
     currentUser.hasOwnProperty("myWishlist") &&
     currentUser.myWishlist.length > 0
@@ -32,9 +31,9 @@ function Wishlist() {
               name={p.product_name}
               src={p.product_url}
               price={p.product_price}
-              id={p.product_id}
+              id={p._id}
               key={index}
-              isProductInStock={p.isProductInStock}
+              is_product_in_stock={p.is_product_in_stock}
             />
           ))}
         </div>

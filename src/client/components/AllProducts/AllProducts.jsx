@@ -4,6 +4,7 @@ import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../contexts/context";
 
 import { GradientButton } from "../component";
+import axios from "axios";
 function AllProducts() {
   const { restId = null } = useParams();
   const [totalProducts, setTotalProducts] = useState([]);
@@ -12,14 +13,30 @@ function AllProducts() {
     useContext(UserContext);
 
   useEffect(() => {
-    const product = storeLisst.find((r) => r.id === restId);
-    setTotalProducts(product?.productList || []);
+    // const product = storeLisst.find((r) => r.id === restId);
+    // setTotalProducts(product?.productList || []);
+
+    const fetchProduct = async () => {
+      const { data } = await axios.get(
+        `http://localhost:5000/stores/allproducts/${restId}`,
+      );
+      if (!data.success) {
+        toast.error(data.message);
+        returnl;
+      }
+      if (!data.result) {
+        setTotalProducts(null);
+      }
+      setTotalProducts(data.result);
+    };
+    fetchProduct();
+
     if (!restId) {
       setTotalProducts(productsList);
     }
-  }, [currentUser,userData, productsList]);
+  }, [currentUser, userData, productsList]);
 
-  if (totalProducts.length === 0)
+  if (!totalProducts)
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <h2 className="text-lg font-semibold text-gray-600">
@@ -46,10 +63,10 @@ function AllProducts() {
               name={p.product_name}
               src={p.product_url}
               price={p.product_price}
-              id={p.product_id}
+              id={p._id}
               key={index}
-              isProductInStock={p.isProductInStock}
-              isOfferAvailable={p.isOfferAvailable}
+              is_product_in_stock={p.is_product_in_stock}
+              is_offer_available={p.is_offer_available}
               offer_price={p.product_offer_price}
             />
           ))}

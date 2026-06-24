@@ -13,6 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ArrowBigLeft, ArrowLeft } from "lucide-react";
 import { db } from "../../db";
 import { channel } from "../../services/service";
+import axios from "axios";
 
 function Cart({ variant = "full" }) {
   let {
@@ -26,8 +27,7 @@ function Cart({ variant = "full" }) {
   if (currentUserRole === "customer") {
     const navigate = useNavigate();
     let isCompact = variant === "compact";
-    let { cartItems, setCartItems, storeId, setStoreId } =
-      useContext(CartProductContext);
+    let { storeId, setStoreId } = useContext(CartProductContext);
     let { address } = useContext(AddressContext);
 
     let { allOrderHistory, setAllOrderHistory } =
@@ -48,8 +48,8 @@ function Cart({ variant = "full" }) {
     }
 
     useEffect(() => {
-      if (cartItems?.length > 0) {
-        const price = cartItems.reduce((acc, product) => {
+      if (currentUser.myCart?.length > 0) {
+        const price = currentUser.myCart.reduce((acc, product) => {
           return acc + product.product_price * product.product_qty;
         }, 0);
 
@@ -58,13 +58,13 @@ function Cart({ variant = "full" }) {
         setTaxPrice(tax);
         setFinalPrice(price + price * 0.02);
 
-        // const offer_price = cartItems.reduce((acc, product) => {
+        // const offer_price = currentUser.myCart.reduce((acc, product) => {
         //   return acc + product.product_offer_price * product.product_qty;
         // }, 0);
         // setOfferPrice(offer_price);
 
         //using offerprice as a shiping price.
-        const shiping_price = cartItems.reduce((acc, p) => {
+        const shiping_price = currentUser.myCart.reduce((acc, p) => {
           return acc + p.product_shiping_price;
         }, 0);
         setShippingPrice(shiping_price);
@@ -75,9 +75,12 @@ function Cart({ variant = "full" }) {
         setShippingPrice(0);
         setOfferPrice(0);
       }
-    }, [cartItems]);
+    }, [currentUser.myCart]);
 
-    if (cartItems?.length === 0) {
+    if (
+      !currentUser.hasOwnProperty("myCart") ||
+      currentUser.myCart?.length === 0
+    ) {
       return (
         <section className="flex flex-col items-center justify-center text-center py-16">
           <h2 className="text-lg font-semibold text-gray-600">
@@ -110,14 +113,22 @@ function Cart({ variant = "full" }) {
           return;
         }
 
-        if (!cartItems || cartItems.length === 0) {
+        if (!currentUser.myCart || currentUser.myCart.length === 0) {
           toast.error("Cart is empty");
           return;
         }
 
         // GET USER & STORE
-        const user = await db.localUserData.get(currentUser.id);
-        const store = await db.localUserData.get(storeId);
+        const user = currentUser;
+        const { data } = await axios.get(
+          `http://localhost:5000/stores/${storeId}`,
+        );
+
+        if (!data.success) {
+          return toast.error(data.message);
+        }
+
+        const store = data.store;
 
         if (!user || !store) {
           toast.error("Something went wrong");
@@ -125,20 +136,14 @@ function Cart({ variant = "full" }) {
         }
 
         // DATE & TIME
-        const now = new Date();
-
-        const todayDate = now.toLocaleDateString("en-GB");
-        const currentTime = now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const createdAt = new Date();
 
         // PRICE CALCULATIONS
-        const totalPrice = cartItems.reduce((acc, item) => {
+        const totalPrice = currentUser.myCart.reduce((acc, item) => {
           return acc + item.product_price * item.product_qty;
         }, 0);
 
-        const shippingPrice = cartItems.reduce((acc, item) => {
+        const shippingPrice = currentUser.myCart.reduce((acc, item) => {
           return acc + (item.product_shiping_price || 0);
         }, 0);
 
@@ -159,7 +164,7 @@ function Cart({ variant = "full" }) {
         const orderData = {
           orderId,
 
-          customerId: currentUser.id,
+          customerId: currentUser._id,
           storeId: storeId,
 
           store_name: store.store_name,
@@ -176,12 +181,10 @@ function Cart({ variant = "full" }) {
         ${currentUser.myAddress.pincode}
       `,
 
-          orderDate: todayDate,
-          orderTime: currentTime,
-
+          createdAt,
           orderStatus: "pending",
 
-          items: cartItems,
+          items: currentUser.myCart,
 
           paymentMethod,
 
@@ -218,14 +221,11 @@ function Cart({ variant = "full" }) {
 
           msg: `Hey ${
             currentUser.username.split(" ")[0]
-          }, Your order has been placed successfully at ${
-            store.store_name
-          }.`,
+          }, Your order has been placed successfully at ${store.store_name}.`,
 
           isNotificationIsRead: false,
 
-          Ntime: currentTime,
-          Ndate: todayDate,
+          createdAt: createdAt,
         };
 
         const storeNotification = {
@@ -237,8 +237,7 @@ function Cart({ variant = "full" }) {
 
           isNotificationIsRead: false,
 
-          Ntime: currentTime,
-          Ndate: todayDate,
+          createdAt: createdAt,
         };
 
         // ADD CUSTOMER NOTIFICATION
@@ -251,37 +250,40 @@ function Cart({ variant = "full" }) {
           ? [...updatedStore.myNotifications, storeNotification]
           : [storeNotification];
 
+        
         // SAVE DATABASE
-        await db.localUserData.put(updatedUser);
+        console.log(updatedUser);
+        console.log(updatedStore);
+        console.log(orderData);
 
-        await db.localUserData.put(updatedStore);
 
-        await db.orderHistory.add(orderData);
+        // await db.localUserData.put(updatedUser);
+
+        // await db.localUserData.put(updatedStore);
+
+        // await db.orderHistory.add(orderData);
 
         // UPDATE CONTEXT
-        setCurrentUser(updatedUser);
-        setUserData(await db.localUserData.toArray());
+        // setCurrentUser(updatedUser);
+        // setUserData(await db.localUserData.toArray());
 
-        // REALTIME UPDATE
-        channel.postMessage({
-          type: "USER_DATA_UPDATED",
-        });
 
         // SUCCESS
         toast.success("Order placed successfully");
 
-        setTimeout(() => {
-          setCartItems([]);
-          navigate("/orders");
-        }, 1000);
-        setTimeout(async () => {
-          // CLEAR CART
-          delete updatedUser.myCart;
-          await db.localUserData.put(updatedUser);
-        }, 0);
+        // setTimeout(() => {
+        //   setcurrentUser.myCart([]);
+        //   navigate("/orders");
+        // }, 1000);
+
+        // setTimeout(async () => {
+        //   // CLEAR CART
+        //   delete updatedUser.myCart;
+        //   await db.localUserData.put(updatedUser);
+        // }, 0);
+
       } catch (error) {
         console.error("Place Order Error:", error);
-
         toast.error("Failed to place order");
       }
     };
@@ -296,7 +298,7 @@ function Cart({ variant = "full" }) {
                 <span className="text-2xl">Shopping Cart</span>
 
                 <span className="text-indigo-600 text-sm">
-                  {cartItems?.length || 0} items
+                  {currentUser.myCart?.length || 0} items
                 </span>
               </div>
 
@@ -305,7 +307,7 @@ function Cart({ variant = "full" }) {
               </div>
               <div>
                 <button
-                  onClick={() => navigate("/allproducts")}
+                  onClick={() => navigate("/stores")}
                   className="flex gap-0.5 items-center font-semibold text-sm text-blue-600 hover:text-green-600"
                 >
                   <ArrowLeft size={17} /> <span>Continue Shoping</span>

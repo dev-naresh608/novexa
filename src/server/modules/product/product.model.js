@@ -9,10 +9,16 @@ const productSchema = new mongoose.Schema({
     ref: "Store",
     required: true,
   },
+
   product_url: {
     type: String,
     required: true,
   },
+  product_public_id: {
+    type: String,
+    required: true,
+  },
+
   product_category: {
     type: String,
     default: "other",

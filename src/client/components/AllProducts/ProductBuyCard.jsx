@@ -13,19 +13,21 @@ import ProductImageLoader from "./ProductImageLoader";
 
 import { useParams } from "react-router-dom";
 import { Heart, ShoppingCartIcon } from "lucide-react";
+import axios from "axios";
 
 function ProductBuyCard({
+  name,
+  src,
   price,
   id,
-  src,
-  name,
-  isProductInStock,
-  isOfferAvailable,
+  is_product_in_stock,
+  is_offer_available,
   offer_price,
 }) {
+
   const { restId } = useParams();
   const { isLogin } = useContext(UserContext);
-  const { productsList } = useContext(ProductContext);
+
   const {
     currentUserRole,
     currentUser,
@@ -35,7 +37,7 @@ function ProductBuyCard({
   } = useContext(UserContext);
   const { wishlist, setWishlist } = useContext(WishlistContext);
 
-  const { storeId, setStoreId } = useContext(CartProductContext);
+  const { cartItems, storeId, setStoreId } = useContext(CartProductContext);
 
   const [currentQty, setCurrentQty] = useState(0);
 
@@ -44,11 +46,16 @@ function ProductBuyCard({
     if (!isLogin) {
       return toast.error("Login To Buy Items");
     }
-    const productToAdd = productsList.find((p) => p.product_id === itemId);
 
-    if (!productToAdd) return;
+    const { data } = await axios.get(`http://localhost:5000/cart/${itemId}`);
 
-    const user = await db.localUserData.get(currentUser.id);
+    if (!data.success) {
+      return toast.error(data.message);
+    }
+
+    const productToAdd = data.product;
+
+    const user = currentUser;
 
     // todo: check if product exist.
 
@@ -75,62 +82,62 @@ function ProductBuyCard({
 
     if (user.hasOwnProperty("myCart") && user?.myCart?.length > 0) {
       if (handleUserCanItemInCartFromOnlyOneStore()) {
-        const isProductAlreadyExist = user.myCart.some(
-          (p) => p.product_id === itemId,
-        );
+        const isProductAlreadyExist = user.myCart.some((p) => p._id === itemId);
 
         if (isProductAlreadyExist) {
           toast.info("product already exist");
           return;
         }
-        user.myCart = [...user.myCart, newProduct];
+        // user.myCart = [...user.myCart, newProduct];
+        setCurrentUser((prev) => ({
+          ...prev,
+          myCart: [...prev.myCart, newProduct],
+        }));
       } else {
         alert("first clear previous stores cart");
         return;
       }
     } else {
-      user.myCart = [newProduct];
+      // user.myCart = [newProduct];
+      setCurrentUser({
+        ...currentUser,
+        myCart: [newProduct],
+      });
     }
 
-    await db.localUserData.put(user);
-
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(user);
-
+    // setCurrentUser(user);
     setStoreId(restId);
     toast.success("Added");
   }
 
   // ============== INCREASE QUANTITY ====================
   const onIncreaseQty = async (itemId) => {
-    const user = await db.localUserData.get(currentUser.id);
+    const user = currentUser;
 
-    user.myCart = user.myCart.map((item) => {
-      if (item.product_id === itemId && item.product_qty < 10) {
+    const updatedCart = user.myCart.map((item) => {
+      if (item._id === itemId && item.product_qty < 10) {
         return { ...item, product_qty: item.product_qty + 1 };
       }
       return item;
     });
-    await db.localUserData.put(user);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(user);
+
+    setUserData({ ...currentUser, user });
+    setCurrentUser({ ...currentUser, myCart: updatedCart });
   };
 
   // ==============DEINCREASE QUANTITY ====================
   const onDecreaseQty = async (itemId) => {
-    const user = await db.localUserData.get(currentUser.id);
-    user.myCart = user.myCart
+    const user = currentUser;
+    const updatedCart = user.myCart
       .map((item) => {
-        if (item.product_id === itemId) {
+        if (item._id === itemId) {
           return { ...item, product_qty: item.product_qty - 1 };
         }
         return item;
       })
       .filter((item) => item.product_qty > 0);
 
-    await db.localUserData.put(user);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(user);
+    setCurrentUser({ ...currentUser, myCart: updatedCart });
   };
 
   // ============== WISHLIST =======================
@@ -138,33 +145,52 @@ function ProductBuyCard({
     if (!isLogin) {
       return toast.error("Login To Add Items in Wishlist");
     }
-    const productToAdd = productsList.find((p) => p.product_name === name);
 
-    if (!productToAdd) return;
+    const { data } = await axios.get(`http://localhost:5000/cart/${itemId}`);
 
-    const user = await db.localUserData.get(currentUser.id);
+    if (!data.success) {
+      return toast.error(data.message);
+    }
+
+    const productToAdd = data.product;
+
+    const user = currentUser;
+
     if (user.hasOwnProperty("myWishlist")) {
-      let isProductAlreadyExist = user.myWishlist.some(
-        (p) => p.product_id === itemId,
-      );
+      let isProductAlreadyExist = user.myWishlist.some((p) => p._id === itemId);
       if (!isProductAlreadyExist) {
-        user.myWishlist = [...user.myWishlist, productToAdd];
+
+        // if not exist then add the wishlist item.
+        setCurrentUser((prev) => ({
+          ...prev,
+          myWishlist: [...user.myWishlist, productToAdd],
+        }));
+
+
       } else {
+
         // if product exist then remove it.
         const remainingProducts = user.myWishlist.filter(
-          (p) => p.product_id !== itemId,
+          (p) => p._id !== itemId,
         );
-        user.myWishlist = remainingProducts;
+        setCurrentUser({
+          ...currentUser,
+          myWishlist: remainingProducts
+        })
+        return toast.success('item removed successfully')
       }
+
+      // setCurrentUser((prev) => ({
+      //   ...prev,
+      //   myWishlist: [...user.myWishlist, productToAdd],
+      // }));
     } else {
-      user.myWishlist = [productToAdd];
+      setCurrentUser({ ...currentUser, myWishlist: [productToAdd] });
     }
 
     toast.success("added in wishlist");
     // console.log(user.hasOwnProperty("myWishlist") && user.myWishlist);
-    await db.localUserData.put(user);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(await db.localUserData.get(currentUser.id));
+    // setCurrentUser(await db.localUserData.get(currentUser.id));
   };
 
   // to see currentQty.
@@ -172,17 +198,15 @@ function ProductBuyCard({
   let qty = 0;
 
   useEffect(() => {
-    // console.log("run");
     const getQty = async () => {
-      const user = await db.localUserData.get(currentUser.id);
-      currentProduct = user?.myCart?.find((p) => p.product_id === id);
-
+      const user = currentUser;
+      currentProduct = user?.myCart?.find((p) => p._id === id);
       // currentQty = currentProduct?.product_qty || 0;
       qty = (await currentProduct?.product_qty) || 0;
       setCurrentQty(qty);
     };
     getQty();
-  }, [onAddToCart, currentUser]);
+  }, [onAddToCart, currentUser, cartItems]);
 
   let isItemInWishlist = false;
 
@@ -229,7 +253,7 @@ function ProductBuyCard({
           // Whishlist
           <div
             className={`${isItemInWishlist ? "bg-[#f3d8d9]" : ""} z-[50] transition-all w-max h-max absolute rounded-full p-2 items-center justify-center 
-          hidden group-hover:flex ${isOfferAvailable ? "right-3 bottom-12" : "right-3"} duration-300`}
+          hidden group-hover:flex ${is_offer_available ? "right-3 bottom-12" : "right-3"} duration-300`}
           >
             <button
               className="active:scale-95"
@@ -266,11 +290,11 @@ function ProductBuyCard({
           <RatingStar />
 
           <div className="flex items-center justify-between">
-            <p className="w-28 font-semibold">
+            <div className="w-28 font-semibold">
               {/* <span className="text-xl text-blue-700">${price} </span>
               <del className="text-gray-500">{(price + Math.ceil((price/10)))}</del> */}
 
-              {isOfferAvailable ? (
+              {is_offer_available && is_product_in_stock ? (
                 <>
                   {/* =====OFFER LABEL ======= */}
                   {getOfferOffPercentage(price, offer_price)}
@@ -288,7 +312,7 @@ function ProductBuyCard({
                   <span className="text-gray-500 text-sm">/pre kg</span>
                 </>
               )}
-            </p>
+            </div>
 
             {currentUserRole === "customer" &&
               (currentQty > 0 ? (
@@ -324,7 +348,7 @@ function ProductBuyCard({
                     </svg>
                   </button>
                 </div>
-              ) : isProductInStock ? (
+              ) : is_product_in_stock ? (
                 <button
                   className="flex items-center cursor-pointer justify-center gap-1  border border-green-600 h-7 w-16 text-sm px-1.5 py-1 text-green-700 bg-green-100 rounded"
                   onClick={() => onAddToCart(id)}

@@ -3,12 +3,8 @@ import { UserContext } from "../../contexts/context";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   PersonalInfo,
-  Orders,
   Setting,
   Payments,
-  Cart,
-  MyProducts,
-  Wishlist,
 } from "../pages";
 
 

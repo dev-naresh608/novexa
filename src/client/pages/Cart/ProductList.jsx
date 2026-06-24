@@ -3,40 +3,38 @@ import { CartProductContext, UserContext } from "../../contexts/context";
 import { db } from "../../db";
 
 function ProductList({ compact = false }) {
-  const { cartItems, setCartItems } = useContext(CartProductContext);
   const [totalCartItem, setTotalCartItem] = useState([]);
   const { currentUser, setCurrentUser, setUserData } = useContext(UserContext);
 
   useEffect(() => {
-    if (cartItems?.length > 0) {
-      setTotalCartItem(cartItems);
+    if (currentUser.myCart?.length > 0) {
+      setTotalCartItem(currentUser.myCart);
     }
-  }, [cartItems]);
+  }, [currentUser, setUserData]);
 
   async function onQtyChange(e) {
     const itemId = e.target.id;
     const itemQty = e.target.value;
 
-    const updatedCart = cartItems.map((item) => {
-      if (item.product_id === itemId) {
+    const updatedCart = currentUser.myCart.map((item) => {
+      if (item._id === itemId) {
         return { ...item, product_qty: itemQty };
       }
       return item;
     });
-    const user = await db.localUserData.get(currentUser.id);
-    user.myCart = updatedCart;
-    await db.localUserData.put(user);
-    setCartItems(user.myCart);
+
+    setCurrentUser({
+      ...currentUser,
+      myCart: updatedCart,
+    });
   }
 
   async function onDeleteItemBtn(productId) {
-    const updatedCart = cartItems.filter((p) => p.product_id !== productId);
-    const user = await db.localUserData.get(currentUser.id);
-    user.myCart = updatedCart;
-    await db.localUserData.put(user);
-    setCartItems(user.myCart);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(user);
+    const updatedCart = currentUser.myCart.filter((p) => p._id !== productId);
+    setCurrentUser({
+      ...currentUser,
+      myCart: updatedCart,
+    });
   }
 
   return (
@@ -53,7 +51,7 @@ function ProductList({ compact = false }) {
         <span>Action</span>
       </div>
 
-      {cartItems.map((product, index) => (
+      {currentUser?.myCart?.map((product, index) => (
         <div key={index} className="grid grid-cols-[2fr_1fr_1fr] px-2 pb-3">
           <div className="flex items-center gap-2">
             <div className="group h-20 w-20 flex items-center justify-center rounded-2xl border bg-gray-100">
@@ -82,7 +80,7 @@ function ProductList({ compact = false }) {
                   className="border rounded px-1 py-0.5 text-xs bg-white outline-none"
                   value={product.product_qty}
                   onChange={(e) => onQtyChange(e)}
-                  id={product.product_id}
+                  id={product._id}
                 >
                   {[...Array(10)].map((_, i) => (
                     <option key={i} value={i + 1}>
@@ -99,7 +97,7 @@ function ProductList({ compact = false }) {
           </div>
 
           <div className="flex items-center">
-            <button onClick={() => onDeleteItemBtn(product.product_id)}>
+            <button onClick={() => onDeleteItemBtn(product._id)}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="24px"

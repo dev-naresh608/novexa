@@ -49,9 +49,14 @@ export default function Login() {
             }, 1000);
           } else {
             toast.error(res.data.msg);
+            return;
           }
+          
         })
-        .catch((err) => console.log("Error:", err));
+        .catch((err) => {
+          console.log("Error:", err);
+          return;
+        });
     };
     sendLoginData();
   };

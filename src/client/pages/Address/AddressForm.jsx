@@ -30,15 +30,8 @@ function AddressForm() {
     setCurrentUser(updateCurrentUser);
 
     //update currentUser:
-    const isUpdate = await db.localUserData.update(currentUser.id, {
-      myAddress: address,
-    });
-    if(isUpdate){
-      toast.success("Address Changed");
-    }else{
-      toast.error("Something Wrong to change Address");
-    }
-    setUserData(await db.localUserData.toArray());
+    setCurrentUser({ ...currentUser, myAddress: address });
+    toast.success("Address Changed");
     setTimeout(() => {
       navigate("/dashboard");
     }, 1000);
@@ -116,7 +109,6 @@ function AddressForm() {
           Save Address
         </button>
       </form>
-
     </div>
   );
 }

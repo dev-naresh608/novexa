@@ -10,13 +10,12 @@ import axios from "axios";
 
 function AddProduct() {
   const [productImg, setProductImg] = useState(null);
-
+  const [selectedFile, setSelectedFile] = useState(null);
   const { currentUser, setUserData, setCurrentUser } = useContext(UserContext);
 
   const navigate = useNavigate();
   const initialFormData = {
     product_name: "",
-    product_url: "",
     product_weight: "",
     product_weight_type: "none",
     product_price: "",
@@ -31,29 +30,22 @@ function AddProduct() {
 
   // ================= HANDLE IMAGE =================
   const handleImageUpload = (e) => {
-    const selectedFile = e.target.files[0];
+    const file = e.target.files[0];
 
-    if (!selectedFile) return;
+    if (!file) return;
 
-    if (!selectedFile.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Please upload image only");
       return;
     }
 
+    setSelectedFile(file);
     const fileReader = new FileReader();
 
     fileReader.onloadend = () => {
-      const imgUrl = fileReader.result;
-
-      setProductImg(imgUrl);
-
-      setFormData((prev) => ({
-        ...prev,
-        product_url: imgUrl,
-      }));
+      setProductImg(fileReader.result);
     };
-
-    fileReader.readAsDataURL(selectedFile);
+    fileReader.readAsDataURL(file);
   };
 
   // ================= HANDLE CHANGE =================
@@ -86,24 +78,26 @@ function AddProduct() {
       toast.error("Enter product image");
       return;
     }
-
+  
     if (Number(formData.product_price) <= 0) {
       toast.error("Invalid product price");
       return;
     }
-
+    if (Number(formData.product_offer_price <= 0)) {
+      toast.error("Invalid product offer price");
+      return;
+    }
     if (Number(formData.product_offer_price) > Number(formData.product_price)) {
       toast.error("Offer price cannot exceed product price");
       return;
     }
 
-    try {
+    
 
+    try {
       // ================= PRODUCT DATA =================
       const productData = {
         ...formData,
-
-        // product_id: uuid(),
 
         store_id: currentUser._id,
 
@@ -120,23 +114,39 @@ function AddProduct() {
         isOfferAvailable: false,
       };
 
-      // ================= UPDATE DATABASE =================
-      const payload = productData;
-      axios
-        .post("http://localhost:5000/product/add-product", payload)
-        .then((res) => {
-          console.log(res.data || "nothing")
-          toast.success("Product Added");
-        });
+      // ================= ADD PRODUCT IN DATABASE =================
+
+      const formDataToSend = new FormData();
+      Object.entries(productData).forEach(([key, value]) => {
+        key !== "product_img_url" && formDataToSend.append(key, value);
+      });
+
+      formDataToSend.append("product_img", selectedFile);
+
+      const config = {
+        headers: {
+          "ContenContent-Type": "multipart/form-data",
+        },
+      };
+      const { data } = await axios.post(
+        "http://localhost:5000/product/add-product",
+        formDataToSend,
+        config,
+      );
+      // console.log('data: ',data);
+      if (!data.success || !data) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+      }
 
       // ================= UPDATE CONTEXT =================
       // setCurrentUser();
 
       // setUserData();
 
-
       // ================= RESET FORM =================
-      // resetForm();
+      resetForm();
     } catch (error) {
       console.error(error);
       toast.error("Failed to add product");
@@ -185,6 +195,8 @@ function AddProduct() {
 
                     <input
                       type="file"
+                      accept="image/*"
+                      name="product_img"
                       className="hidden"
                       onChange={handleImageUpload}
                     />
@@ -193,7 +205,7 @@ function AddProduct() {
                   <>
                     <img
                       src={productImg || defaultPP}
-                      alt="product image"
+                      alt="preview"
                       className="w-full h-full object-contain z-[50]"
                     />
 
@@ -204,11 +216,6 @@ function AddProduct() {
                         className="outline-none"
                         onClick={() => {
                           setProductImg(null);
-
-                          setFormData((prev) => ({
-                            ...prev,
-                            product_url: "",
-                          }));
                         }}
                       >
                         {/* DELETE SVG */}

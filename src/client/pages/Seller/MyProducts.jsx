@@ -1,9 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/context";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { db } from "../../db/index";
 import { DeleteIcon, Trash2Icon } from "lucide-react";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 function MyProducts() {
   const navigate = useNavigate();
@@ -16,10 +17,35 @@ function MyProducts() {
     setActiveTab,
   } = useContext(UserContext);
 
-  if (
-    currentUser?.productList?.length === 0 ||
-    !currentUser.hasOwnProperty("productList")
-  ) {
+  const [isProductsAvail, setIsProductsAvail] = useState(false);
+  // ===================== BACKEND =========================
+  useEffect(() => {
+    const fetchAllProducts = async (params) => {
+      try {
+        const { data } = await axios.get(
+          "http://localhost:5000/product/allproducts",
+          { params },
+        );
+        if (data.success) {
+          setIsProductsAvail(true);
+          currentUser.productList = data.result;
+          setCurrentUser(currentUser);
+          return;
+        }
+        setIsProductsAvail(false);
+        // console.log(currentUser.productList)
+      } catch (error) {
+        setIsProductsAvail(false);
+        toast.error(error);
+      }
+    };
+    const params = {
+      store_id: currentUser._id,
+    };
+    fetchAllProducts(params);
+  }, [currentUser]);
+
+  if (!isProductsAvail) {
     return (
       <section className="flex flex-col items-center justify-center text-center py-16">
         <h2 className="text-lg font-semibold text-gray-600">Add Products</h2>
@@ -34,61 +60,49 @@ function MyProducts() {
   }
 
   // ================ HANDLE STOCK CHANGE ==================
-  const handleProductStockChange = async (product_id) => {
-    let updatedProductList = currentUser.productList.map((p) =>
-      p.product_id === product_id
-        ? { ...p, isProductInStock: !p.isProductInStock }
-        : p,
-    );
-    let updatedCurrentUser = {
-      ...currentUser,
-      productList: updatedProductList,
+  const handleProductStockChange = async (product_id, is_product_in_stock) => {
+    const updates = {
+      is_product_in_stock: !is_product_in_stock,
     };
-    await db.localUserData.put(updatedCurrentUser);
-    setCurrentUser(updatedCurrentUser);
+    const { data } = await axios.patch(
+      `http://localhost:5000/product/${product_id}`,
+      {
+        store_id: currentUser._id,
+        product_id,
+        updates,
+      },
+    );
+    console.log(currentUser);
   };
 
-    // ================ HANDLE OFFER CHANGE ==================
-const handleProductOfferChange = async(product_id) => {
-  
-    let updatedProductList = currentUser.productList.map((p) =>
-      p.product_id === product_id
-        ? { ...p, isOfferAvailable: !p.isOfferAvailable }
-        : p,
-    );
-    let updatedCurrentUser = {
-      ...currentUser,
-      productList: updatedProductList,
+  // ================ HANDLE OFFER CHANGE ==================
+  const handleProductOfferChange = async (product_id, is_offer_available) => {
+    const updates = {
+      is_offer_available: !is_offer_available,
     };
-    
-    // DATA BASE. 
-    try {
-      await db.localUserData.put(updatedCurrentUser);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(updatedCurrentUser);
-    } catch (error) {
-      console.log('Failed to save in DB');
-    }
-  
-}
-  // ================= DELETE PRODUCT =======================
-  const handleDeleteProduct = async (productId) => {
-    const user = await db.localUserData.get(currentUser.id);
-    let updatedUser = user;
-    const filteredProducts = await updatedUser.productList.filter(
-      (p) => p.product_id !== productId,
+    const { data } = await axios.patch(
+      `http://localhost:5000/product/${product_id}`,
+      {
+        store_id: currentUser._id,
+        updates,
+      },
     );
-    updatedUser.productList = filteredProducts;
+  };
 
-    // store in db
-    try {
-      await db.localUserData.put(updatedUser);
-      setCurrentUser(await db.localUserData.get(currentUser.id));
-      setUserData(await db.localUserData.toArray());
-      toast.success("deleted");
-    } catch (error) {
-      toast.error("Can't delete product");
-    }
+  // ================= DELETE PRODUCT =======================
+  const handleDeleteProduct = async (product_id) => {
+    const { data } = await axios.delete(
+      `http://localhost:5000/product/${product_id}`,
+      { data: { store_id: currentUser._id } },
+    );
+
+    const newUpdatedProductList = currentUser.productList.filter(
+      (p) => p._id !== data.result,
+    );
+    setCurrentUser((prev) => ({
+      ...prev,
+      productList: newUpdatedProductList,
+    }));
   };
 
   return (
@@ -104,7 +118,7 @@ const handleProductOfferChange = async(product_id) => {
           <span>Offer</span>
           <span>Action</span>
         </div>
-        {currentUser.productList.map((product, i) => (
+        {currentUser?.productList?.map((product, i) => (
           <div
             key={i}
             className="grid items-center grid-cols-[2fr_1fr_1fr_1fr_1fr] p-2 my-2  sm:text-md md:text-xl"
@@ -139,11 +153,16 @@ const handleProductOfferChange = async(product_id) => {
             {/* ============ PRODUCT STOCK STATE=========== */}
             <div className="ml-5">
               <label
-                onChange={() => handleProductStockChange(product.product_id)}
+                onChange={() =>
+                  handleProductStockChange(
+                    product._id,
+                    product.is_product_in_stock,
+                  )
+                }
                 className="relative inline-flex items-center cursor-pointer"
               >
                 <input
-                  defaultChecked={product.isProductInStock}
+                  defaultChecked={product.is_product_in_stock}
                   type="checkbox"
                   className="sr-only peer"
                 />
@@ -152,13 +171,18 @@ const handleProductOfferChange = async(product_id) => {
             </div>
 
             {/* ============ PRODUCT OFFER =========== */}
-             <div className="ml-5">
+            <div className="ml-5">
               <label
-                onChange={() => handleProductOfferChange(product.product_id)}
+                onChange={() =>
+                  handleProductOfferChange(
+                    product._id,
+                    product.is_offer_available,
+                  )
+                }
                 className="relative inline-flex items-center cursor-pointer"
               >
                 <input
-                  defaultChecked={product.isOfferAvailable}
+                  defaultChecked={product.is_offer_available}
                   type="checkbox"
                   className="sr-only peer"
                 />
@@ -168,7 +192,7 @@ const handleProductOfferChange = async(product_id) => {
 
             <div className="ml-5">
               <button
-                onClick={() => handleDeleteProduct(product.product_id)}
+                onClick={() => handleDeleteProduct(product._id)}
                 className="w-max h-max"
               >
                 <Trash2Icon className="text-red-600 hover:scale-105 duration-150 cursor-pointer" />

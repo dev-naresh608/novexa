@@ -17,22 +17,23 @@ function ProductContextProvider({ children }) {
   const [productsList, setProductsList] = useState([]);
   const [storeLisst, setStoreList] = useState([]);
 
-  useEffect(() => {
-    let localUserData = null;
-    const getData = async () => {
-      localUserData = await db.localUserData.toArray();
-      const products = localUserData.filter(
-        (user) => user.role === "seller" && user.hasOwnProperty("productList")
-      ).map((p) => p.productList).flat()
+  // useEffect(() => {
+  //   let localUserData = null;
+  //   const getData = async () => {
+  //     localUserData = await db.localUserData.toArray();
+  //     const products = localUserData.filter(
+  //       (user) => user.role === "seller" && user.hasOwnProperty("productList")
+  //     ).map((p) => p.productList).flat()
 
       
-      setProductsList(products);
+  //     setProductsList(products);
       
-      const stores = localUserData.filter((r) => r.role === "seller");
-      setStoreList(stores);
-    };
-    getData();
-  }, []);
+  //     const stores = localUserData.filter((r) => r.role === "seller");
+  //     setStoreList(stores);
+  //   };
+  //   getData();
+  // }, []);
+  
   return (
     <ProductContext.Provider value={{ productsList, storeLisst }}>
       {children}

@@ -1,5 +1,5 @@
 const Cart = require("./cart.model");
-
+const { getCartItemService } = require("./cart.service");
 const handleGetAllCartItems = async (req, res) => {
   const allCartItems = (await Cart.find({})) || [];
 
@@ -14,7 +14,20 @@ const handleAddItemToCart = async (req, res) => {
 };
 
 const handleFindCartItemById = async (req, res) => {
-  return res.json({ msg: "item not found" });
+  const { productId } = req.params;
+
+  if (!productId) {
+    return res.status(400).json({
+      success: false,
+      message: "Product id required",
+    });
+  }
+  const product = await getCartItemService(productId);
+  return res.status(200).json({
+    success: true,
+    message: "product fetched successfully",
+    product,
+  });
 };
 
 const handleDeleteCartItemById = async (req, res) => {

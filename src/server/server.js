@@ -3,12 +3,15 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const distanceRoute = require("./routes/distance");
+const storeRoute = require('./routes/store');
 const {
   productRouter,
   orderRouter,
   cartRouter,
   loginSignupRouter,
 } = require("./modules/moduleExport");
+
+
 const app = express();
 app.use(cors());
 // app.use(express.json());
@@ -35,11 +38,12 @@ app.get("/", (req, res) => {
   res.json({ msg: "api running" });
 });
 
+app.use("/", loginSignupRouter);
 app.use("/api", distanceRoute);
 app.use("/product", productRouter);
 app.use("/order", orderRouter);
 app.use("/cart", cartRouter);
-app.use("/", loginSignupRouter);
+app.use("/stores", storeRoute);
 
 const PORT = process.env.PORT || 5000;
 

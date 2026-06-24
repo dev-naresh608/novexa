@@ -1,16 +1,17 @@
 import React, { useContext, useEffect, useState } from "react";
 import CartProductContext from "./cartProductContext";
-import { db } from "../db";
+
 import { UserContext } from "../contexts/context";
 
 function CartProductContextProvider({ children }) {
   const { currentUser } = useContext(UserContext);
 
   const [cartItems, setCartItems] = useState([]);
-  const [storeId,setStoreId] = useState(null);
+  const [storeId, setStoreId] = useState(null);
+  
   useEffect(() => {
     const getCartItems = async () => {
-      const user = await db.localUserData.get(currentUser?.id);
+      const user = currentUser;
       if (user?.hasOwnProperty("myCart")) {
         setCartItems(user.myCart);
       } else {
@@ -21,7 +22,9 @@ function CartProductContextProvider({ children }) {
   }, [currentUser]);
 
   return (
-    <CartProductContext.Provider value={{ cartItems, setCartItems,storeId, setStoreId }}>
+    <CartProductContext.Provider
+      value={{ cartItems, setCartItems, storeId, setStoreId }}
+    >
       {children}
     </CartProductContext.Provider>
   );

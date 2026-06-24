@@ -9,11 +9,12 @@ const {
   handleUpdateCartItemById,
 } = require("./cart.controllers");
 
-router.route("/").get(handleGetAllCartItems).post(handleAddItemToCart);
+router.get('/',handleGetAllCartItems);
 
 router
-  .route("/:cartItemId")
+  .route("/:productId")
   .get(handleFindCartItemById)
+  .post(handleAddItemToCart)
   .delete(handleDeleteCartItemById)
   .patch(handleUpdateCartItemById);
 

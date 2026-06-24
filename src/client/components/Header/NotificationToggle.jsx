@@ -29,17 +29,17 @@ function NotificationToggle() {
     setUserData(await db.localUserData.toArray());
   };
 
-  useEffect(() => {
-    const checkReadStatus = async () => {
-      const user = await db.localUserData.get(currentUser?.id);
-      const allNotifications = user?.myNotifications;
-      const isThereIsAnUnReadedNotificationAvail = allNotifications?.some(
-        (n) => !n?.isNotificationIsRead,
-      );
-      setIsAllNotificationsRead(isThereIsAnUnReadedNotificationAvail);
-    };
-    checkReadStatus();
-  }, [isNotificationClicked, handleNotificationIsRead]);
+  // useEffect(() => {
+  //   const checkReadStatus = async () => {
+  //     const user = await db.localUserData.get(currentUser?.id);
+  //     const allNotifications = user?.myNotifications;
+  //     const isThereIsAnUnReadedNotificationAvail = allNotifications?.some(
+  //       (n) => !n?.isNotificationIsRead,
+  //     );
+  //     setIsAllNotificationsRead(isThereIsAnUnReadedNotificationAvail);
+  //   };
+  //   checkReadStatus();
+  // }, [isNotificationClicked, handleNotificationIsRead]);
 
   return (
     <div className="relative group">
