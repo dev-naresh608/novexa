@@ -25,8 +25,8 @@ import Home from "./Home/Home.jsx";
 import Login from "./Login/Login.jsx";
 
 // Profile Components
-import Orders from "./OrderManagement/Orders.jsx";
-import OrderDetail from "./OrderManagement/OrderDetail.jsx";
+import Orders from "./OrderManagement/pages/OrdersPage.jsx";
+import OrderDetail from "./OrderManagement/pages/OrderDetailPage.jsx";
 import Payments from "./Profile/Payments.jsx";
 import PersonalInfo from "./Profile/PersonalInfo.jsx";
 import Profile from "./Profile/Profile.jsx";
@@ -42,9 +42,9 @@ import Signup from "./Signup/Signup.jsx";
 
 //Orders Management
 import ActiveOrders from "./OrderManagement/ActiveOrders.jsx";
-import CustomerActiveOrders from "./OrderManagement/Customer/CustomerActiveOrders.jsx";
-import SellerActiveOrders from "./OrderManagement/Seller/SellerActiveOrders.jsx";
-import DriverActiveOrders from "./OrderManagement/Driver/DriverActiveOrders.jsx";
+import CustomerActiveOrders from "./OrderManagement/pages/customer/CustomerActiveOrders.jsx";
+import SellerActiveOrders from "./OrderManagement/pages/seller/SellerActiveOrders.jsx";
+import DriverActiveOrders from "./OrderManagement/pages/driver/DriverActiveOrders.jsx";
 
 //Notification Management : 
 //Notification Component

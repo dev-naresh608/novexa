@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { UserContext } from "../../../contexts/context";
-import { GradientButton } from "../../../components/component";
+import { UserContext } from "../../../../contexts/context";
+import { GradientButton } from "../../../../components/component";
 import {
   Banknote,
   Calendar,
@@ -10,7 +10,7 @@ import {
   TimerIcon,
   User,
 } from "lucide-react";
-import { EmptyOrders } from "../index";
+import { EmptyOrders } from "../../index";
 
 function CustomerActiveOrders() {
   const { currentUser } = useContext(UserContext);

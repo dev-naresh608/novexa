@@ -13,9 +13,10 @@ import { tableHeaderConfig, OrderStatusPill } from "../../index";
 
 import { useNavigate } from "react-router-dom";
 
+import { formateDateTime } from "../../../../services/service";
+
 function OrdersTable({ currentUserRole, allOrders }) {
   const navigate = useNavigate();
-
   // ===================== ROLE CONFIG =====================
   const cfg = tableHeaderConfig(currentUserRole);
 
@@ -50,7 +51,7 @@ function OrdersTable({ currentUserRole, allOrders }) {
       <table className="w-full text-left text-sm">
         {/* TABLE HEAD */}
         <thead className="border-b bg-gray-50 text-gray-500">
-          <tr className="">
+          <tr>
             {TABLE_CONFIG.map((colLabel) => renderTableHeader(colLabel))}
             <th> </th>
           </tr>
@@ -60,13 +61,13 @@ function OrdersTable({ currentUserRole, allOrders }) {
         <tbody>
           {allOrders.map((o) => (
             <tr
-              key={o.orderId}
-              onClick={() => navigate(`/orders/${o.orderId}`)}
+              key={o._id}
+              onClick={() => navigate(`/orders/${o._id}`)}
               className="cursor-pointer border-b transition-colors duration-150 hover:bg-gray-100/70"
             >
               {/* ORDER ID */}
               <td className="p-4 font-medium text-gray-600">
-                #{o.orderId.slice(0, 8).toUpperCase()}
+                #{o._id?.slice(0, 8).toUpperCase()}
               </td>
 
               {/* CUSTOMER / STORE */}
@@ -84,8 +85,7 @@ function OrdersTable({ currentUserRole, allOrders }) {
 
               {/* DATE / TIME */}
               <td className="p-4 text-sm text-gray-600">
-                <p>{o.orderDate}</p>
-                <p>{o.orderTime}</p>
+                <p>{formateDateTime(o.createdAt, 'date')}</p>
               </td>
 
               {/* PAYMENT */}
@@ -95,12 +95,12 @@ function OrdersTable({ currentUserRole, allOrders }) {
 
               {/* TOTAL */}
               <td className="p-4 font-semibold text-gray-700">
-                ${o.priceDetails?.finalPrice}
+                ${o.price_detail?.finalPrice}
               </td>
 
               {/* STATUS */}
               <td className="p-4">
-                <OrderStatusPill status={o.orderStatus} />
+                <OrderStatusPill status={o.order_status} />
               </td>
 
               {/* ARROW */}

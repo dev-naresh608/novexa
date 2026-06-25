@@ -7,7 +7,7 @@ export const searchOrders = (orders, searchValue) => {
 
   return orders.filter((o) => {
     return (
-      o.orderId?.toLowerCase().includes(search) ||
+      o._id?.toLowerCase().includes(search) ||
       o.store_name?.toLowerCase().includes(search) ||
       o.name?.toLowerCase().includes(search) ||
       o.orderStatus?.toLowerCase().includes(search) ||

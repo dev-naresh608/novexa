@@ -120,7 +120,7 @@ function Home({ productsList }) {
                         {item.svg}
                         {!isLeftPanelOpen && item.to === "/cart" && (
                           <div className="absolute top-0 right-0.5 text-xs">
-                            <div className="">{cartItems?.length || "0"}</div>
+                            <div className="">{cartItems?.length || ""}</div>
                           </div>
                         )}
                         {isLeftPanelOpen && (

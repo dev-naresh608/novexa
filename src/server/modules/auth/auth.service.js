@@ -5,6 +5,44 @@ const Customer = require("../customer/customer.model");
 const Driver = require("../driver/driver.model");
 const Seller = require("../seller/seller.model");
 
+const loginSvc = async (email, password) => {
+  try {
+    const user = await User.findOne({
+      email: email,
+    });
+
+    if (!user) {
+      return { isLoginSuccess: false, msg: "Email not Found" };
+    }
+
+    if (user.password !== password) {
+      return { isLoginSuccess: false, msg: "Invalid Password" };
+    }
+
+    const roles = {
+      customer: Customer,
+      seller: Seller,
+      driver: Driver,
+    };
+
+    const userType = roles[user.role];
+
+    const remainingUserData = await userType.findOne({
+      user_id: user.id,
+    });
+
+    const userData = {
+      ...user.toObject(),
+      ...remainingUserData.toObject(),
+    };
+
+    return { isLoginSuccess: true, user: userData };
+  } catch (error) {
+    console.log("Error in login: ", error);
+  }
+};
+
+
 const register = async (data) => {
   try {
     const existingUser = await User.findOne({
@@ -85,41 +123,5 @@ const register = async (data) => {
   }
 };
 
-const loginSvc = async (email, password) => {
-  try {
-    const user = await User.findOne({
-      email: email,
-    });
-
-    if (!user) {
-      return { isLoginSuccess: false, msg: "Email not Found" };
-    }
-
-    if (user.password !== password) {
-      return { isLoginSuccess: false, msg: "Invalid Password" };
-    }
-
-    const roles = {
-      customer: Customer,
-      seller: Seller,
-      driver: Driver,
-    };
-
-    const userType = roles[user.role];
-
-    const remainingUserData = await userType.findOne({
-      user_id: user.id,
-    });
-
-    const userData = {
-      ...user.toObject(),
-      ...remainingUserData.toObject(),
-    };
-
-    return { isLoginSuccess: true, user: userData };
-  } catch (error) {
-    console.log("Error in login: ", error);
-  }
-};
 
 module.exports = { register, loginSvc };

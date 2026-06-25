@@ -10,8 +10,8 @@ const tableHeaderConfig = (role) => {
 
     seller: {
       colLabel: "Customer",
-      fromKey: "name",
-      subKey: "phone",
+      fromKey: "customer_name",
+      subKey: "customer_phone",
     },
 
     driver: {

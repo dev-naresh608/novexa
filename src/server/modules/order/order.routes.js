@@ -8,13 +8,11 @@ const {
   handleUpdateOrderById,
 } = require("./order.controllers");
 
-router
-.route("/")
-.get(handleGetAllOrders)
-.post(handleAddOrder);
+router.get("/:userId", handleGetAllOrders);
+router.post("/", handleAddOrder);
 
 router
-  .route("/:orderId")
+  .route("/detail/:orderId")
   .get(handleFindOrderById)
   .delete(handleDeleteOrderById)
   .patch(handleUpdateOrderById);

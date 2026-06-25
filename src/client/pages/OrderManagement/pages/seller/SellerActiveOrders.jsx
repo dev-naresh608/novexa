@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../../contexts/context";
+import { UserContext } from "../../../../contexts/context";
 
-import { db } from "../../../db";
-import { channel } from "../../../services/service";
+import { db } from "../../../../db";
+import { channel } from "../../../../services/service";
 
 import { CreditCard, Phone, ShoppingBag, Timer, User } from "lucide-react";
 

@@ -1,7 +1,7 @@
-import {channel} from "./realtime";
+import { channel } from "./realtime";
 // import {api} from "./api"
-import {getDistance,getAddress} from "./DistanceCalculator"
+import { getDistance, getAddress } from "./DistanceCalculator";
 
-export {
-  channel,getAddress,getDistance
-}
+import formateDateTime from "./dateAndTimeFormat.service";
+
+export { channel, getAddress, getDistance, formateDateTime };

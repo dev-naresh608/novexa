@@ -152,7 +152,7 @@ function Cart({ variant = "full" }) {
         const finalPrice = totalPrice + taxPrice + shippingPrice;
 
         // ORDER DETAILS
-        const orderId = uuid();
+        // const orderId = uuid();
 
         const orderPriceDetails = {
           price: totalPrice,
@@ -161,33 +161,26 @@ function Cart({ variant = "full" }) {
           finalPrice,
         };
 
+        const items = currentUser.myCart.map(({ _id }) => _id);
         const orderData = {
-          orderId,
+          // orderId,
+          items,
+          createdAt,
+          paymentMethod,
+          storeId,
 
           customerId: currentUser._id,
-          storeId: storeId,
 
           store_name: store.store_name,
-          store_address: store.store_address,
 
           name: currentUser.myAddress.name,
           phone: currentUser.myAddress.phone,
           email: currentUser.email,
 
-          address: `
-        ${currentUser.myAddress.street},
-        ${currentUser.myAddress.city},
-        ${currentUser.myAddress.state},
-        ${currentUser.myAddress.pincode}
-      `,
+          store_address: store.store_address,
+          order_address: `${currentUser.myAddress.street}, ${currentUser.myAddress.city}, ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode}`,
 
-          createdAt,
           orderStatus: "pending",
-
-          items: currentUser.myCart,
-
-          paymentMethod,
-
           priceDetails: orderPriceDetails,
         };
 
@@ -250,41 +243,39 @@ function Cart({ variant = "full" }) {
           ? [...updatedStore.myNotifications, storeNotification]
           : [storeNotification];
 
-        
-        // SAVE DATABASE
-        console.log(updatedUser);
-        console.log(updatedStore);
-        console.log(orderData);
+        // ! DATABASE
+        // console.log(updatedUser);
+        // console.log(updatedStore);
+        // console.log(orderData);
 
+        const addOrder = async () => {
+          const payload = orderData;
+          const { data } = await axios.post(
+            `http://localhost:5000/order`,
+            payload,
+          );
 
-        // await db.localUserData.put(updatedUser);
+          if (!data.success) {
+            return toast.error(data.message || "Something went wrong");
+          }
 
-        // await db.localUserData.put(updatedStore);
-
-        // await db.orderHistory.add(orderData);
-
-        // UPDATE CONTEXT
-        // setCurrentUser(updatedUser);
-        // setUserData(await db.localUserData.toArray());
-
+          toast.success(data.message || "successfully");
+          return;
+        };
+        addOrder();
 
         // SUCCESS
-        toast.success("Order placed successfully");
 
-        // setTimeout(() => {
-        //   setcurrentUser.myCart([]);
-        //   navigate("/orders");
-        // }, 1000);
-
-        // setTimeout(async () => {
-        //   // CLEAR CART
-        //   delete updatedUser.myCart;
-        //   await db.localUserData.put(updatedUser);
-        // }, 0);
-
+        setTimeout(() => {
+          navigate("/orders");
+        }, 1000);
+        setTimeout(() => {
+          delete updatedUser.myCart;
+          setCurrentUser(updatedUser);
+        }, 1100);
       } catch (error) {
-        console.error("Place Order Error:", error);
         toast.error("Failed to place order");
+        return console.error("Place Order Error:", error);
       }
     };
 

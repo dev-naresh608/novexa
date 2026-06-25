@@ -1,20 +1,100 @@
 const Order = require("./order.model");
+const User = require("../User");
+const Product = require("../product/product.model");
 
+const { addOrderService, findSingleOrderService } = require("./order.service");
 const handleGetAllOrders = async (req, res) => {
-  const allOrders = (await Order.find({})) || [];
+  const { userId } = req.params;
+  const { role } = req.query;
+
+  if (!userId) {
+    return res.status(200).json({
+      success: false,
+      message: "User id required",
+    });
+  }
+
+  let AllOrders = "";
+
+  switch (role) {
+    case "customer": {
+      allOrders = await Order.find({ customer_id: userId });
+      break;
+    }
+    case "seller": {
+      allOrders = await Order.find({ store_id: userId });
+      break;
+    }
+    default: {
+      return res.status(400).json({
+        success: false,
+        message: "Who are you !!",
+      });
+    }
+  }
+  // const allOrders = await Order.find({ cfg: userId });
+
+  if (!allOrders || allOrders.length === 0) {
+    return res.status(200).json({
+      success: false,
+      message: "No order found",
+    });
+  }
 
   return res.json({
-    msg: "get all orders details",
-    AllOrders: `${allOrders?.length === 0 ? "No orders found" : allOrders.length}`,
+    success: true,
+    message: "All orders",
+    allOrders,
   });
 };
 
 const handleAddOrder = async (req, res) => {
-  return res.json({ msg: "order created" });
+  const payload = req.body;
+  if (!payload) {
+    return res.status(200).json({
+      success: false,
+      message: "Payload is required",
+    });
+  }
+
+  const result = await addOrderService(payload);
+  return res.status(201).json({
+    success: true,
+    message: "order places successfully",
+    result,
+  });
 };
 
 const handleFindOrderById = async (req, res) => {
-  return res.json({ msg: "One order found" });
+  try {
+    const { orderId } = req.params;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Order id required",
+      });
+    }
+
+    const result = await findSingleOrderService(orderId);
+    if (!result) {
+      return res.status(400).json({
+        success: false,
+        message: "order is not fetched",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order Fetched Successfully",
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 const handleDeleteOrderById = async (req, res) => {

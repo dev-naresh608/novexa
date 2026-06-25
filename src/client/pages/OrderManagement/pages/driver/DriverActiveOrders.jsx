@@ -1,5 +1,5 @@
 import React from 'react'
-import {GradientButton} from "../../../components/component"
+import {GradientButton} from "../../../../components/component"
 
 function DriverActiveOrders() {
   return (

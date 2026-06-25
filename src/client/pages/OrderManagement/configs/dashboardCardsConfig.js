@@ -1,10 +1,10 @@
 import { Store, Package, Clock } from "lucide-react";
 
-const dashboardCardsConfig = (currentUser, setActiveCard,setAllOrders ) => {
+const dashboardCardsConfig = (currentUser, setActiveCard,setAllOrders,allOrders ) => {
   // ===================== STATUS FILTER =====================
   const activeOrders =
-    currentUser?.myOrders?.filter(
-      (o) => o.orderStatus === "pending" || o.orderStatus === "preparing",
+    allOrders.filter(
+      (o) => o.order_status === "pending" || o.order_status === "preparing",
     ) || [];
 
   return [
@@ -22,11 +22,11 @@ const dashboardCardsConfig = (currentUser, setActiveCard,setAllOrders ) => {
       id: "total",
       icon: Package,
       text: "TOTAL ORDERS",
-      value: currentUser?.myOrders?.length || 0,
+      value: allOrders.length || 0,
 
       onClick: () => {
         setActiveCard("total");
-        setAllOrders(currentUser?.myOrders || []);
+        setAllOrders(allOrders || []);
       },
       cardStyle: "bg-orange-100 text-orange-500 border border-orange-200",
       borderStyle: "border-b-[3px] border-orange-400",
