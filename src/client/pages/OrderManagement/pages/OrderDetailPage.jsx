@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../db";
 import { UserContext } from "../../../contexts/context";
+
 import {
   ArrowLeftIcon,
   CreditCard,
@@ -12,12 +13,17 @@ import {
   Banknote,
   MapPin,
   Store,
+  StoreIcon,
+  CopyIcon,
 } from "lucide-react";
+
 import axios from "axios";
 import { toast } from "react-toastify";
-import { orderStatusConfig } from "../index";
+import { orderStatusConfig, SectionCard, SectionLabel } from "../index";
+import dateAndTimeFormat from "../../../services/dateAndTimeFormat.service";
 
-import { OrderItemList } from "./OrderItemListPage";
+import { div } from "framer-motion/client";
+import { stringify } from "uuid";
 
 function OrderDetail() {
   const { orderId } = useParams();
@@ -36,9 +42,9 @@ function OrderDetail() {
         if (!data.success) {
           return toast.error(data.message);
         }
-        const { order, products: order_items } = data.result;
-        setOrder(order);
-        setOrderItems(order_items);
+        // const { order, products: order_items } = data.result;
+        setOrder(data.result);
+        setOrderItems(data.result.order_items);
       } catch (error) {
         return toast.error(error.message);
       }
@@ -46,33 +52,33 @@ function OrderDetail() {
     fetchOrder();
   }, []);
 
-  console.log(orderItems);
-
-  // ================== COMMONG BOX CSS ====================
-  const commonSectionCss = "";
-
   // ================== STATUS CONFIG ====================
   const STATUS_CONFIG = orderStatusConfig();
   const cfg = STATUS_CONFIG[order?.order_status];
 
-  // ================== SUB-COMPONENT ====================
-  function SectionCard({ children, className = "" }) {
+  // ================== ORDER DETAIL HEADER COMPONENT ===================
+  const OrderDetailHeaderSection = () => {
     return (
-      <div
-        className={`bg-white border border-gray-100 rounded-xl p-4 shadow-sm ${className}`}
-      >
-        {children}
-      </div>
+      <SectionCard>
+        <div className="flex justify-between">
+          <div className="font-semibold text-gray-600 tracking-tight">
+            <p>Order #{orderId.slice(0, 6).toLowerCase()}</p>
+            <p className="text-gray-400 text-xs">
+              {order?.createdAt && <p>{dateAndTimeFormat(order.createdAt)}</p>}
+            </p>
+          </div>
+          <div
+            className={`rounded-2xl py-1 px-2.5 text-sm flex h-max w-max items-center gap-2 font-semibold ${cfg?.pillStyle}`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full block bg-yellow-600`}
+            ></span>{" "}
+            <span> {cfg?.label}</span>
+          </div>
+        </div>
+      </SectionCard>
     );
-  }
-
-  function SectionLabel({ children }) {
-    return (
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
-        {children}
-      </p>
-    );
-  }
+  };
 
   // ================== CUSTOMER INFO COMPONENT ====================
   const CustomerInfoComponent = () => {
@@ -104,7 +110,6 @@ function OrderDetail() {
       ];
       return (
         <SectionCard>
-          {" "}
           {<SectionLabel>Customer</SectionLabel>}
           <div className="[&>*:not(:last-child)]:border-b">
             {TITLE_CONFIG.map((t, i) => {
@@ -148,17 +153,16 @@ function OrderDetail() {
   };
 
   // ================== ORDER PRICE COMPONENT ====================
-  const OrderPriceComponent = () => {
+  const PriceBreakdown = () => {
     if (order) {
       const { price, finalPrice, taxPrice, shippingPrice } =
         order?.price_detail;
 
       return (
         <SectionCard>
-          {" "}
-          <SectionLabel>PRICE BREAKDOWN</SectionLabel>
           <div>
-            <div className="*:flex *:justify-between *:items-center [&_p>span:first-child]:text-gray-500 pb-3 pt-2 space-y-1.5 border-b border-r-gray-500">
+            <SectionLabel>PRICE BREAKDOWN</SectionLabel>
+            <div className="*:flex *:justify-between *:items-center [&_p>span:first-child]:text-gray-500 [&_p>span:last-child]:font-semibold [&_p>span:last-child]:text-[14px] pb-3 pt-2 space-y-1.5 border-b border-r-gray-500 text-sm">
               <p>
                 <span>Subtotal</span>
                 <span>${price.toFixed(2)}</span>
@@ -172,7 +176,10 @@ function OrderDetail() {
                 )}
               </p>
               <p>
-                <span>Tax</span>${taxPrice.toFixed(2)}
+                <span>
+                  Tax <span className="text-[10px]">(2%)</span>
+                </span>
+                <span>${taxPrice.toFixed(2)}</span>
               </p>
             </div>
             <div className="*:flex *:justify-between *:items-center *:font-bold pt-2">
@@ -209,7 +216,13 @@ function OrderDetail() {
       return (
         <SectionCard>
           {" "}
-          <SectionLabel>ADDRESS</SectionLabel>
+          <div className="flex items-center justify-between">
+            <SectionLabel>ADDRESS</SectionLabel>
+            <SectionLabel className="flex items-center gap-2">
+              <StoreIcon size={15} />
+              {order?.store_name}
+            </SectionLabel>
+          </div>
           <div>
             {CONFIG.map((c, i) => {
               const Icon = c.icon;
@@ -221,7 +234,7 @@ function OrderDetail() {
 
                   <div className="space-y-1">
                     <span className="text-gray-400">{c.text}</span>
-                    <p className="text-gray-600">{c.value}</p>
+                    <p className="text-gray-600 text-xs">{c.value}</p>
                   </div>
                 </div>
               );
@@ -232,14 +245,119 @@ function OrderDetail() {
     }
   };
 
+  // ================== ORDER ITEMS/PRODUCTS COMPONENT ====================
+  const OrderItemsComponent = () => {
+    if (order) {
+      const ProductImage = ({ url }) => {
+        return (
+          <div className="group h-14 w-14 flex items-center justify-center rounded-2xl border bg-gray-100">
+            <img
+              className="group-hover:scale-105 duration-150 w-10 h-10 object-contain"
+              src={url}
+              alt="order item"
+            />
+          </div>
+        );
+      };
+
+      return (
+        <SectionCard className="p-5">
+          <div className="flex items-center text-sm gap-2 pb-2">
+            <SectionLabel>Items</SectionLabel>
+            <SectionLabel className="bg-gray-100 rounded-2xl text-gray-500 px-2">
+              {orderItems.length} items
+            </SectionLabel>
+          </div>
+
+          <div
+            className="space-y-3 gap-3 max-h-48 overflow-x-hidden overflow-y-auto 
+  [&::-webkit-scrollbar]:w-2
+  [&::-webkit-scrollbar-track]:bg-gray-100
+  [&::-webkit-scrollbar-thumb]:bg-gray-400
+  [&::-webkit-scrollbar-thumb]:rounded-full"
+          >
+            {orderItems.map((product, index) => {
+              const total = product.product_qty * product.product_price;
+
+              return (
+                <div
+                  key={product._id}
+                  className="hover:bg-gray-100/80 cursor-pointer border bg-gray-100/40 rounded-2xl p-2 flex items-center gap-2"
+                >
+                  <ProductImage url={product.product_url} />
+                  <div className="text-xs">
+                    <h3 className="font-semibold capitalize">
+                      {product.product_name}
+                    </h3>
+                    <p className="text-gray-500">
+                      Weight:{" "}
+                      {product.product_weight_type === "none"
+                        ? product.product_weight
+                        : `${product.product_weight}${product.product_weight_type}`}
+                    </p>
+                    <div>
+                      <span className="font-semibold text-gray-500">
+                        ${product.product_price} x {product.product_qty} = $
+                        {total.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      );
+    }
+  };
+
+  // ================== ORDER ID'S COMPONENT ====================
+  const OrderInfo = () => {
+    if (order) {
+      const {
+        _id: orderId,
+        customer_id: customerId,
+        store_id: storeId,
+      } = order;
+
+      const handleCopyId = (value) => {
+        window.navigator.clipboard
+          .writeText(value)
+          .then(async (result) => toast.success("id copied"))
+          .catch((err) => {
+            return toast.error(err.message);
+          });
+      };
+
+      const InfoRow = ({ label, value }) => {
+        return (
+          <div>
+            <p className="font-semibold">{label}</p>
+            <p className="text-xs flex items-center gap-2">
+              <span>{value}</span>
+              <button onClick={() => handleCopyId(value)}>
+                <CopyIcon size={12} />
+              </button>
+            </p>
+          </div>
+        );
+      };
+      return (
+        <SectionCard>
+          <SectionLabel>order info</SectionLabel>
+          <div className="text-sm text-gray-600 space-y-2">
+            <InfoRow label="Order ID" value={orderId} />
+            <InfoRow label="Customer ID" value={customerId} />
+            <InfoRow label="Store ID" value={storeId} />
+          </div>
+        </SectionCard>
+      );
+    }
+  };
   return (
     <>
       <div>
-        <OrderPriceComponent />
-        <CustomerInfoComponent />
-        <AddressComponent />
-
-        <div>
+        <div className="pb-2">
           <button
             onClick={() => navigate("/orders")}
             className="flex items-center gap-1 text-gray-700 hover:text-green-800 font-semibold duration-100"
@@ -247,6 +365,28 @@ function OrderDetail() {
             <ArrowLeftIcon size={18} strokeWidth={2.5} />
             <span className="text-sm">Back to Orders</span>
           </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="md:col-span-12">
+            <OrderDetailHeaderSection />
+          </div>
+
+          <div className="md:col-span-4">
+            <CustomerInfoComponent />
+          </div>
+          <div className="md:col-span-4">
+            <AddressComponent />
+          </div>
+          <div className="md:col-span-4">
+            <PriceBreakdown />
+          </div>
+          <div className="md:col-span-8">
+            <OrderItemsComponent />
+          </div>
+          <div className="md:col-span-4 ">
+            <OrderInfo />
+          </div>
         </div>
       </div>
     </>

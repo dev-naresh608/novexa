@@ -1,4 +1,4 @@
-export const searchOrders = (orders, searchValue) => {
+export const searchOrdersSvc = (orders, searchValue) => {
   if (!searchValue.trim()) {
     return orders;
   }
@@ -10,15 +10,10 @@ export const searchOrders = (orders, searchValue) => {
       o._id?.toLowerCase().includes(search) ||
       o.store_name?.toLowerCase().includes(search) ||
       o.name?.toLowerCase().includes(search) ||
-      o.orderStatus?.toLowerCase().includes(search) ||
-      o.paymentMethod?.toLowerCase().includes(search) ||
-      // o.priceDetails?.finalPrice?.toLowerCase().includes(Number(search)) ||
-      o.itmes?.filter((items) => {
-        return (
-          items.product_name?.toLowerCase().includes(search) ||
-          items.paymentMethod?.toLowerCase().includes(search)
-        );
-      })
+      o.store_address?.toLowerCase().includes(search) ||
+      o.order_address?.toLowerCase().includes(search) ||
+      o.order_status?.toLowerCase().includes(search) ||
+      o.payment_method?.toLowerCase().includes(search)
     );
   });
 };

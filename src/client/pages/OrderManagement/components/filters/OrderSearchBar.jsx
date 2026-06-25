@@ -9,7 +9,6 @@ function OrderSearchBar({
     <div>
 
       <div className="flex justify-end">
-
         <div
           className="
             hidden sm:flex

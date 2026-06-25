@@ -39,23 +39,51 @@ const findSingleOrderService = async (orderId) => {
     throw new Error("Order not found");
   }
 
-  const { order_items: product_ids } = order;
+  // const { order_items: product_ids } = order;
 
   //fetch product items.
-  const products = await Product.find({
-    _id: { $in: product_ids },
-  });
+  // const products = await Product.find({
+  //   _id: { $in: product_ids },
+  // });
 
-  if (!products) {
-    throw new Error("No order items found");
-  }
+  // console.log(products);
+
+  // if (!products) {
+  //   throw new Error("No order items found");
+  // }
 
   // !  SELECT *
   // ! FROM PRODUCT
   // ! WHERE id IN ('A', 'C')
   // ! RESULT: [{}, {}];
 
-  return {order, products};
+  const { order_items } = order;
+  const updatedOrderItems = order_items.map(
+    ({
+      _id,
+      product_name,
+      product_url,
+      product_weight,
+      product_weight_type,
+      product_price,
+      product_qty,
+      product_offer_price,
+    }) => ({
+      _id,
+      product_name,
+      product_url,
+      product_weight,
+      product_weight_type,
+      product_price,
+      product_qty,
+      product_offer_price,
+    }),
+  );
+
+  order.order_items = updatedOrderItems;
+
+  // return {order, products};
+  return order;
 };
 
 module.exports = {

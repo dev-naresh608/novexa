@@ -161,10 +161,13 @@ function Cart({ variant = "full" }) {
           finalPrice,
         };
 
-        const items = currentUser.myCart.map(({ _id }) => _id);
+        // const items = currentUser.myCart.map(({ _id, product_qty }) => ({
+        //   _id,
+        //   product_qty,
+        // }));
         const orderData = {
           // orderId,
-          items,
+          items: currentUser?.myCart,
           createdAt,
           paymentMethod,
           storeId,

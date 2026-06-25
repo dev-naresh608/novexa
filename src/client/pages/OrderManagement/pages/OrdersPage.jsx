@@ -1,17 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import {  UserContext } from "../../../contexts/context";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { UserContext } from "../../../contexts/context";
 
 import {
   DashboardCard,
-  // EmptyOrders,
+  EmptyOrders,
   dashboardCardsConfig,
   tableHeaderConfig,
   OrdersTable,
   OrderSearchBar,
-  searchOrders,
+  searchOrdersSvc,
+  getAllOrdersSvc,
 } from "../index";
 
-import {  EmptyOrders } from "../index"
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -21,30 +21,27 @@ function Orders() {
   const [allOrders, setAllOrders] = useState([]);
   const [activeCard, setActiveCard] = useState("total");
   const [searchValue, setSearchValue] = useState("");
-  const [filteredOrders, setFilteredOrders] = useState([]);
 
   useEffect(() => {
     const fetchOrderData = async () => {
-
-      const { data } = await axios.get(
-        `http://localhost:5000/order/${currentUser._id}?role=${currentUser.role}`,
-        
-        // `http://localhost:5000/order/${currentUser.user_id}`,
-      );
+      const { data } = await getAllOrdersSvc(currentUser._id, currentUser.role);
       if (!data.success) {
         return toast.error(data.message);
       }
       setAllOrders(data.allOrders);
-      const result = searchOrders(data.allOrders, searchValue);
-      setFilteredOrders(result);
       setCurrentUser((prev) => ({
         ...prev,
         myOrders: data.allOrders,
       }));
+
     };
 
     fetchOrderData();
   }, []);
+
+  const filteredOrders = useMemo(() => {
+    return searchOrdersSvc(allOrders, searchValue);
+  }, [allOrders, searchValue]);
 
   // ===================== EMPTY STATE =====================
   if (allOrders.length === 0) {
