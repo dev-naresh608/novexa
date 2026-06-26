@@ -10,6 +10,8 @@ import {
   OrderSearchBar,
   searchOrdersSvc,
   getAllOrdersSvc,
+  sortOrderByDate,
+  sortOrderByPrice,
 } from "../index";
 
 import axios from "axios";
@@ -28,12 +30,12 @@ function Orders() {
       if (!data.success) {
         return toast.error(data.message);
       }
-      setAllOrders(data.allOrders);
+      const sortedOrders = sortOrderByDate(data.allOrders, "desc");
+      setAllOrders(sortedOrders);
       setCurrentUser((prev) => ({
         ...prev,
         myOrders: data.allOrders,
       }));
-
     };
 
     fetchOrderData();

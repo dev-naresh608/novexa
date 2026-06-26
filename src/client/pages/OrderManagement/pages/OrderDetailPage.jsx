@@ -63,9 +63,9 @@ function OrderDetail() {
         <div className="flex justify-between">
           <div className="font-semibold text-gray-600 tracking-tight">
             <p>Order #{orderId.slice(0, 6).toLowerCase()}</p>
-            <p className="text-gray-400 text-xs">
+            <div className="text-gray-400 text-xs">
               {order?.createdAt && <p>{dateAndTimeFormat(order.createdAt)}</p>}
-            </p>
+            </div>
           </div>
           <div
             className={`rounded-2xl py-1 px-2.5 text-sm flex h-max w-max items-center gap-2 font-semibold ${cfg?.pillStyle}`}
@@ -354,43 +354,51 @@ function OrderDetail() {
       );
     }
   };
-  return (
-    <>
-      <div>
-        <div className="pb-2">
-          <button
-            onClick={() => navigate("/orders")}
-            className="flex items-center gap-1 text-gray-700 hover:text-green-800 font-semibold duration-100"
-          >
-            <ArrowLeftIcon size={18} strokeWidth={2.5} />
-            <span className="text-sm">Back to Orders</span>
-          </button>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className="md:col-span-12">
-            <OrderDetailHeaderSection />
-          </div>
 
-          <div className="md:col-span-4">
-            <CustomerInfoComponent />
+  // ======================== MAIN COMPONENT =========================
+  const MainOrderComponent = () => {
+    return (
+      <>
+        <div>
+
+          {/* ============= BACK TO ORDERS BUTTON ============== */}
+          <div className="pb-2">
+            <button
+              onClick={() => navigate("/orders")}
+              className="flex items-center gap-1 text-green-700 hover:text-green-800 font-semibold duration-100"
+            >
+              <ArrowLeftIcon size={18} strokeWidth={2.5} />
+              <span className="text-sm">Back to Orders</span>
+            </button>
           </div>
-          <div className="md:col-span-4">
-            <AddressComponent />
-          </div>
-          <div className="md:col-span-4">
-            <PriceBreakdown />
-          </div>
-          <div className="md:col-span-8">
-            <OrderItemsComponent />
-          </div>
-          <div className="md:col-span-4 ">
-            <OrderInfo />
+  
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="md:col-span-12">
+              <OrderDetailHeaderSection />
+            </div>
+  
+            <div className="md:col-span-4">
+              <CustomerInfoComponent />
+            </div>
+            <div className="md:col-span-4">
+              <AddressComponent />
+            </div>
+            <div className="md:col-span-4">
+              <PriceBreakdown />
+            </div>
+            <div className="md:col-span-8">
+              <OrderItemsComponent />
+            </div>
+            <div className="md:col-span-4 ">
+              <OrderInfo />
+            </div>
           </div>
         </div>
-      </div>
-    </>
-  );
+      </>
+    );
+  }
+  return <MainOrderComponent />;
 }
 
 export default OrderDetail;
