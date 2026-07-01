@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Hero, Footer } from "../../components/component";
+import { Hero, Footer } from "../../components";
 
-import { Category, Orders, Setting, Wishlist, Cart } from "../pages";
+import { Category } from "..";
 
 import {
   delivery_truck,

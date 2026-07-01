@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { defaultRest } from "../../assets/assets";
 import { UserContext } from "../../contexts/context";
-import { Store } from "../component";
+import { Store } from "..";
 import { db } from "../../db";
 import axios from "axios";
 

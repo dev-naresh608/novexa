@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { UserContext } from "../../contexts/context";
-import { GradientButton } from "../../components/component";
+import { GradientButton } from "../../components";
 function ShowAllNotifications() {
   const { currentUser } = useContext(UserContext);
   if (!currentUser.hasOwnProperty('myNotifications') || currentUser?.myNotifications?.length === 0) {

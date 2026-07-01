@@ -17,4 +17,4 @@ router
   .delete(handleDeleteOrderById)
   .patch(handleUpdateOrderById);
 
-module.exports = router;
+module.exports = {orderRoute: router};

@@ -9,7 +9,7 @@ const {
   handleUpdateCartItemById,
 } = require("./cart.controllers");
 
-router.get('/',handleGetAllCartItems);
+router.get("/", handleGetAllCartItems);
 
 router
   .route("/:productId")
@@ -18,4 +18,4 @@ router
   .delete(handleDeleteCartItemById)
   .patch(handleUpdateCartItemById);
 
-module.exports = router;
+module.exports = { cartRoute: router };

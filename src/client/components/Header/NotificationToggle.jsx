@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { UserContext } from "../../contexts/context";
 import { defaultPP } from "../../assets/assets";
 import { CheckCircle, MailCheck, Mail } from "lucide-react";
-import { MiniProfileContainer } from "../component";
+import { MiniProfileContainer } from "..";
 import { db } from "../../db";
 function NotificationToggle() {
   const {

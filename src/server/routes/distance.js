@@ -2,9 +2,11 @@ const epxress = require("express");
 const router = epxress.Router();
 const {
   handleGetDistanceAndEta,
-  handleGetAddress,
+  handleGetAddressApi,
 } = require('../controllers/distance')
 router.get("/distance", handleGetDistanceAndEta);
-router.get("/address", handleGetAddress);
+router.get("/address", handleGetAddressApi);
 
-module.exports = router;
+module.exports = {
+  distanceRoute: router
+};

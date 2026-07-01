@@ -1,0 +1,90 @@
+import React from "react";
+import { onCartItemQtyChange, onCartItemDeleteBtn } from "../../index";
+function CartItems({ currentUser, setCurrentUser }) {
+  return (
+    <div
+      className="space-y-3 overflow-y-auto 
+  [&::-webkit-scrollbar]:w-2
+  [&::-webkit-scrollbar-track]:bg-gray-100
+  [&::-webkit-scrollbar-thumb]:bg-gray-400
+  [&::-webkit-scrollbar-thumb]:rounded-full"
+    >
+      <div className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 font-semibold">
+        <span>Product Details</span>
+        <span>Subtotal</span>
+        <span>Action</span>
+      </div>
+
+      {currentUser?.myCart?.map((product, index) => (
+        <div key={index} className="grid grid-cols-[2fr_1fr_1fr] px-2 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="group h-20 w-20 flex items-center justify-center rounded-2xl border bg-gray-100">
+              <img
+                className="group-hover:scale-105 duration-150 w-14 h-14 object-contain"
+                src={product.product_url}
+                alt={product.product_name}
+              />
+            </div>
+            <div className="text-sm px-2">
+              <h3 className="font-semibold capitalize">
+                {product.product_name}
+              </h3>
+              <p className="text-gray-500 text-sm">
+                Weight: {product.product_weight}
+                <span className="text-[10px]">
+                  {product.product_weight_type === "none"
+                    ? "N/A"
+                    : product.product_weight_type}{" "}
+                </span>{" "}
+              </p>
+
+              <div className="mt-1 font-semibold text-gray-500 space-x-2">
+                <span>Qty:</span>
+                <select
+                  className="border rounded px-1 py-0.5 text-xs bg-white outline-none"
+                  value={product.product_qty}
+                  onChange={(e) =>
+                    onCartItemQtyChange(e, currentUser, setCurrentUser)
+                  }
+                  id={product._id}
+                >
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <span className="font-semibold w-24">
+              ${product.product_selling_price}
+            </span>
+          </div>
+
+          <div className="flex items-center">
+            <button
+              onClick={() =>
+                onCartItemDeleteBtn(product._id, currentUser, setCurrentUser)
+              }
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                className="fill-red-500 hover:scale-110 duration-100"
+              >
+                <path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default CartItems;

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import {
   GradientButton,
-} from "../component";
+} from "..";
 import { footer_banner, shopping_cart_with_grocery_items} from "../../assets/assets"
 
 import { UserContext } from "../../contexts/context";

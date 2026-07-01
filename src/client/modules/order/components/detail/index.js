@@ -1,0 +1,6 @@
+export { default as OrderHeaderDetail} from "./Header.jsx"
+export { default as CustomerInfo} from "./CustomerInfo.jsx"
+export { default as Address} from "./Address.jsx"
+export { default as PriceBreakdown} from "./PriceBreakdown.jsx"
+export { default as OrderItemsComponent} from "./OrderItems.jsx"
+export { default as OrderIdInfo} from "./OrderIdInfo.jsx"

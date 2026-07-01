@@ -11,12 +11,12 @@
     return res.json(result);
   }
 
-  async function handleGetAddress(req, res) {
+  async function handleGetAddressApi(req, res) {
     const {userAddress} = req.query;
     const result = await findAddress(userAddress);
     return res.json(result);
   }
   module.exports = {
     handleGetDistanceAndEta,
-    handleGetAddress,
+    handleGetAddressApi,
   };

@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import axios from "axios";
 
-export default function Login() {
+export function Login() {
   const navigate = useNavigate();
 
   const { setCurrentUser, setCurrentUserRole, setIsLogin, setActiveTab } =

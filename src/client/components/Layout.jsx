@@ -1,5 +1,5 @@
 import React from "react";
-import { Header, Footer } from "./component";
+import { Header, Footer } from ".";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 function Layout() {

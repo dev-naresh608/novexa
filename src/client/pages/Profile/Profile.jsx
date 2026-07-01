@@ -5,7 +5,7 @@ import {
   PersonalInfo,
   Setting,
   Payments,
-} from "../pages";
+} from "..";
 
 
 import {defaultPP} from "../../assets/assets"

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { RatingStar } from "../component";
+import { RatingStar } from "..";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../db";

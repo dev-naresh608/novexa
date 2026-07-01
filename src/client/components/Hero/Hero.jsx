@@ -2,8 +2,8 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 
 
-import {GradientButton} from '../component'
-import {Home} from "../../pages/pages"
+import {GradientButton} from '..'
+import {Home} from "../../pages"
 import {fruit_basket} from "../../assets/assets"
 function Hero() {
 

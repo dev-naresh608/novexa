@@ -3,7 +3,7 @@ import { Link, useLoaderData, useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../contexts/context";
 
-import { GradientButton } from "../component";
+import { GradientButton } from "..";
 import axios from "axios";
 function AllProducts() {
   const { restId = null } = useParams();
@@ -62,7 +62,7 @@ function AllProducts() {
             <ProductBuyCard
               name={p.product_name}
               src={p.product_url}
-              price={p.product_price}
+              price={p.product_selling_price}
               id={p._id}
               key={index}
               is_product_in_stock={p.is_product_in_stock}

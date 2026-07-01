@@ -10,7 +10,7 @@ import {
   GradientButton,
   ProfileToggle,
   NotificationToggle,
-} from "../component";
+} from "..";
 import { Store } from "lucide-react";
 
 function Header() {

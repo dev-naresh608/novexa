@@ -5,15 +5,15 @@ const Order = require("../../modules/order/order.model");
 const addOrderService = async (o) => {
   try {
     let order = null;
-
+    const { name:customer_name, phone:customer_phone } = o.order_address;
     await Order.create({
       customer_id: o.customerId,
       store_id: o.storeId,
       store_name: o.store_name,
       order_address: o.order_address,
       store_address: o.store_address,
-      customer_name: o.name,
-      customer_phone: o.phone,
+      customer_name: customer_name,
+      customer_phone: customer_phone,
       customer_email: o.email,
       order_items: o.items,
       order_status: o.order_status,
@@ -23,11 +23,14 @@ const addOrderService = async (o) => {
     }).then((result) => {
       order = result;
     });
-    return order;
+    return {
+      success: true,
+      order,
+    };
   } catch (error) {
     return {
       success: false,
-      message: error,
+      message: error.message,
     };
   }
 };
@@ -65,7 +68,7 @@ const findSingleOrderService = async (orderId) => {
       product_url,
       product_weight,
       product_weight_type,
-      product_price,
+      product_selling_price,
       product_qty,
       product_offer_price,
     }) => ({
@@ -74,7 +77,7 @@ const findSingleOrderService = async (orderId) => {
       product_url,
       product_weight,
       product_weight_type,
-      product_price,
+      product_selling_price,
       product_qty,
       product_offer_price,
     }),

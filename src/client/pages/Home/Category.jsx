@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ProductContext, CategoryContext } from "../../contexts/context";
-import { ProductImageLoader, GradientButton } from "../../components/component";
+import { ProductImageLoader, GradientButton } from "../../components";
 
 function Category() {
   const {

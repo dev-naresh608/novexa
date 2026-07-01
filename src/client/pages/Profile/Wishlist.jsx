@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { CartProductContext, UserContext } from "../../contexts/context";
-import { ProductBuyCard, GradientButton } from "../../components/component";
+import { ProductBuyCard, GradientButton } from "../../components";
 
 function Wishlist() {
   const { currentUser, setActiveTab } = useContext(UserContext);
@@ -30,7 +30,7 @@ function Wishlist() {
             <ProductBuyCard
               name={p.product_name}
               src={p.product_url}
-              price={p.product_price}
+              price={p.product_selling_price}
               id={p._id}
               key={index}
               is_product_in_stock={p.is_product_in_stock}

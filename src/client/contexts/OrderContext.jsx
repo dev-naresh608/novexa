@@ -5,8 +5,6 @@ import { channel } from "../services/service";
 export const OrderContext = createContext();
 
 function OrderProvider({ children }) {
-
-
   const {currentUser} = useContext(UserContext)
   const [orders, setOrders] = useState([]);
 

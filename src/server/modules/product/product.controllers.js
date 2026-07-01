@@ -29,33 +29,41 @@ const handleGetAllProducts = async (req, res) => {
 };
 
 const handleAddProduct = async (req, res) => {
-  const payload = req.body;
-  const file = req.file;
+  try {
+    const payload = req.body;
+    const file = req.file;
 
-  if (!payload) {
+    if (!payload) {
+      return res
+        .status(400)
+        .json({ success: false, message: "formdata is required" });
+    }
+
+    if (!file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "img is required" });
+    }
+
+    const uploadedImg = await uploadOnCloudinary(file.path);
+    // console.log("uploaded image data: ", uploadedImg);
+
+    if (!uploadedImg.success) {
+      return uploadedImg;
+    }
+
+    const { url, public_id } = uploadedImg;
+
+    const product = await addProductService(payload, url, public_id);
+
     return res
-      .status(400)
-      .json({ success: false, message: "formdata is required" });
+      .status(201)
+      .json({ success: true, message: "Product added successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: error.message });
   }
-
-  if (!file) {
-    return res.status(400).json({ success: false, message: "img is required" });
-  }
-
-  const uploadedImg = await uploadOnCloudinary(file.path);
-  // console.log("uploaded image data: ", uploadedImg);
-
-  if (!uploadedImg.success) {
-    return uploadedImg;
-  }
-
-  const { url, public_id } = uploadedImg;
-
-  const product = await addProductService(payload, url, public_id);
-
-  return res
-    .status(201)
-    .json({ success: true, message: "Product added successfully" });
 };
 
 const handleFindProductById = async (req, res) => {

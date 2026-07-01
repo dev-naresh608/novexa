@@ -2,20 +2,19 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const distanceRoute = require("./routes/distance");
-const storeRoute = require('./routes/store');
-const {
-  productRouter,
-  orderRouter,
-  cartRouter,
-  loginSignupRouter,
-} = require("./modules/moduleExport");
 
+const {
+  distanceRoute,
+  storeRoute,
+  addressRoute,
+  authRoute,
+  productRoute,
+  orderRoute,
+  cartRoute,
+} = require("./routes");
 
 const app = express();
 app.use(cors());
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
 app.use(
   express.json({
     limit: "100mb",
@@ -29,6 +28,14 @@ app.use(
   }),
 );
 
+app.use("/", authRoute);
+app.use("/api", distanceRoute);
+app.use("/product", productRoute);
+app.use("/order", orderRoute);
+app.use("/cart", cartRoute);
+app.use("/stores", storeRoute);
+app.use("/address", addressRoute);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -37,13 +44,6 @@ mongoose
 app.get("/", (req, res) => {
   res.json({ msg: "api running" });
 });
-
-app.use("/", loginSignupRouter);
-app.use("/api", distanceRoute);
-app.use("/product", productRouter);
-app.use("/order", orderRouter);
-app.use("/cart", cartRouter);
-app.use("/stores", storeRoute);
 
 const PORT = process.env.PORT || 5000;
 

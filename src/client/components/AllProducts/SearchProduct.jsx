@@ -38,7 +38,7 @@ function SearchProduct() {
             <ProductBuyCard
               name={p.product_name}
               src={p.product_url}
-              price={p.product_price}
+              price={p.product_selling_price}
               id={p.product_id}
               key={index}
               isProductInStock={p.isProductInStock}

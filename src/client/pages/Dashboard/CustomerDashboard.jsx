@@ -4,7 +4,7 @@ import { defaultPP } from "../../assets/assets";
 import { NavLink } from "react-router-dom";
 import DashboardCards from "./DashboardCards.jsx";
 import { dashboardCards } from "./dashboardCards";
-import {MiniProfileContainer} from "../../components/component.js"
+import {MiniProfileContainer} from "../../components/index.js"
 import { ChevronRight, Mail, MapPin, MoveRight, Phone } from "lucide-react";
 
 function CustomerDashboard() {

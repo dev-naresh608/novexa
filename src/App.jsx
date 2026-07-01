@@ -16,23 +16,23 @@ import {
   Payments,
   Orders,
   OrderDetail,
-  Cart,
+  CartPage,
   Home,
   Login,
   Signup,
-  AddressForm,
-  MyProducts,
+  ProductList,
   AddProduct,
   ActiveOrders,
   Wishlist,
   Category,
   Dashboard,
-  ProductList,
   DeliveryHistory,
   VehicleDetails,
   Earnings,
   ShowAllNotifications,
-} from "./client/pages/pages";
+} from "./client/index";
+
+
 
 import {
   AllProducts,
@@ -40,7 +40,7 @@ import {
   Layout,
   SearchProduct,
   AllStores,
-} from "./client/components/component";
+} from "./client/components";
 
 import {
   BrowserRouter,
@@ -49,6 +49,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+
 import { ToastContainer } from "react-toastify";
 import { useEffect } from "react";
 import OrderProvider from "./client/contexts/OrderContext";
@@ -62,7 +63,6 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/signup" element={<Signup />}></Route>
         <Route path="allproduct" element={<AllProducts />}></Route>
-        <Route path="addressform" element={<AddressForm />}></Route>
         <Route
           path="/allproducts/searchproduct/:searchValue"
           element={<SearchProduct />}
@@ -79,14 +79,15 @@ function App() {
           />
           <Route path="favourite" element={<Wishlist />}></Route>
           <Route path="orders" element={<Orders />}></Route>
-          <Route path="/orders/:orderId" element={<OrderDetail />} />
-          <Route path="cart" element={<Cart />}></Route>
+          <Route path="orders/:orderId" element={<OrderDetail />} />
+          {/* <Route path="cart" element={<Cart />}></Route> */}
+          <Route path="cart" element={<CartPage />}></Route>
           <Route path="wishlist" element={<Wishlist />}></Route>
           <Route path="setting" element={<Setting />}></Route>
           <Route path="dashboard" element={<Dashboard />}></Route>
           <Route path="stores" element={<AllStores />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
-          <Route path="product-list" element={<MyProducts />}></Route>
+          <Route path="product-list" element={<ProductList />}></Route>
           <Route path="active-orders" element={<ActiveOrders />}></Route>
           <Route
             path="allnotifications"

@@ -1,4 +1,4 @@
-import CartProductContext from "./cartProductContext";
+import CartProductContext from "./CartProductContext";
 import CartProductContextProvider from "./CartProductContextProvider";
 
 import UserContext from "./UserContext";

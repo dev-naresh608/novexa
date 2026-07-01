@@ -49,20 +49,34 @@ const handleGetAllOrders = async (req, res) => {
 };
 
 const handleAddOrder = async (req, res) => {
-  const payload = req.body;
-  if (!payload) {
-    return res.status(200).json({
+  try {
+    const payload = req.body;
+    if (!payload) {
+      return res.status(200).json({
+        success: false,
+        message: "Payload is required",
+      });
+    }
+    const result = await addOrderService(payload);
+    if (!result.success) {
+      return res.status(200).json({
+        success: false,
+        message: result.message,
+      });
+    }
+    return res.status(201).json({
+      success: true,
+      message: "order places succssfully",
+      order: result.order,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
       success: false,
-      message: "Payload is required",
+      message: "something happen wrong",
+      error,
     });
   }
-
-  const result = await addOrderService(payload);
-  return res.status(201).json({
-    success: true,
-    message: "order places successfully",
-    result,
-  });
 };
 
 const handleFindOrderById = async (req, res) => {

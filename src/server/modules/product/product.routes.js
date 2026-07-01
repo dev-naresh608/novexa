@@ -20,4 +20,6 @@ router
   .patch(handleUpdateProductById)
   .delete(handleDeleteProductById)
 
-module.exports = router;
+module.exports = {
+  productRoute: router
+};
