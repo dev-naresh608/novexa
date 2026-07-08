@@ -20,7 +20,8 @@ import {
   Home,
   Login,
   Signup,
-  ProductList,
+  ProductListPage,
+  ProductDetailPage,
   AddProduct,
   ActiveOrders,
   Wishlist,
@@ -87,7 +88,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />}></Route>
           <Route path="stores" element={<AllStores />}></Route>
           <Route path="addproducts" element={<AddProduct />}></Route>
-          <Route path="product-list" element={<ProductList />}></Route>
+          <Route path="product-list" element={<ProductListPage />}></Route>
+          <Route path="product/:productId" element={<ProductDetailPage />}></Route>
           <Route path="active-orders" element={<ActiveOrders />}></Route>
           <Route
             path="allnotifications"

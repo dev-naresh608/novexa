@@ -1,4 +1,4 @@
-import { SectionCard } from "../../index";
+import { SectionCard } from "../../../../index";
 import { dateAndTimeFormat } from "../../../../services";
 function OrderHeaderDetail({ orderId, createdAt, cfg }) {
   return (

@@ -2,14 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ProductContext } from "./context";
 import { v4 as uuid } from "uuid";
 
-import {
-  category_fruit,
-  category_cold_drinks,
-  category_milk,
-  category_wafer,
-  category_ice_cream
-
-} from "../assets/assets";
 
 import { db } from "../db";
 

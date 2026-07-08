@@ -1,7 +1,6 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../assets/assets";
 import { toast, ToastContainer } from "react-toastify";
 import { db } from "../../db";
 import {

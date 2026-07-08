@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { defaultRest } from "../../assets/assets";
+import { defaultRest } from "../../../../public/assets";
 import { UserContext } from "../../contexts/context";
 import { Store } from "..";
 import { db } from "../../db";

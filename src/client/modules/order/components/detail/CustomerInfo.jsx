@@ -1,4 +1,4 @@
-  import {SectionCard, SectionLabel} from "../../index"
+import { SectionCard, SectionLabel } from "../../../../index";
   import { User, Phone, Mail, CreditCard, Banknote } from "lucide-react"
 
   const CustomerInfoComponent = ({order}) => {

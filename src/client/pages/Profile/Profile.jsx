@@ -8,7 +8,7 @@ import {
 } from "..";
 
 
-import {defaultPP} from "../../assets/assets"
+import { defaultPP } from "../../../../public/assets";
 import { CardSim, CreditCard, LogOut, Settings, User } from "lucide-react";
 
 function Profile() {

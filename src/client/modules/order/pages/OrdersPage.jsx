@@ -14,6 +14,8 @@ import {
   sortOrderByPrice,
 } from "../index";
 
+import {SearchBar} from "../../../index"
+
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -60,7 +62,6 @@ function Orders() {
 
   // ===================== CSS =====================
   const commonCss = "bg-white rounded-xl border shadow-md";
-  const iconStyle = "flex items-center space-x-3";
 
   return (
     <div className="space-y-4">
@@ -79,7 +80,7 @@ function Orders() {
 
       <div className={`${commonCss} space-y-2 p-3`}>
         {/* ================= ORDER FILTER HEADER ================= */}
-        <OrderSearchBar
+        <SearchBar
           searchValue={searchValue}
           setSearchValue={setSearchValue}
         />

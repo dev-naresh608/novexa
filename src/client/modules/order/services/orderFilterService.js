@@ -1,4 +1,3 @@
-import { Infinity } from "lucide-react";
 import dateAndTimeFormat from "../../../services/dateAndTimeFormat.service";
 
 // SEARCH
@@ -16,7 +15,9 @@ export const searchOrdersSvc = (allOrders, searchValue) => {
       o.name?.toLowerCase().includes(search) ||
       o.store_address?.toLowerCase().includes(search) ||
       o.order_status?.toLowerCase().includes(search) ||
-      o.payment_method?.toLowerCase().includes(search) 
+      o.payment_method?.toLowerCase().includes(search) ||
+      o.price_detail?.finalPrice.includes(search) ||
+      ("$" + o.price_detail?.finalPrice).includes(search)
       // || dateAndTimeFormat(o?.createdAt, "date").trim().includes(search)
     );
   });

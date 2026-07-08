@@ -57,7 +57,7 @@ const updateProductService = async (product_id, store_id, updates) => {
     "product_category",
     "product_weight",
     "product_weight_type",
-    "product_selling_price",
+    "product_cost_price",
     "product_selling_price",
     "product_offer_price",
     "product_description",
@@ -96,11 +96,11 @@ const deleteProductService = async (product_id, store_id) => {
     store_id: store_id,
   });
 
-  if(!result){
+  if (!result) {
     return {
       success: false,
-      message: "product is not deleted"
-    }
+      message: "product is not deleted",
+    };
   }
   const { _id } = result;
   return _id;
@@ -115,9 +115,17 @@ const deleteTempFolder = async () => {
   }
 };
 
+const findProductSvc = async (productId) => {
+  const product = await Product.findById({
+    _id: productId,
+  });
+  return product;
+};
+
 module.exports = {
   addProductService,
   updateProductService,
   deleteProductService,
   deleteTempFolder,
+  findProductSvc,
 };

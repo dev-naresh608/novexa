@@ -4,14 +4,21 @@ const {
   updateProductService,
   deleteProductService,
   deleteTempFolder,
+  findProductSvc,
 } = require("./product.service");
 const { uploadOnCloudinary } = require("../../utils/cloudinary");
 const { default: Result_ } = require("postcss/lib/result");
 
 const handleGetAllProducts = async (req, res) => {
-  const { store_id } = req.query;
+  const {userId} = req.params;
 
-  const allProducts = (await Product.find({ store_id })) || [];
+  if (!userId) {
+    return res.status(200).json({
+      success: false,
+      message: "User is required",
+    });
+  }
+  const allProducts = await Product.find({ store_id: userId });
 
   if (allProducts.length === 0) {
     return res.status(400).json({
@@ -60,14 +67,32 @@ const handleAddProduct = async (req, res) => {
       .status(201)
       .json({ success: true, message: "Product added successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 const handleFindProductById = async (req, res) => {
-  return res.json({ msg: "One product found" });
+  const { productId } = req.params;
+  if (!productId) {
+    return res.status(200).json({
+      success: false,
+      message: "product id is required",
+    });
+  }
+
+  const result = await findProductSvc(productId);
+
+  if (!result) {
+    return res.status(200).json({
+      success: false,
+      message: "No product Found",
+    });
+  }
+  return res.status(200).json({
+    success: true,
+    message: "product fetched successfully",
+    product: result,
+  });
 };
 
 const handleDeleteProductById = async (req, res) => {
@@ -90,6 +115,7 @@ const handleUpdateProductById = async (req, res) => {
     };
   }
   const result = await updateProductService(productId, store_id, updates);
+
   return res.status(201).json({ msg: "Updated successfully" });
 };
 

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import {GradientButton} from '..'
 import {Home} from "../../pages"
-import {fruit_basket} from "../../assets/assets"
+import { fruit_basket } from "../../../../public/assets";
 function Hero() {
 
   return (

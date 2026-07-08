@@ -21,8 +21,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import {
   orderStatusConfig,
-  SectionCard,
-  SectionLabel,
   OrderHeaderDetail,
   CustomerInfo,
   Address,
@@ -30,6 +28,7 @@ import {
   OrderItemsComponent,
   OrderIdInfo,
 } from "../index";
+import { SectionCard, SectionLabel } from "../../../index";
 import dateAndTimeFormat from "../../../services/dateAndTimeFormat.service";
 
 import { div } from "framer-motion/client";

@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import {
   GradientButton,
 } from "..";
-import { footer_banner, shopping_cart_with_grocery_items} from "../../assets/assets"
+import { footer_banner, shopping_cart_with_grocery_items } from "../../../../public/assets";
 
 import { UserContext } from "../../contexts/context";
 import { Link } from "react-router-dom";

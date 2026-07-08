@@ -11,7 +11,7 @@ const {
   handleUpdateProductById,
 } = require("./product.controllers");
 
-router.get("/allproducts",handleGetAllProducts);
+router.get("/allproducts/:userId",handleGetAllProducts);
 router.post("/add-product",upload.single('product_img'), handleAddProduct);
 
 router

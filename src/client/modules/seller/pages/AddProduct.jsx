@@ -1,9 +1,7 @@
 import React, { useContext, useState } from "react";
 import { UserContext } from "../../../contexts/context";
 import { v4 as uuid } from "uuid";
-// import { db } from "../../db";
 import { toast } from "react-toastify";
-import { defaultPP } from "../../../assets/assets";
 import { ArrowLeftIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";

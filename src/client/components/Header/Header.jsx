@@ -5,12 +5,12 @@ import {
   UserContext,
   ProductContext,
 } from "../../contexts/context";
-import { greenCart_logo } from "../../assets/assets";
+import { greenCart_logo } from "../../../../public/assets";
 import {
   GradientButton,
   ProfileToggle,
   NotificationToggle,
-} from "..";
+} from "../../index";
 import { Store } from "lucide-react";
 
 function Header() {

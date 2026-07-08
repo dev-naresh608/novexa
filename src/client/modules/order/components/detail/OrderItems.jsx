@@ -1,4 +1,4 @@
-import { SectionCard, SectionLabel } from "../../index";
+import { SectionCard, SectionLabel } from "../../../../index";
 
 const OrderItems = ({ order ,orderItems}) => {
   if (order) {

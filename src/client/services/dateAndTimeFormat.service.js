@@ -1,4 +1,8 @@
 const formateDateTime = (isoStr, output = "both") => {
+
+  if(!isoStr){
+    return "-"
+  }
   const newDate = new Date(isoStr);
 
   // const date = `${}, ${}`

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../assets/assets";
 import { CheckCircle, MailCheck, Mail } from "lucide-react";
 import { MiniProfileContainer } from "..";
 import { db } from "../../db";

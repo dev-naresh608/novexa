@@ -1,4 +1,4 @@
-import { SectionCard, SectionLabel } from "../../index";
+import { SectionCard, SectionLabel } from "../../../../index";
 
 const PriceBreakdown = ({ price_detail }) => {
   if (price_detail) {

@@ -1,4 +1,4 @@
-import { SectionCard,SectionLabel } from "../../index";
+import { SectionCard, SectionLabel } from "../../../../index";
 import { toast } from "react-toastify";
 import { CopyIcon } from "lucide-react";
 

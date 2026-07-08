@@ -9,9 +9,7 @@ import {
   coin_icon,
   leaf_icon,
   bottom_banner,
-  bottom_banner_h,
-  bottom_banner_v,
-} from "../../assets/assets";
+} from "../../../../public/assets";
 
 import {
   UserContext,
