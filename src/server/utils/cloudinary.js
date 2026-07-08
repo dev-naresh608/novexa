@@ -9,7 +9,7 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (
   localFilePath,
-  folder = "grocerymart/products",
+  folder = "novexa/products",
 ) => {
   try {
     if (!localFilePath) return null;

@@ -205,17 +205,17 @@ function Footer() {
               </div>
               {/* copyright footer  */}
               <div className="flex items-center justify-between px-5 sm:px-10 md:px-20 bg-gray-100 h-10 text-green-700 font-semibold rounded-b-2xl">
-                <span className="sm:text-md text-sm">@2026 GroceryMart</span>
+                <span className="sm:text-md text-sm">@2026 Novexa</span>
 
                 <Link
                   to="#"
                   onClick={(e) => {
-                    window.location.href = "mailto:grocerymart@outlook.com";
+                    window.location.href = "mailto:novexa@outlook.com";
                     e.preventDefault();
                   }}
                 >
                   <span className="text-sm sm:text-md">
-                    grocerymart@outlook.com
+                    novexa@outlook.com
                   </span>
                 </Link>
               </div>

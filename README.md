@@ -24,3 +24,13 @@ In V1.2 i have implemented the Many functionality.
 # Version - 1.3
 
 In V1.3 i implement backend api's.
+
+
+images that i used: 
+  - greenCart_logo
+  - fruit_basket 
+  - bottom_banner
+  - footer_banner
+  - shopping_cart_with_grocery_items
+  - defaultPP
+  - defaultRest

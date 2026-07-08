@@ -1,11 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../../../contexts/context";
-
 import { db } from "../../../../db";
-import { channel } from "../../../../services/service";
-
 import { CreditCard, Phone, ShoppingBag, Timer, User } from "lucide-react";
-
 import { toast } from "react-toastify";
 
 function ActiveOrders() {
@@ -138,11 +134,6 @@ function ActiveOrders() {
       await db.localUserData.put({
         ...customerWhoOrder,
         myOrders: updatedCustomerOrders,
-      });
-
-      // ================= BROADCAST =================
-      channel.postMessage({
-        type: "USER_DATA_UPDATED",
       });
 
       // ================= UPDATE CONTEXT =================

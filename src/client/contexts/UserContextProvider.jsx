@@ -23,7 +23,6 @@ import {
   Package,
   CopyPlus,
 } from "lucide-react";
-import { channel } from "../services/service";
 
 function UserContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState({
@@ -216,25 +215,6 @@ function UserContextProvider({ children }) {
     },
   ];
 
-  useEffect(() => {
-    channel.onmessage = async (event) => {
-      if (event.data.type === "USER_DATA_UPDATED") {
-        // get fresh users from indexedDB
-        const updatedUsers = await db.localUserData.toArray();
-
-        setUserData(updatedUsers);
-
-        // refresh current logged in user
-        const freshCurrentUser = updatedUsers.find(
-          (user) => user.id === currentUser.id,
-        );
-
-        if (freshCurrentUser) {
-          setCurrentUser(freshCurrentUser);
-        }
-      }
-    };
-  }, [currentUser.id]);
 
   return (
     <UserContext.Provider

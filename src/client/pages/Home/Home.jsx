@@ -2,20 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { Hero, Footer } from "../../components";
 
 import { Category } from "..";
-
-import {
-  delivery_truck,
-  trust_icon,
-  coin_icon,
-  leaf_icon,
-  bottom_banner,
-} from "../../../../public/assets";
+import { bottom_banner } from "../../../../public/assets";
 
 import {
   UserContext,
   CartProductContext,
 } from "../../contexts/context";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Truck, Leaf, Coins, ShieldCheck } from "lucide-react";
 import { NavLink, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 function Home({ productsList }) {
   const { isLogin, leftPanelItems, secondLeftPanelItems, currentUser } =
@@ -31,22 +24,22 @@ function Home({ productsList }) {
       {
         text: "Fastest Delivery",
         text_info: "Groceries delivered in under 30 minutes.",
-        src: delivery_truck,
+        icon: <Truck size={24} />,
       },
       {
         text: "Freshness Guaranteed",
         text_info: "Fresh produce straight from the source.",
-        src: leaf_icon,
+        icon: <Leaf size={24} />,
       },
       {
         text: "Affordable Prices",
         text_info: "Quality groceries at unbeatable prices.",
-        src: coin_icon,
+        icon: <Coins size={24} />,
       },
       {
         text: "Trusted by Thousands",
         text_info: "Loved by 10,000+ happy customers.",
-        src: trust_icon,
+        icon: <ShieldCheck size={24} />,
       },
     ];
     return (
@@ -68,8 +61,8 @@ function Home({ productsList }) {
                 {items.map((item, i) => {
                   return (
                     <div key={i} className="flex items-center gap-3  my-2">
-                      <div className="w-10 h-10">
-                        <img className="h-max w-max" src={item.src} alt="" />
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-green-700 border border-green-100 shadow-sm flex-shrink-0">
+                        {item.icon}
                       </div>
                       <div>
                         <p className="font-semibold text-2xl sm:text-xl md:text-xl text-[#364153]">
