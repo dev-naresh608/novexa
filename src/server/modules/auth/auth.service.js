@@ -42,7 +42,6 @@ const loginSvc = async (email, password) => {
   }
 };
 
-
 const register = async (data) => {
   try {
     const existingUser = await User.findOne({
@@ -122,6 +121,5 @@ const register = async (data) => {
     return { isSignupSuccess: false };
   }
 };
-
 
 module.exports = { register, loginSvc };
