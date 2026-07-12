@@ -5,12 +5,8 @@ import {
   UserContext,
   ProductContext,
 } from "../../contexts/context";
-import { greenCart_logo } from "../../../../public/assets";
-import {
-  GradientButton,
-  ProfileToggle,
-  NotificationToggle,
-} from "../../index";
+import { novexa_logo } from "../../../../public/assets";
+import { GradientButton, ProfileToggle, NotificationToggle } from "../../index";
 import { Store } from "lucide-react";
 
 function Header() {
@@ -41,16 +37,12 @@ function Header() {
 
   // }, []);
 
-
-
   if (!isLogin) {
     return (
       <div className="flex z-40 justify-between items-center py-2.5 px-10">
         <div>
-          <Link to="/">
-            <span className="text-green-700 font-bold">
-              <img className="h-10" src={greenCart_logo} alt="logo" />
-            </span>
+          <Link to="/" className="flex items-end">
+            <img className="h-10" src={novexa_logo} alt="logo" />
           </Link>
         </div>
 
@@ -119,7 +111,7 @@ function Header() {
       <div>
         <Link to="/dashboard">
           <span className="text-green-700 font-bold text-3xl">
-            <img className="h-8" src={greenCart_logo} alt="logo image" />
+            <img className="h-8" src={novexa_logo} alt="logo image" />
           </span>
         </Link>
       </div>
