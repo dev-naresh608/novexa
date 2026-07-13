@@ -35,10 +35,17 @@ function SellerDashboard() {
             </div>
           </div>
           <div>
-            <p className="text-xs text-gray-400 font-medium">
-             SELLER DASHBOARD
-            </p>
-            <p className="text-2xl font-serif font-semibold">
+            <div className="flex items-center gap-2.5">
+              <p className="text-xs text-gray-400 font-medium tracking-wider">
+                SELLER DASHBOARD
+              </p>
+              {currentUser?.store_type && (
+                <span className="text-[10px] font-semibold text-green-700 bg-green-50/80 px-2.5 py-0.5 rounded-full border border-green-100 uppercase tracking-wide">
+                  {currentUser.store_type}
+                </span>
+              )}
+            </div>
+            <p className="text-2xl font-serif font-semibold text-gray-850 mt-1">
               {currentUser?.store_name}
             </p>
           </div>

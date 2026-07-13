@@ -84,7 +84,7 @@ function Home({ productsList }) {
     );
   }
 
-  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
 
   return (
     <>

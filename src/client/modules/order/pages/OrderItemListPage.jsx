@@ -80,7 +80,6 @@ export function OrderItemCard({ item }) {
     _id,
     product_name,
     product_url,
-    product_category,
     product_weight,
     product_weight_type,
     product_selling_price,
@@ -100,15 +99,10 @@ export function OrderItemCard({ item }) {
       <ProductImage url={product_url} name={product_name} />
 
       <div className="flex flex-col flex-1 min-w-0 px-4 py-3.5 gap-1.5">
-        {/* Name + category */}
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-[15px] font-medium text-gray-900 truncate">
-            {product_name}
-          </p>
-          <span className="text-[11px] text-gray-400 bg-gray-50 rounded-full px-2.5 py-0.5 whitespace-nowrap shrink-0">
-            {capitalize(product_category)}
-          </span>
-        </div>
+        {/* Name */}
+        <p className="text-[15px] font-medium text-gray-900 truncate">
+          {product_name}
+        </p>
 
         {/* Description */}
         {product_description && (

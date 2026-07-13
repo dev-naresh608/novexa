@@ -10,6 +10,8 @@ import {
 } from "./client/contexts/context";
 
 import {
+    Login,
+  Singup,
   Profile,
   PersonalInfo,
   Setting,
@@ -18,8 +20,6 @@ import {
   OrderDetail,
   CartPage,
   Home,
-  Login,
-  Signup,
   ProductListPage,
   ProductDetailPage,
   AddProduct,
@@ -62,7 +62,7 @@ function App() {
         {/* ! general path */}
 
         <Route path="/login" element={<Login />}></Route>
-        <Route path="/signup" element={<Signup />}></Route>
+        <Route path="/signup" element={<Singup />}></Route>
         <Route path="allproduct" element={<AllProducts />}></Route>
         <Route
           path="/allproducts/searchproduct/:searchValue"

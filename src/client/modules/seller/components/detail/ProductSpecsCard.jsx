@@ -1,5 +1,5 @@
 import React from "react";
-import { Scale, Ruler, Folder, CheckCircle, Edit3 } from "lucide-react";
+import { Scale, Ruler, CheckCircle, Edit3 } from "lucide-react";
 import { SectionCard, SectionLabel } from "../../../../index";
 
 function ProductSpecsCard({
@@ -8,7 +8,6 @@ function ProductSpecsCard({
   onChange,
   product,
 }) {
-  const category = isEditing ? formData.product_category : product?.product_category;
   const weight = isEditing ? formData.product_weight : product?.product_weight;
   const weightType = isEditing ? formData.product_weight_type : product?.product_weight_type;
   const isInStock = isEditing ? formData.is_product_in_stock : product?.is_product_in_stock;
@@ -32,27 +31,6 @@ function ProductSpecsCard({
             />
           </div>
         )}
-
-        {/* Category */}
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <div className="flex items-center gap-2 text-gray-500 text-xs">
-            <Folder size={16} className="text-gray-400" />
-            <span>Category</span>
-          </div>
-          <div className="font-semibold text-sm">
-            {isEditing ? (
-              <input
-                type="text"
-                name="product_category"
-                value={formData.product_category}
-                onChange={onChange}
-                className="border rounded-lg px-2 py-1 text-xs outline-none bg-white max-w-[150px]"
-              />
-            ) : (
-              <span className="text-gray-800 capitalize">{category || "Other"}</span>
-            )}
-          </div>
-        </div>
 
         {/* Weight */}
         <div className="flex justify-between items-center pb-3 border-b border-gray-100">

@@ -36,6 +36,18 @@ function AllProducts() {
     }
   }, [currentUser, userData, productsList]);
 
+  if (!isLogin) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <h2 className="text-lg font-semibold text-gray-600">
+         Login to get All products
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          There is a no products available on this app.
+        </p>
+      </div>
+    );
+  }
   if (!totalProducts)
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">

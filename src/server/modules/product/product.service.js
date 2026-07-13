@@ -54,7 +54,6 @@ const updateProductService = async (product_id, store_id, updates) => {
 
   const allowedFields = [
     "product_name",
-    "product_category",
     "product_weight",
     "product_weight_type",
     "product_cost_price",

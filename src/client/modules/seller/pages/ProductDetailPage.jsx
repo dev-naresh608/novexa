@@ -22,7 +22,6 @@ function ProductDetailPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     product_name: "",
-    product_category: "",
     product_weight: "",
     product_weight_type: "none",
     product_cost_price: "",
@@ -44,7 +43,6 @@ function ProductDetailPage() {
         setProduct(data.product);
         setFormData({
           product_name: data.product.product_name || "",
-          product_category: data.product.product_category || "",
           product_weight: data.product.product_weight || "",
           product_weight_type: data.product.product_weight_type || "none",
           product_cost_price: data.product.product_cost_price || "",
@@ -79,7 +77,6 @@ function ProductDetailPage() {
     if (product) {
       setFormData({
         product_name: product.product_name || "",
-        product_category: product.product_category || "",
         product_weight: product.product_weight || "",
         product_weight_type: product.product_weight_type || "none",
         product_cost_price: product.product_cost_price || "",
@@ -120,7 +117,6 @@ function ProductDetailPage() {
     try {
       const updates = {
         product_name: formData.product_name.trim(),
-        product_category: formData.product_category.trim(),
         product_weight: Number(formData.product_weight),
         product_weight_type: formData.product_weight_type,
         product_cost_price: Number(formData.product_cost_price),
