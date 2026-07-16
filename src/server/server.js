@@ -11,6 +11,7 @@ const {
   productRoute,
   orderRoute,
   cartRoute,
+  adminRoute,
 } = require("./routes");
 
 const app = express();
@@ -28,6 +29,10 @@ app.use(
   }),
 );
 
+// ADMIN ROUTE 
+app.use('/admin',adminRoute);
+
+// OTHER ROUTES
 app.use("/", authRoute);
 app.use("/api", distanceRoute);
 app.use("/product", productRoute);
@@ -42,7 +47,7 @@ mongoose
   .catch((err) => console.log("Error to connect DB, E: ", err));
 
 app.get("/", (req, res) => {
-  res.json({ msg: "api running" });
+  res.json({ message: "api running" });
 });
 
 const PORT = process.env.PORT || 5000;

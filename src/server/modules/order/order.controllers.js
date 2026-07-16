@@ -112,11 +112,11 @@ const handleFindOrderById = async (req, res) => {
 };
 
 const handleDeleteOrderById = async (req, res) => {
-  return res.json({ msg: "deleted successfully" });
+  return res.json({ message: "deleted successfully" });
 };
 
 const handleUpdateOrderById = async (req, res) => {
-  return res.json({ msg: "Updated successfully" });
+  return res.json({ message: "Updated successfully" });
 };
 
 module.exports = {

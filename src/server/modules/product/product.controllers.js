@@ -100,7 +100,7 @@ const handleDeleteProductById = async (req, res) => {
   const { productId } = req.params;
 
   const result = await deleteProductService(productId, store_id);
-  return res.json({ success: true, result, msg: "deleted successfully" });
+  return res.json({ success: true, result, message: "deleted successfully" });
 };
 
 const handleUpdateProductById = async (req, res) => {
@@ -116,7 +116,7 @@ const handleUpdateProductById = async (req, res) => {
   }
   const result = await updateProductService(productId, store_id, updates);
 
-  return res.status(201).json({ msg: "Updated successfully" });
+  return res.status(201).json({ message: "Updated successfully" });
 };
 
 module.exports = {

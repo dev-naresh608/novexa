@@ -9,3 +9,7 @@ export async function loginUserApi(payload) {
 export async function signupUserApi(payload) {
   return axios.post(`${BASE_URL}/signup`, payload);
 }
+
+// export async function loginAsAdminApi(payload){
+//   return axios.post(`${BASE_URL}/admin`,payload);
+// }

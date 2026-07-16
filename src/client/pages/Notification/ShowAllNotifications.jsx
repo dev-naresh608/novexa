@@ -23,7 +23,7 @@ function ShowAllNotifications() {
         <div key={i} className="h-full p-2">
           <div className="p-1 flex flex-col justify-between border rounded-md">
             <div className="text-gray-400">
-              <p>{n.msg}</p>
+              <p>{n.message}</p>
             </div>
           </div>
         </div>

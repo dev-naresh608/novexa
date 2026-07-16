@@ -98,7 +98,7 @@ function NotificationToggle() {
                           <div
                             className={`text-sm ${!n.isNotificationIsRead ? "text-gray-600" : "text-gray-400"}`}
                           >
-                            <p>{n.msg}</p>
+                            <p>{n.message}</p>
                           </div>
 
                           <div className="text-gray-500 font-semibold hover:text-gray-600 flex justify-end items-end">

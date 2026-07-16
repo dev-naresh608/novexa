@@ -1,231 +1,194 @@
-import React, { useContext } from "react";
-import {
-  GradientButton,
-} from "..";
-import { footer_banner, shopping_cart_with_grocery_items } from "../../../../public/assets";
-
-import { UserContext } from "../../contexts/context";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
+
+import { novexa_logo } from "../../../../public/assets";
+import { UserContext } from "../../contexts/context";
+
+const FOOTER_LINKS = {
+  Shop: [
+    { label: "All Products", to: "/allproducts" },
+    { label: "Stores", to: "/stores" },
+    { label: "My Cart", to: "/cart" },
+    { label: "Track Order", to: "/orders" },
+  ],
+  Company: [
+    { label: "About Novexa", to: "/about" },
+    { label: "Careers", to: "/careers" },
+    { label: "Blog", to: "/blog" },
+    { label: "Become a Seller", to: "/signup?role=seller" },
+    { label: "Join as a Driver", to: "/signup?role=driver" },
+  ],
+  Support: [
+    { label: "Help Center", to: "/help" },
+    { label: "Contact Us", to: "/contact" },
+    { label: "Privacy Policy", to: "/privacy" },
+    { label: "Terms of Service", to: "/terms" },
+    { label: "Refund Policy", to: "/refunds" },
+  ],
+};
+
+const SOCIAL_LINKS = [
+  { abbr: "f", href: "#", label: "Facebook" },
+  { abbr: "ig", href: "#", label: "Instagram" },
+  { abbr: "x", href: "#", label: "Twitter / X" },
+  { abbr: "in", href: "#", label: "LinkedIn" },
+];
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-white tracking-widest uppercase mb-4">
+        {title}
+      </h3>
+      <ul className="space-y-2.5">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link
+              to={link.to}
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function Footer() {
   const { isLogin } = useContext(UserContext);
-  if (!isLogin) {
-    return (
-      <>
-        <section className="sm:pb-[50vh] relative bg-yellow-200 p-10">
-          <div className="relative">
-            {/* upper  */}
-            <div className="sm:flex hidden justify-center relative z-20">
-              <div className="flex overflow-clip justify-between rounded-2xl bg-gray-100 w-[50vw]">
-                {/* left  */}
-                <div className="flex-col space-y-2 p-10 text-green-700 font-semibold">
-                  <div>
-                    <p className="text-2xl">Get Start</p>
-                  </div>
-                  <div>
-                    <h2>Become a Shopper</h2>
-                  </div>
-                  <div>
-                    <p>
-                      Download our app for faster access, exclusive features,
-                      and a seamless experience.
-                    </p>
-                  </div>
-                  <div className="w-max rounded-xl py-1 text-sm">
-                    <GradientButton
-                      componentType="a"
-                      to="https://play.google.com/store/apps/details?id=com.grofers.customerapp&hl=en_IN"
-                      className="text-black text-lg"
-                      target="_blank"
-                    >
-                      Download The App
-                    </GradientButton>
-                  </div>
-                </div>
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
-                {/* right  */}
-                <div className="w-14">
-                  <img className="h-full w-full" src={footer_banner} alt="" />
-                </div>
-              </div>
-            </div>
-
-            {/* lower  */}
-            <div className="bg-[#efd565] sm:absolute rounded-2xl top-40 w-full">
-              <div className="flex items-center justify-center space-x-10 p-5 sm:pt-24 md:pt-28 pb-10 px-6 ">
-                <div className="h-36 w-36">
-                  <img src={shopping_cart_with_grocery_items} alt="cart image" />
-                </div>
-                <div className="flex items-start space-x-7">
-                  {/* <!-- About --> */}
-                  <div>
-                    <h2 className="font-semibold text-lg mb-4 text-[#1F2937]">
-                      About
-                    </h2>
-                    <ul className="space-y-2 text-sm text-gray-800">
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          About Company
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Carrers
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Blog
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-800"
-                        >
-                          Privacy Policy
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* <!-- Categories --> */}
-                  <div className="hidden sm:block">
-                    <h2 className="font-semibold text-lg mb-4">Categories</h2>
-                    <ul className="space-y-2 text-sm text-gray-800">
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Fruits & Vegetables
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Dairy & Bakery
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Snacks & Beverages
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Personal Care
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* <!-- Contact --> */}
-                  <div>
-                    <h2 className="font-semibold text-lg mb-4">Contact</h2>
-                    <ul className="space-y-2 text-sm text-gray-800">
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Email
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Phone Number
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Address
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-gray-600 hover:text-green-600"
-                        >
-                          Support Hours
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="sm:flex hidden flex-col items-start space-y-4">
-                  {/* <!-- Social Icons --> */}
-                  <div className="flex space-x-3">
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white text-sm">
-                      f
-                    </div>
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white text-sm">
-                      t
-                    </div>
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white text-sm">
-                      in
-                    </div>
-                  </div>
-
-                  {/* <!-- Email Input --> */}
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    className="w-64 px-4 py-2 rounded-md bg-white text-gray-700 outline-none"
-                  />
-
-                  {/* <!-- Subscribe Button --> */}
-                  <button className="w-64 py-2 rounded-full bg-yellow-400 text-white font-semibold hover:bg-yellow-500 transition">
-                    SUBSCRIBE
-                  </button>
-                </div>
-              </div>
-              {/* copyright footer  */}
-              <div className="flex items-center justify-between px-5 sm:px-10 md:px-20 bg-gray-100 h-10 text-green-700 font-semibold rounded-b-2xl">
-                <span className="sm:text-md text-sm">@2026 Novexa</span>
-
-                <Link
-                  to="#"
-                  onClick={(e) => {
-                    window.location.href = "mailto:novexa@outlook.com";
-                    e.preventDefault();
-                  }}
-                >
-                  <span className="text-sm sm:text-md">
-                    novexa@outlook.com
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </>
-    );
+  function handleSubscribe(e) {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    setSubscribed(true);
+    setEmail("");
   }
-  return <></>;
+
+  // Footer is only shown on the public/guest storefront, not inside
+  // the logged-in dashboards which have their own layout.
+  if (isLogin) return null;
+
+  return (
+    <footer className="bg-[#0F1C15] text-gray-300">
+      {/* Newsletter strip */}
+      <div className="border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 sm:px-10 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <p className="text-white text-xl sm:text-2xl font-semibold">
+              Get fresh deals in your inbox
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              One email a week — restock alerts and seasonal picks, no spam.
+            </p>
+          </div>
+
+          {subscribed ? (
+            <div className="flex items-center gap-2 text-sm font-medium text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 w-full md:w-auto">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              You're subscribed — check your inbox to confirm.
+            </div>
+          ) : (
+            <form
+              onSubmit={handleSubscribe}
+              className="flex w-full md:w-auto"
+            >
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com"
+                className="flex-1 md:w-72 bg-white/5 border border-white/10 rounded-l-xl px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none focus:border-green-500 transition-colors"
+              />
+              <button
+                type="submit"
+                className="flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-4 sm:px-5 rounded-r-xl transition-colors"
+              >
+                <span className="hidden sm:inline">Subscribe</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Main links */}
+      <div className="max-w-6xl mx-auto px-6 sm:px-10 py-12 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        {/* Brand column */}
+        <div className="col-span-2">
+          <Link to="/" className="inline-flex items-center">
+            <img
+              className="h-8 brightness-0 invert opacity-90"
+              src={novexa_logo}
+              alt="Novexa logo"
+            />
+          </Link>
+          <p className="text-sm text-gray-400 mt-4 max-w-xs leading-relaxed">
+            Groceries and everyday essentials from local stores, delivered to
+            your door in minutes.
+          </p>
+          <ul className="mt-5 space-y-2.5 text-sm text-gray-400">
+            <li className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-green-500 shrink-0" />
+              Bengaluru, Karnataka, India
+            </li>
+            <li className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-green-500 shrink-0" />
+              <a href="tel:+910123456789" className="hover:text-white transition-colors">
+                +91 01234 56789
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-green-500 shrink-0" />
+              <a
+                href="mailto:novexa@outlook.com"
+                className="hover:text-white transition-colors"
+              >
+                novexa@outlook.com
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <FooterColumn title="Shop" links={FOOTER_LINKS.Shop} />
+        <FooterColumn title="Company" links={FOOTER_LINKS.Company} />
+        <FooterColumn title="Support" links={FOOTER_LINKS.Support} />
+      </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-white/10">
+        <div className="max-w-6xl mx-auto px-6 sm:px-10 py-5 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} Novexa. All rights reserved.
+          </p>
+          <div className="flex items-center gap-3">
+            {SOCIAL_LINKS.map(({ abbr, href, label }) => (
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-xs font-semibold text-gray-400 hover:bg-green-600 hover:text-white transition-colors"
+              >
+                {abbr}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 export default Footer;

@@ -1,25 +1,47 @@
-const {loginSvc, register} = require('./auth.service');
+const { userLoginSvc, userSignupSvc } = require("./auth.service");
 
 const login = async (req, res) => {
-  const payload = await req.body;
-  if (!payload) {
-    return res.json({ msg: "Please send some data" });
+  try {
+    const payload = req.body;
+    if (!payload) {
+      return res.status(400).json({ success: false, message: "Please send some data" });
+    }
+    const { email, password } = payload;
+
+    const response = await userLoginSvc(email, password);
+
+    if (!response || !response.success) {
+      return res.status(400).json(response || { success: false, message: "Login failed" });
+    }
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
-  const { email, password } = payload;
-
-  const response = await loginSvc(email, password) || await {msg: "nothing"};
-
-  return res.json(response);
 };
 
 const signup = async (req, res) => {
-  const payload = await req.body;
-  if (!payload) {
-    return res.json({ msg: "Please send some data" });
-  }
-  const response = await register(payload) || await {msg: "nothing"};
+  try {
+    const payload = req.body;
+    if (!payload) {
+      return res.status(400).json({ success: false, message: "Please send some data" });
+    }
+    const response = await userSignupSvc(payload);
 
-  return res.json(response);
+    if (!response.success) {
+      return res.status(400).json(response);
+    }
+
+    return res.status(201).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 module.exports = {

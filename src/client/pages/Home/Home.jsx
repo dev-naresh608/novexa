@@ -1,13 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Hero, Footer } from "../../components";
+import { Hero, Footer, BlogSection } from "../../components";
 
 import { Category } from "..";
 import { bottom_banner } from "../../../../public/assets";
 
-import {
-  UserContext,
-  CartProductContext,
-} from "../../contexts/context";
+import { UserContext, CartProductContext } from "../../contexts/context";
 import { Menu, X, Truck, Leaf, Coins, ShieldCheck } from "lucide-react";
 import { NavLink, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 function Home({ productsList }) {
@@ -17,7 +14,6 @@ function Home({ productsList }) {
 
   const { setActiveTab, activeTab } = useContext(UserContext);
   const { cartItems } = useContext(CartProductContext);
-
 
   if (!isLogin) {
     const items = [
@@ -46,7 +42,8 @@ function Home({ productsList }) {
       <>
         <Hero />
         <Category />
-        <section className="p-5 py-10">
+        <BlogSection />
+        <section className="p-5 py-10 bg-gray-50/80">
           <div className="sm:flex sm:gap-10 space-y-10 bg-blue-200 rounded-2xl p-5 sm:items-center">
             {/* left  */}
             <div className="w-auto sm:w-[60vw] md:w-[80vw]">

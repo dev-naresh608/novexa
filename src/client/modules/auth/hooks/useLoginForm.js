@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { UserContext } from "../../../contexts/context";
-import { loginUserApi } from "../services/authService";
+import { loginUserApi } from "../services/auth.service.api";
 
 export function useLoginForm() {
   const navigate = useNavigate();
@@ -36,16 +36,17 @@ export function useLoginForm() {
     try {
       const res = await loginUserApi(formData);
 
-      if (res.data.isLoginSuccess) {
+      if (res.data.success) {
         toast.success("Login successful");
         setCurrentUser(res.data.user);
+        console.log(res.data.user);
         setCurrentUserRole(res.data.user.role);
         setTimeout(() => {
           setIsLogin(true);
           navigate("/dashboard");
         }, 1000);
       } else {
-        toast.error(res.data.msg);
+        toast.error(res.data.message);
       }
     } catch (err) {
       console.log("Error:", err);

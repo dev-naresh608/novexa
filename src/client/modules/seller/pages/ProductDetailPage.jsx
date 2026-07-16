@@ -129,7 +129,7 @@ function ProductDetailPage() {
 
       const data = await updateProductApi(productId, currentUser._id, updates);
 
-      toast.success(data.msg || "Product updated successfully");
+      toast.success(data.message || "Product updated successfully");
 
       setProduct((prev) => ({
         ...prev,

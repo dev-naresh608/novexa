@@ -8,4 +8,5 @@ module.exports = {
   ...require('./order'),
   ...require('./product'),
   ...require('./seller'),
+  ...require('./admin'),
 };

@@ -94,7 +94,7 @@ export const onCartPlaceOrder = async (
     const customerNotification = {
       notificationID: uuid(),
 
-      msg: `Hey ${
+      message: `Hey ${
         currentUser.username.split(" ")[0]
       }, Your order has been placed successfully at ${store.store_name}.`,
 
@@ -106,7 +106,7 @@ export const onCartPlaceOrder = async (
     const storeNotification = {
       notificationID: uuid(),
 
-      msg: `New order received from ${
+      message: `New order received from ${
         currentUser.username
       }. Total Amount: $${finalPrice}`,
 

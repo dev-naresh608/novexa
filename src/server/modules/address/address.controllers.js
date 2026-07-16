@@ -35,10 +35,10 @@ const handleAddAddressApi = async (req, res) => {
     const { userId } = req.params;
     const payload = req.body;
 
-    const returnResponse = (msg) => {
+    const returnResponse = (message) => {
       return {
         success: false,
-        message: msg,
+        message: message,
       };
     };
     if (!userId) {

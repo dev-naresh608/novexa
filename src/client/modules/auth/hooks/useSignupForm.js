@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { signupUserApi } from "../services/authService";
+import { signupUserApi } from "../services/auth.service.api";
 
 const INITIAL_FORM_DATA = {
   username: "",
@@ -85,15 +85,15 @@ export function useSignupForm() {
     const payload = buildPayload();
 
     try {
-      const res = await signupUserApi(payload);
+      const {data} = await signupUserApi(payload);
 
-      if (res.data.isSignupSuccess) {
-        toast.success(`Signup successful as a ${res.data.role}`);
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
+      if (data.success) {
+        toast.success(`Signup successful`);
+        // setTimeout(() => {
+        //   navigate("/login");
+        // }, 1000);
       } else {
-        toast.error(res.data.msg);
+        toast.error(data.message);
       }
     } catch (err) {
       console.log("Error:", err);
