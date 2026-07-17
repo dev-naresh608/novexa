@@ -1,10 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AddressForm,
-  generateAddressLine,
-  onCartPlaceOrder,
-} from "../../index";
+import { generateAddressLine, onCartPlaceOrder } from "../../index";
+import { useModal, MODAL_TYPES } from "../../../components";
 function OrderSummary({
   currentUser,
   setCurrentUser,
@@ -24,6 +21,7 @@ function OrderSummary({
   const isAddressAvailable = false;
   const currentUserAddress = false;
   const navigate = useNavigate();
+  const { openModal } = useModal();
 
   const handleAddressChange = (e) => {
     const addressId = e.target.value;
@@ -48,8 +46,8 @@ function OrderSummary({
         {!addressList ? (
           <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-2 text-center text-sm">
             <button
-              className="font-medium hover:underline"
-              onClick={() => setIsAddressFormOpen((prev) => !prev)}
+              className="font-medium hover:underline cursor-pointer outline-none"
+              onClick={() => openModal(MODAL_TYPES.ADDRESS, { userId, setAddress })}
             >
               + Add Address
             </button>
@@ -63,8 +61,8 @@ function OrderSummary({
             </div>
             <div className="text-right">
               <button
-                className="font-medium hover:underline text-blue-700"
-                onClick={() => setIsAddressFormOpen((prev) => !prev)}
+                className="font-medium hover:underline text-blue-700 cursor-pointer outline-none"
+                onClick={() => openModal(MODAL_TYPES.ADDRESS, { userId, setAddress })}
               >
                 add new
               </button>
@@ -141,14 +139,6 @@ function OrderSummary({
           Place Order
         </button>
       </div>
-
-      {isAddressFormOpen && (
-        <AddressForm
-          closeBtnAction={setIsAddressFormOpen}
-          userId={userId}
-          setAddress={setAddress}
-        />
-      )}
     </>
   );
 }

@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { GradientButton, ProductBuyCard, Store } from "..";
-import { defaultRest } from "../../../../public/assets";
+import { GradientButton, ProductBuyCard, StoreCard } from "../..";
+import { defaultRest } from "../../../../../public/assets";
 
 import {
   ProductContext,
   CategoryContext,
   UserContext,
-} from "../../contexts/context";
+} from "../../../contexts/context";
 import { toast } from "react-toastify";
-import { db } from "../../db";
+import { db } from "../../../db";
 import { div } from "framer-motion/client";
 
 function CategoryWiseProducts() {
@@ -52,7 +52,7 @@ function CategoryWiseProducts() {
       <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4">
         {selectedCategoryProduct.map((r, i) => {
           return (
-            <Store
+            <StoreCard
               key={i}
               defaultRest={defaultRest}
               name={r.store_name}

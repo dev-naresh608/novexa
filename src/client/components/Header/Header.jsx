@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
   CartProductContext,
@@ -7,7 +7,7 @@ import {
   ProductContext,
 } from "../../contexts/context";
 import { novexa_logo } from "../../../../public/assets";
-import { ProfileToggle, NotificationToggle } from "../../index";
+import { ProfileToggle, NotificationToggle, useModal, MODAL_TYPES } from "../../index";
 import {
   Search,
   ShoppingBag,
@@ -21,6 +21,8 @@ import {
 function JoinUsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { openModal } = useModal();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -47,22 +49,30 @@ function JoinUsDropdown() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-10">
-          <Link
-            to="/signup?role=seller"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition-colors"
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              setSearchParams({ role: "seller" });
+              openModal(MODAL_TYPES.SIGNUP);
+            }}
+            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition-colors border-none bg-transparent cursor-pointer outline-none font-semibold"
           >
             <Store className="w-4 h-4" />
             Become a Seller
-          </Link>
-          <Link
-            to="/signup?role=driver"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition-colors"
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              setSearchParams({ role: "driver" });
+              openModal(MODAL_TYPES.SIGNUP);
+            }}
+            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700 transition-colors border-none bg-transparent cursor-pointer outline-none font-semibold"
           >
             <Car className="w-4 h-4" />
             Join as Driver
-          </Link>
+          </button>
         </div>
       )}
     </div>
@@ -74,6 +84,8 @@ function Header() {
   const { productsList } = useContext(ProductContext);
   const { cartItems } = useContext(CartProductContext);
   const navigate = useNavigate();
+  const { openModal } = useModal();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [searchValue, setSearchValue] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -153,12 +165,13 @@ function Header() {
             </Link>
 
             <div>
-              <Link
-                to="/login"
-                className="text-sm font-semibold text-gray-700 border border-gray-200 rounded-2xl px-4 py-2 hover:border-green-400 hover:text-green-700 transition-colors"
+              <button
+                type="button"
+                onClick={() => openModal(MODAL_TYPES.LOGIN)}
+                className="text-sm font-semibold text-gray-700 border border-gray-200 rounded-2xl px-4 py-2 hover:border-green-400 hover:text-green-700 transition-colors outline-none cursor-pointer"
               >
                 Login
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -262,35 +275,46 @@ function Header() {
 
                     {isMobileJoinOpen && (
                       <div className="flex flex-col gap-3 mt-3 pl-2">
-                        <Link
-                          to="/signup?role=seller"
-                          className="flex items-center gap-2 text-gray-600 font-normal hover:text-green-700 transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setSearchParams({ role: "seller" });
+                            openModal(MODAL_TYPES.SIGNUP);
+                          }}
+                          className="flex items-center gap-2 text-gray-600 font-semibold hover:text-green-700 transition-colors border-none bg-transparent cursor-pointer outline-none w-full text-left"
                         >
                           <Store className="w-4 h-4" />
                           Become a Seller
-                        </Link>
-                        <Link
-                          to="/signup?role=driver"
-                          className="flex items-center gap-2 text-gray-600 font-normal hover:text-green-700 transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setSearchParams({ role: "driver" });
+                            openModal(MODAL_TYPES.SIGNUP);
+                          }}
+                          className="flex items-center gap-2 text-gray-600 font-semibold hover:text-green-700 transition-colors border-none bg-transparent cursor-pointer outline-none w-full text-left"
                         >
                           <Car className="w-4 h-4" />
                           Join as Driver
-                        </Link>
+                        </button>
                       </div>
                     )}
                   </li>
                 </ul>
 
                 <div className="flex flex-col gap-3 mt-2">
-                  <Link
-                    to="/login"
-                    className="text-center text-sm font-semibold text-gray-700 border border-gray-200 rounded-2xl px-4 py-2.5 hover:border-green-400 hover:text-green-700 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      openModal(MODAL_TYPES.LOGIN);
+                    }}
+                    className="text-center text-sm font-semibold text-gray-700 border border-gray-200 rounded-2xl px-4 py-2.5 hover:border-green-400 hover:text-green-700 transition-colors outline-none cursor-pointer"
                   >
                     Login
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

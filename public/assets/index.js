@@ -1,5 +1,6 @@
-import novexa_title_logo from "./novexa-title-logo.png"
-import novexa_logo from "./novexa-logo-one.svg"
+import novexa_title_logo from "./novexa-title-logo.png";
+import heroBannerImage from "./hero-banner-image.png";
+import novexa_logo from "./novexa-logo-one.svg";
 // import novexa_logo from "./novexa-logo-two.svg"
 // import novexa_logo from "./novexa-logo-three.svg"
 import bottom_banner from "./bottom_banner.png";
@@ -13,11 +14,12 @@ import shopping_cart_with_grocery_items from "./shopping-cart-with-grocery-items
 export {
   novexa_logo,
   novexa_title_logo,
+  heroBannerImage,
   bottom_banner,
   defaultPP,
   defaultRest,
   footer_banner,
   fruit_basket,
   greenCart_logo,
-  shopping_cart_with_grocery_items
+  shopping_cart_with_grocery_items,
 };

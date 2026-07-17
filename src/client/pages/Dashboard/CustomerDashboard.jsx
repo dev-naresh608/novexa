@@ -4,17 +4,32 @@ import { defaultPP } from "../../../../public/assets";
 import { NavLink } from "react-router-dom";
 import DashboardCards from "./DashboardCards.jsx";
 import { dashboardCards } from "./dashboardCards";
-import {MiniProfileContainer} from "../../components/index.js"
+import { MiniProfileContainer, useModal, MODAL_TYPES } from "../../components/index.js"
+import { db } from "../../db";
 import { ChevronRight, Mail, MapPin, MoveRight, Phone } from "lucide-react";
 
 function CustomerDashboard() {
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, setCurrentUser, setUserData } = useContext(UserContext);
+  const { openModal } = useModal();
   let currentUserAddress = "";
   const isAddressAvailable = currentUser.hasOwnProperty("myAddress");
 
   if (isAddressAvailable) {
     currentUserAddress = `${currentUser.myAddress.name} ${currentUser.myAddress.phone} ${currentUser.myAddress.street} ${currentUser.myAddress.city} ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode} `;
   }
+
+  const handleAddAddress = () => {
+    openModal(MODAL_TYPES.ADDRESS, {
+      userId: currentUser._id,
+      setAddress: async (newAddress) => {
+        const user = await db.localUserData.get(currentUser._id);
+        user.myAddress = newAddress;
+        await db.localUserData.put(user);
+        setUserData(await db.localUserData.toArray());
+        setCurrentUser(await db.localUserData.get(currentUser._id));
+      }
+    });
+  };
 
   // Customer stats -------------------------------
   const customerStats = {
@@ -176,12 +191,13 @@ function CustomerDashboard() {
                       {currentUserAddress}
                     </p>
                   ) : (
-                    <NavLink
-                      to="/addressform"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] mt-1 transition-colors"
+                    <button
+                      type="button"
+                      onClick={handleAddAddress}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] mt-1 transition-colors bg-transparent border-none p-0 cursor-pointer outline-none"
                     >
                       + Add address
-                    </NavLink>
+                    </button>
                   )}
                 </div>
               </div>

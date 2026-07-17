@@ -1,0 +1,6 @@
+export const MODAL_TYPES = {
+  LOGIN: "LOGIN",
+  SIGNUP: "SIGNUP",
+  ADDRESS: "ADDRESS",
+  CONFIRM: "CONFIRM",
+};

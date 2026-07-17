@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { UserContext } from "../../contexts/context";
 import { defaultPP } from "../../../../public/assets";
-import { MiniProfileContainer } from "..";
+import { MiniProfileContainer, useModal, MODAL_TYPES } from "..";
 import { Home, LogOut, Mail, User } from "lucide-react";
 
 function ProfileToggle() {
@@ -18,6 +18,7 @@ function ProfileToggle() {
   } = useContext(UserContext);
 
   const navigate = useNavigate();
+  const { openModal } = useModal();
 
   // Base shared styles for navigation links
   const commonStyle =
@@ -41,10 +42,19 @@ function ProfileToggle() {
 
   const handleLogout = () => {
     setIsProfileClicked(false);
-    setCurrentUserRole("customer");
-    navigate("/");
-    // setIsLogin(false); // ! error.
-    window.location.reload()
+    openModal(MODAL_TYPES.CONFIRM, {
+      title: "Logout Confirmation",
+      message: "Are you sure you want to log out of your account?",
+      confirmText: "Logout",
+      cancelText: "Cancel",
+      type: "danger",
+      onConfirm: () => {
+        setIsLogin(false);
+        setCurrentUserRole("customer");
+        navigate("/");
+        window.location.reload();
+      }
+    });
   };
 
   return (
@@ -108,14 +118,15 @@ function ProfileToggle() {
             ))}
 
             {/* Logout Button*/}
-            <li>
-              <Link
+            <li className="w-full">
+              <button
+                type="button"
                 onClick={handleLogout}
-                className={`${commonStyle} text-red-600 hover:bg-red-50`}
+                className={`${commonStyle} text-red-600 hover:bg-red-50 w-full text-left border-none bg-transparent cursor-pointer outline-none flex items-center`}
               >
-                <LogOut size={17} strokeWidth={2.5} />
+                <LogOut size={17} strokeWidth={2.5} className="mr-1" />
                 <span>Logout</span>
-              </Link>
+              </button>
             </li>
           </ul>
         </div>

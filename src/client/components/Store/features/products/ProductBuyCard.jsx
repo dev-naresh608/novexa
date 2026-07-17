@@ -1,15 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
-import { RatingStar } from "..";
+import { RatingStar, ProductImageLoader } from "../../../..";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { db } from "../../db";
+import { db } from "../../../../db";
 import {
   ProductContext,
   CartProductContext,
   UserContext,
   WishlistContext,
-} from "../../contexts/context";
-import ProductImageLoader from "./ProductImageLoader";
+} from "../../../../contexts/context";
 
 import { useParams } from "react-router-dom";
 import { Heart, ShoppingCartIcon } from "lucide-react";

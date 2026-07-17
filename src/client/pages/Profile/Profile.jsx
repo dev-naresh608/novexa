@@ -6,6 +6,7 @@ import {
   Setting,
   Payments,
 } from "..";
+import { useModal, MODAL_TYPES } from "../../components";
 
 
 import { defaultPP } from "../../../../public/assets";
@@ -13,6 +14,7 @@ import { CardSim, CreditCard, LogOut, Settings, User } from "lucide-react";
 
 function Profile() {
   const navigate = useNavigate();
+  const { openModal } = useModal();
   const {
     currentUser,
     activeTab,
@@ -115,10 +117,19 @@ function Profile() {
 
               <li
                 onClick={() => {
-                  setIsLogin(false);
-                  navigate("/login");
-                  setCurrentUserRole("customer");
-                  location.reload();
+                  openModal(MODAL_TYPES.CONFIRM, {
+                    title: "Logout Confirmation",
+                    message: "Are you sure you want to log out of your account?",
+                    confirmText: "Logout",
+                    cancelText: "Cancel",
+                    type: "danger",
+                    onConfirm: () => {
+                      setIsLogin(false);
+                      setCurrentUserRole("customer");
+                      navigate("/");
+                      location.reload();
+                    }
+                  });
                 }}
                 className="text-red-500 cursor-pointer flex items-center gap-2"
               >

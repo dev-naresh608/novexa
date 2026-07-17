@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { defaultRest } from "../../../../public/assets";
-import { UserContext } from "../../contexts/context";
-import { Store } from "..";
-import { db } from "../../db";
+import { defaultRest } from "../../../../../public/assets";
+import { UserContext } from "../../../contexts/context";
+import { StoreCard } from "../..";
+import { db } from "../../../db";
 import axios from "axios";
 
 function AllStores() {
@@ -30,7 +30,7 @@ function AllStores() {
       <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4">
         {AllStores.map((r, i) => {
           return (
-            <Store
+            <StoreCard
               key={i}
               defaultRest={defaultRest}
               name={r.store_name}

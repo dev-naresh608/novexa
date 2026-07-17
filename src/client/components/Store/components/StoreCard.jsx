@@ -2,7 +2,7 @@ import { MapPin, Star, StarOff, StarsIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Store({  defaultRest, name, address, id }) {
+function StoreCard({  defaultRest, name, address, id }) {
   return (
     <div
       className="flex gap-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100"
@@ -36,4 +36,4 @@ function Store({  defaultRest, name, address, id }) {
   );
 }
 
-export default Store;
+export default StoreCard;

@@ -10,8 +10,6 @@ import {
 } from "./client/contexts/context";
 
 import {
-    Login,
-  Singup,
   Profile,
   PersonalInfo,
   Setting,
@@ -41,6 +39,8 @@ import {
   Layout,
   SearchProduct,
   AllStores,
+  useModal,
+  MODAL_TYPES,
 } from "./client/components";
 
 import {
@@ -49,11 +49,32 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
+  useNavigate,
 } from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
 import { useEffect } from "react";
 import OrderProvider from "./client/contexts/OrderContext";
+
+const LoginRedirect = () => {
+  const { openModal } = useModal();
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate("/", { replace: true });
+    openModal(MODAL_TYPES.LOGIN);
+  }, [openModal, navigate]);
+  return null;
+};
+
+const SignupRedirect = () => {
+  const { openModal } = useModal();
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate("/", { replace: true });
+    openModal(MODAL_TYPES.SIGNUP);
+  }, [openModal, navigate]);
+  return null;
+};
 
 function App() {
   const router = createBrowserRouter(
@@ -61,8 +82,8 @@ function App() {
       <Route path="/" element={<Layout />}>
         {/* ! general path */}
 
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/signup" element={<Singup />}></Route>
+        <Route path="/login" element={<LoginRedirect />}></Route>
+        <Route path="/signup" element={<SignupRedirect />}></Route>
         <Route path="allproduct" element={<AllProducts />}></Route>
         <Route
           path="/allproducts/searchproduct/:searchValue"

@@ -14,6 +14,7 @@ function Home({ productsList }) {
 
   const { setActiveTab, activeTab } = useContext(UserContext);
   const { cartItems } = useContext(CartProductContext);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
 
   if (!isLogin) {
     const items = [
@@ -80,8 +81,6 @@ function Home({ productsList }) {
       </>
     );
   }
-
-  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
 
   return (
     <>

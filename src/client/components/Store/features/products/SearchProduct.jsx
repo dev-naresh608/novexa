@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
-import { ProductContext } from "../../contexts/context";
+import { ProductContext } from "../../../../contexts/context";
 
 function SearchProduct() {
   const { productsList } = useContext(ProductContext);

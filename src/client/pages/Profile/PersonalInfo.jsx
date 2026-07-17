@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddressContext, UserContext } from "../../contexts/context";
+import { useModal, MODAL_TYPES } from "../../components";
 import { db } from "../../db";
 import {
   User,
@@ -36,6 +37,7 @@ function PersonalInfo() {
   const { currentUser, setCurrentUser, setUserData, setActiveTab } =
     useContext(UserContext);
   const navigate = useNavigate();
+  const { openModal } = useModal();
 
   let isAddressAvail = currentUser.hasOwnProperty("myAddress");
   const addr = isAddressAvail ? currentUser.myAddress : null;
@@ -45,12 +47,34 @@ function PersonalInfo() {
 
   useEffect(() => setActiveTab("personalinformation"), []);
 
-  const onDeleteAddress = async () => {
-    const user = await db.localUserData.get(currentUser.id);
-    delete user.myAddress;
-    await db.localUserData.put(user);
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(await db.localUserData.get(currentUser.id));
+  const onDeleteAddress = () => {
+    openModal(MODAL_TYPES.CONFIRM, {
+      title: "Delete Address",
+      message: "Are you sure you want to delete your saved address?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+      onConfirm: async () => {
+        const user = await db.localUserData.get(currentUser.id);
+        delete user.myAddress;
+        await db.localUserData.put(user);
+        setUserData(await db.localUserData.toArray());
+        setCurrentUser(await db.localUserData.get(currentUser.id));
+      }
+    });
+  };
+
+  const onAddOrEditAddress = () => {
+    openModal(MODAL_TYPES.ADDRESS, {
+      userId: currentUser.id,
+      setAddress: async (newAddress) => {
+        const user = await db.localUserData.get(currentUser.id);
+        user.myAddress = newAddress;
+        await db.localUserData.put(user);
+        setUserData(await db.localUserData.toArray());
+        setCurrentUser(await db.localUserData.get(currentUser.id));
+      }
+    });
   };
 
   const totalOrders = currentUser?.myOrders?.length || 0;
@@ -153,7 +177,7 @@ function PersonalInfo() {
             </div>
             <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#F5F5F4]">
               <button
-                onClick={() => navigate("/addressform")}
+                onClick={onAddOrEditAddress}
                 className="flex items-center gap-1.5 text-xs font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors"
               >
                 <Pencil size={12} strokeWidth={2} /> Edit
@@ -176,7 +200,7 @@ function PersonalInfo() {
               No address saved yet
             </p>
             <button
-              onClick={() => navigate("/addressform")}
+              onClick={onAddOrEditAddress}
               className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] transition-colors"
             >
               <PlusCircle size={13} strokeWidth={2} /> Add Address

@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
-import { ProductContext, UserContext } from "../../contexts/context";
+import { ProductContext, UserContext } from "../../../../contexts/context";
 
-import { GradientButton } from "..";
+import { GradientButton } from "../../..";
 import axios from "axios";
 function AllProducts() {
   const { restId = null } = useParams();
@@ -15,7 +15,7 @@ function AllProducts() {
   useEffect(() => {
     // const product = storeLisst.find((r) => r.id === restId);
     // setTotalProducts(product?.productList || []);
-
+    console.log("here");
     const fetchProduct = async () => {
       const { data } = await axios.get(
         `http://localhost:5000/stores/allproducts/${restId}`,
@@ -40,7 +40,7 @@ function AllProducts() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <h2 className="text-lg font-semibold text-gray-600">
-         Login to get All products
+          Login to get All products
         </h2>
         <p className="text-sm text-gray-500 mt-1">
           There is a no products available on this app.
