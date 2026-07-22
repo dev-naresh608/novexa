@@ -3,7 +3,7 @@ import { Link, useLoaderData, useParams } from "react-router-dom";
 import ProductBuyCard from "./ProductBuyCard";
 import { ProductContext, UserContext } from "../../../../contexts/context";
 import { GradientButton } from "../../..";
-import axios from "axios";
+import api from "../../../../configs/api";
 import { toast } from "react-toastify";
 function AllProducts() {
   const { restId = null } = useParams();
@@ -16,8 +16,8 @@ function AllProducts() {
     // const product = storeLisst.find((r) => r.id === restId);
     // setTotalProducts(product?.productList || []);
     const fetchProduct = async () => {
-      const { data } = await axios.get(
-        `http://localhost:5000/stores/allproducts/${restId}`,
+      const { data } = await api.get(
+        `/stores/allproducts/${restId}`,
       );
       if (!data.success) {
         toast.error(data.message);

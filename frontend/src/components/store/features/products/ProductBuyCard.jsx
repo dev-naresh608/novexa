@@ -12,7 +12,7 @@ import {
 
 import { useParams } from "react-router-dom";
 import { Heart, ShoppingCartIcon } from "lucide-react";
-import axios from "axios";
+import api from "../../../../configs/api";
 
 function ProductBuyCard({
   name,
@@ -46,7 +46,7 @@ function ProductBuyCard({
     //   return toast.error("Login To Buy Items");
     // }
 
-    const { data } = await axios.get(`http://localhost:5000/cart/${itemId}`);
+    const { data } = await api.get(`/cart/${itemId}`);
 
     if (!data.success) {
       return toast.error(data.message);
@@ -145,7 +145,7 @@ function ProductBuyCard({
       return toast.error("Login To Add Items in Wishlist");
     }
 
-    const { data } = await axios.get(`http://localhost:5000/cart/${itemId}`);
+    const { data } = await api.get(`/cart/${itemId}`);
 
     if (!data.success) {
       return toast.error(data.message);

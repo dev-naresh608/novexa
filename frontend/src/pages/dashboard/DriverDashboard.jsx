@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { defaultPP } from "../../../public/assets";
+import { defaultPP } from "@/assets";
 import { UserContext } from "../../contexts/context";
 import { NavLink } from "react-router-dom";
 import { db } from "../../db";

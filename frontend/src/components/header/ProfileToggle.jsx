@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../../public/assets";
+import { defaultPP } from "@/assets";
 import { MiniProfileContainer, useModal, MODAL_TYPES } from "..";
 import { Home, LogOut, Mail, User } from "lucide-react";
 

@@ -9,7 +9,7 @@ import {
 import { useModal, MODAL_TYPES } from "../../components";
 
 
-import { defaultPP } from "../../../public/assets";
+import { defaultPP } from "@/assets";
 import { CardSim, CreditCard, LogOut, Settings, User } from "lucide-react";
 
 function Profile() {

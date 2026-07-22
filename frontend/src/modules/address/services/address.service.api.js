@@ -1,11 +1,11 @@
-import axios from "axios";
+import api from "../../../configs/api";
 import { toast } from "react-toastify";
 
 export const handleGetAddressApi = async (userId) => {
   if (!userId) return;
   try {
-    const { data } = await axios.get(
-      `http://localhost:5000/address/all/${userId}`,
+    const { data } = await api.get(
+      `/address/all/${userId}`,
     );
     return data;
   } catch (error) {
@@ -16,8 +16,8 @@ export const handleGetAddressApi = async (userId) => {
 export const handleAddAddressApi = async (userId, payload) => {
   if (!userId || !payload) return;
   try {
-    const { data } = await axios.post(
-      `http://localhost:5000/address/add/${userId}`,
+    const { data } = await api.post(
+      `/address/add/${userId}`,
       payload,
     );
     return data;

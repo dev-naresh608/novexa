@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/context";
 import { toast, ToastContainer } from "react-toastify";
 import { db } from "../../db";
-import { defaultPP } from "../../../public/assets";
+import { defaultPP } from "@/assets";
 import {
   User,
   Mail,

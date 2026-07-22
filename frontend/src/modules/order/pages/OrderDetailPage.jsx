@@ -17,7 +17,7 @@ import {
   CopyIcon,
 } from "lucide-react";
 
-import axios from "axios";
+import api from "../../../configs/api";
 import { toast } from "react-toastify";
 import {
   orderStatusConfig,
@@ -45,8 +45,8 @@ function OrderDetail() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const { data } = await axios.get(
-          `http://localhost:5000/order/detail/${orderId}`,
+        const { data } = await api.get(
+          `/order/detail/${orderId}`,
         );
         if (!data.success) {
           return toast.error(data.message);

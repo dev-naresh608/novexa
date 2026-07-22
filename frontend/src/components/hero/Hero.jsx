@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { GradientButton, useModal, MODAL_TYPES } from "..";
-import { heroBannerImage } from "../../../public/assets";
+import { heroBannerImage } from "@/assets";
 
 const TRUST_BADGES = [
   { icon: Truck, label: "30-min delivery" },

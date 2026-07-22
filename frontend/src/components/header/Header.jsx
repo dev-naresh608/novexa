@@ -6,7 +6,7 @@ import {
   UserContext,
   ProductContext,
 } from "../../contexts/context";
-import { novexa_logo } from "../../../public/assets";
+import { novexa_logo } from "@/assets";
 import { ProfileToggle, NotificationToggle, useModal, MODAL_TYPES } from "../../index";
 import {
   Search,

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { UserContext } from "../../contexts/context.js";
-import { defaultPP } from "../../../public/assets/index.js";
+import { defaultPP } from "@/assets";
 import { NavLink } from "react-router-dom";
 import DashboardCards from "./DashboardCards.jsx";
 import { dashboardCards } from "./dashboardCards.js";

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../../configs/api";
 
 export const acceptOrder = () => {};
 
@@ -11,7 +11,7 @@ export const assignDriver = () => {};
 export const updateOrderStatus = () => {};
 
 export const getAllOrdersSvc = async (id, role) => {
-  return await axios.get(
-    `http://localhost:5000/order/${id}?role=${role}`,
+  return await api.get(
+    `/order/${id}?role=${role}`,
   );
 };

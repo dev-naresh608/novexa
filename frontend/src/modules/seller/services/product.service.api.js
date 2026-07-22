@@ -1,9 +1,9 @@
-import axios from "axios";
+import api from "../../../configs/api";
 
 export const getAllProductsApi = async (userId) => {
   try {
-    const { data } = await axios.get(
-      `http://localhost:5000/product/allproducts/${userId}`,
+    const { data } = await api.get(
+      `/product/allproducts/${userId}`,
     );
     return data;
   } catch (error) {
@@ -20,8 +20,8 @@ export const handleProductStockChangeApi = async (
   const updates = {
     is_product_in_stock: !is_product_in_stock,
   };
-  const { data } = await axios.patch(
-    `http://localhost:5000/product/${product_id}`,
+  const { data } = await api.patch(
+    `/product/${product_id}`,
     {
       store_id: userId,
       product_id,
@@ -39,8 +39,8 @@ export const handleProductOfferChangeApi = async (
   const updates = {
     is_offer_available: !is_offer_available,
   };
-  const { data } = await axios.patch(
-    `http://localhost:5000/product/${product_id}`,
+  const { data } = await api.patch(
+    `/product/${product_id}`,
     {
       store_id: userId,
       updates,
@@ -54,8 +54,8 @@ export const handleDeleteProductApi = async (
   currentUser,
   setCurrentUser,
 ) => {
-  const { data } = await axios.delete(
-    `http://localhost:5000/product/${product_id}`,
+  const { data } = await api.delete(
+    `/product/${product_id}`,
     { data: { store_id: currentUser._id } },
   );
 
@@ -70,8 +70,8 @@ export const handleDeleteProductApi = async (
 
 export const getProductByIdApi = async (productId) => {
   try {
-    const { data } = await axios.get(
-      `http://localhost:5000/product/${productId}`,
+    const { data } = await api.get(
+      `/product/${productId}`,
     );
     return data;
   } catch (error) {
@@ -81,8 +81,8 @@ export const getProductByIdApi = async (productId) => {
 
 export const updateProductApi = async (productId, storeId, updates) => {
   try {
-    const { data } = await axios.patch(
-      `http://localhost:5000/product/${productId}`,
+    const { data } = await api.patch(
+      `/product/${productId}`,
       {
         store_id: storeId,
         updates,

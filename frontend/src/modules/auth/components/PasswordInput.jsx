@@ -9,6 +9,7 @@ export default function PasswordInput({
   onToggle,
   placeholder = "Password...",
   required = true,
+  autoComplete = "current-password",
 }) {
   return (
     <div>
@@ -24,6 +25,7 @@ export default function PasswordInput({
           required={required}
           placeholder={placeholder}
           onChange={onChange}
+          autoComplete={autoComplete}
           className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 text-sm"
         />
 

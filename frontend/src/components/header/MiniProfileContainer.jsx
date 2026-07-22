@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { UserContext } from "../../contexts/context";
-import { defaultPP } from "../../../public/assets";
+import { defaultPP } from "@/assets";
 import { Mail } from "lucide-react";
 function MiniProfileContainer() {
   const { currentUser } = useContext(UserContext);

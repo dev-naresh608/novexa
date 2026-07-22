@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { GradientButton, ProductBuyCard, StoreCard } from "../..";
-import { defaultRest } from "../../../../public/assets";
+import { defaultRest } from "@/assets";
 
 import {
   ProductContext,

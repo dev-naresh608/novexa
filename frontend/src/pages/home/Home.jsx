@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Hero, Footer, BlogSection } from "../../components";
 
 import { Category } from "..";
-import { bottom_banner } from "../../../public/assets";
+import { bottom_banner } from "@/assets";
 
 import { UserContext, CartProductContext } from "../../contexts/context";
 import { Menu, X, Truck, Leaf, Coins, ShieldCheck } from "lucide-react";

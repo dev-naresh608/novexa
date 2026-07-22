@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, ArrowRight, CheckCircle2 } from "lucide-react";
 
-import { novexa_logo } from "../../../public/assets";
+import { novexa_logo } from "@/assets";
 import { UserContext } from "../../contexts/context";
 
 const FOOTER_LINKS = {

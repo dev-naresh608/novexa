@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 import { toast } from "react-toastify";
 import { ArrowLeftIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../../configs/api";
 
 function AddProduct() {
   const [productImg, setProductImg] = useState(null);
@@ -139,8 +139,8 @@ function AddProduct() {
           "ContenContent-Type": "multipart/form-data",
         },
       };
-      const { data } = await axios.post(
-        "http://localhost:5000/product/add-product",
+      const { data } = await api.post(
+        "/product/add-product",
         formDataToSend,
         config,
       );

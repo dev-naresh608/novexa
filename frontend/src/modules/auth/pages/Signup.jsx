@@ -44,6 +44,7 @@ export default function Signup() {
           placeholder="Username..."
           value={formData.username}
           onChange={handleChange}
+          autoComplete="username"
           required
         />
 
@@ -55,6 +56,7 @@ export default function Signup() {
           placeholder="Email..."
           value={formData.email}
           onChange={handleChange}
+          autoComplete="email"
           required
         />
 
@@ -63,6 +65,7 @@ export default function Signup() {
           onChange={handleChange}
           visible={isPassVisible}
           onToggle={handleShowPassword}
+          autoComplete="new-password"
         />
 
         <FormInput

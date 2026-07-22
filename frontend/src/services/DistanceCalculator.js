@@ -1,8 +1,10 @@
+import { API_BASE_URL } from "../configs/api";
+
 // Get distance
 export const getDistance = async (lat1, lon1, lat2, lon2) => {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/distance?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}`,
+      `${API_BASE_URL}/api/distance?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}`,
     );
 
     if (!response.ok) {
@@ -29,7 +31,7 @@ export const getAddress = async (userAddress) => {
   
   try {
     const response = await fetch(
-      `http://localhost:5000/api/address?userAddress=${userAddress}`,
+      `${API_BASE_URL}/api/address?userAddress=${userAddress}`,
     );
 
     if (!response.ok) {

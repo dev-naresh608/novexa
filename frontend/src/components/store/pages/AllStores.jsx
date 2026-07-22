@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import { defaultRest } from "../../../../public/assets";
+import { defaultRest } from "@/assets";
 import { UserContext } from "../../../contexts/context";
 import { EmptyStore, StoreCard } from "../..";
 import { db } from "../../../db";
-import axios from "axios";
+import api from "../../../configs/api";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -16,9 +16,9 @@ function AllStores() {
     try {
       const getStores = async () => {
         const url = searchQuery
-          ? `http://localhost:5000/stores?search=${encodeURIComponent(searchQuery)}`
-          : "http://localhost:5000/stores";
-        const { data } = await axios.get(url);
+          ? `/stores?search=${encodeURIComponent(searchQuery)}`
+          : "/stores";
+        const { data } = await api.get(url);
         
         if (!data.success) {
           toast.error(data.message);

@@ -3,12 +3,7 @@ import React from "react";
 function FormInput({
   icon : Icon,
   label,
-  name,
-  type,
-  placeholder,
-  value,
-  onChange,
-  required,
+  ...rest
 }) {
   return (
     <div>
@@ -17,12 +12,8 @@ function FormInput({
         <Icon className="text-gray-400" size={20} />
 
         <input
-          type={type}
-          name={name}
-          onChange={onChange}
-          placeholder={placeholder}
-          required={required}
           className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-400 autofill:bg-transparent text-sm "
+          {...rest}
         />
       </div>
     </div>
