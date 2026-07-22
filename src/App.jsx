@@ -3,11 +3,12 @@ import {
   CartProductContextProvider,
   OrderHistoryContextProvider,
   ProductContextProvider,
+  UserContext,
   UserContextProvider,
   WishlistContextProvider,
   CategoryContextProvider,
   OrderContext,
-} from "./client/contexts/context";
+} from "./frontend/contexts/context";
 
 import {
   Profile,
@@ -29,9 +30,7 @@ import {
   VehicleDetails,
   Earnings,
   ShowAllNotifications,
-} from "./client/index";
-
-
+} from "./frontend/index";
 
 import {
   AllProducts,
@@ -41,7 +40,7 @@ import {
   AllStores,
   useModal,
   MODAL_TYPES,
-} from "./client/components";
+} from "./frontend/components";
 
 import {
   BrowserRouter,
@@ -50,11 +49,12 @@ import {
   Route,
   RouterProvider,
   useNavigate,
+  Outlet,
 } from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
-import { useEffect } from "react";
-import OrderProvider from "./client/contexts/OrderContext";
+import { useEffect, useContext } from "react";
+import OrderProvider from "./frontend/contexts/OrderContext";
 
 const LoginRedirect = () => {
   const { openModal } = useModal();
@@ -76,6 +76,23 @@ const SignupRedirect = () => {
   return null;
 };
 
+const ProtectedRoute = () => {
+  const { isLogin } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLogin) {
+      navigate("/login", { replace: true });
+    }
+  }, [isLogin, navigate]);
+
+  if (!isLogin) {
+    return null;
+  }
+
+  return <Outlet />;
+};
+
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -84,51 +101,52 @@ function App() {
 
         <Route path="/login" element={<LoginRedirect />}></Route>
         <Route path="/signup" element={<SignupRedirect />}></Route>
-        <Route path="allproduct" element={<AllProducts />}></Route>
-        <Route
-          path="/allproducts/searchproduct/:searchValue"
-          element={<SearchProduct />}
-        />
         {/* ! end of general paths */}
 
         {/* ! show in panel  */}
         <Route path="/" element={<Home />}>
-          {/* <Route path="" element={<Dashboard />}></Route> */}
+          {/* Public Routes */}
           <Route path="categories" element={<Category />}></Route>
           <Route
             path="categories/categoryWiseProducts/:catName"
             element={<CategoryWiseProducts />}
           />
-          <Route path="favourite" element={<Wishlist />}></Route>
-          <Route path="orders" element={<Orders />}></Route>
-          <Route path="orders/:orderId" element={<OrderDetail />} />
-          {/* <Route path="cart" element={<Cart />}></Route> */}
           <Route path="cart" element={<CartPage />}></Route>
-          <Route path="wishlist" element={<Wishlist />}></Route>
-          <Route path="setting" element={<Setting />}></Route>
-          <Route path="dashboard" element={<Dashboard />}></Route>
           <Route path="stores" element={<AllStores />}></Route>
-          <Route path="addproducts" element={<AddProduct />}></Route>
-          <Route path="product-list" element={<ProductListPage />}></Route>
-          <Route path="product/:productId" element={<ProductDetailPage />}></Route>
-          <Route path="active-orders" element={<ActiveOrders />}></Route>
-          <Route
-            path="allnotifications"
-            element={<ShowAllNotifications />}
-          ></Route>
-          <Route path="deliveryHistory" element={<DeliveryHistory />}></Route>
-          <Route path="earnings" element={<Earnings />}></Route>
-          <Route path="vehicleDetails" element={<VehicleDetails />}></Route>
-
           <Route path="/stores/allproducts/:restId" element={<AllProducts />} />
+          <Route path="allproduct" element={<AllProducts />}></Route>
+          <Route
+            path="/allproducts/searchproduct/:searchValue"
+            element={<SearchProduct />}
+          />
+          <Route path="product/:productId" element={<ProductDetailPage />}></Route>
+
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="favourite" element={<Wishlist />}></Route>
+            <Route path="orders" element={<Orders />}></Route>
+            <Route path="orders/:orderId" element={<OrderDetail />} />
+            <Route path="wishlist" element={<Wishlist />}></Route>
+            <Route path="setting" element={<Setting />}></Route>
+            <Route path="dashboard" element={<Dashboard />}></Route>
+            <Route path="addproducts" element={<AddProduct />}></Route>
+            <Route path="product-list" element={<ProductListPage />}></Route>
+            <Route path="active-orders" element={<ActiveOrders />}></Route>
+            <Route path="allnotifications" element={<ShowAllNotifications />}></Route>
+            <Route path="deliveryHistory" element={<DeliveryHistory />}></Route>
+            <Route path="earnings" element={<Earnings />}></Route>
+            <Route path="vehicleDetails" element={<VehicleDetails />}></Route>
+          </Route>
         </Route>
         {/* ! end to show in panel  */}
 
         {/* ! profile path  */}
-        <Route path="profile" element={<Profile />}>
-          <Route path="personalinformation" element={<PersonalInfo />}></Route>
-          <Route path="payments" element={<PersonalInfo />}></Route>
-          <Route path="setting" element={<Setting />}></Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="profile" element={<Profile />}>
+            <Route path="personalinformation" element={<PersonalInfo />}></Route>
+            <Route path="payments" element={<PersonalInfo />}></Route>
+            <Route path="setting" element={<Setting />}></Route>
+          </Route>
         </Route>
         {/* ! end - profile path  */}
       </Route>,

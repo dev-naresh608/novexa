@@ -1,5 +1,5 @@
 import novexa_title_logo from "./novexa-title-logo.png";
-import heroBannerImage from "./hero-banner-image.png";
+import heroBannerImage from "./hero-banner-image-1.png";
 import novexa_logo from "./novexa-logo-one.svg";
 // import novexa_logo from "./novexa-logo-two.svg"
 // import novexa_logo from "./novexa-logo-three.svg"
