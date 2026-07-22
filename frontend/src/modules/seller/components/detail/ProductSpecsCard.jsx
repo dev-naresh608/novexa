@@ -1,6 +1,6 @@
 import React from "react";
 import { Scale, Ruler, CheckCircle, Edit3 } from "lucide-react";
-import { SectionCard, SectionLabel } from "../../../../index";
+import { SectionCard, SectionLabel } from "@/components/common";
 
 function ProductSpecsCard({
   isEditing,

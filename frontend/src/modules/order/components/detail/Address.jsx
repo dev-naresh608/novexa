@@ -1,4 +1,4 @@
-import { SectionCard, SectionLabel } from "../../../../index";
+import { SectionCard, SectionLabel } from "@/components/common";
 import { Store, MapPin } from "lucide-react";
 
 const Address = ({ order_address, store_address, store_name }) => {
