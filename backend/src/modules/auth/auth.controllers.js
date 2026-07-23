@@ -31,23 +31,23 @@ const signup = async (req, res) => {
     const payload = req.body;
     if (!payload) {
       return res
-        .status(400)
+        .status(200)
         .json({ success: false, message: "Please send some data" });
     }
     const response = await userSignupSvc(payload);
 
-    if (!response) {
-      return res.status(400).json(response);
+    if (!response || response.success === false) {
+      return res.status(200).json(response || { success: false, message: "Signup failed" });
     }
 
     const { accessToken, refreshToken, username, email } = response;
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "strict",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // });
 
     return res.status(201).json({
       success: true,

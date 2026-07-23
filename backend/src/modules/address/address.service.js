@@ -20,7 +20,17 @@ const addAddressSvc = async (userId, payload) => {
   return address;
 };
 
+const deleteAddressSvc = async (addressId) => {
+  return await Address.findByIdAndDelete(addressId);
+};
+
+const updateAddressSvc = async (addressId, payload) => {
+  return await Address.findByIdAndUpdate(addressId, payload, { new: true });
+};
+
 module.exports = {
   findAddressSvc,
   addAddressSvc,
+  deleteAddressSvc,
+  updateAddressSvc,
 };

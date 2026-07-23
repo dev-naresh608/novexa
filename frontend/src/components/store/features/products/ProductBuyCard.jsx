@@ -13,6 +13,7 @@ import {
 import { useParams } from "react-router-dom";
 import { Heart, ShoppingCartIcon } from "lucide-react";
 import api from "../../../../configs/api";
+import { addToCartApi, updateCartQtyApi, removeFromCartApi } from "../../../../modules/cart/services/cart.api";
 
 function ProductBuyCard({
   name,
@@ -66,42 +67,42 @@ function ProductBuyCard({
 
     // ============== VALIDATION ====================
     const handleUserCanItemInCartFromOnlyOneStore = () => {
-      // todo:
-      // ! USER CAN ADD 1 ITEM FROM S1 STORE
-      // ! AND SECOND ITEM FROM S2 STORE.
       const currentRestId = restId;
-      const prevRestId = user.myCart[0]?.store_id;
-
-      if (prevRestId === currentRestId) {
-        return true;
+      if (storeId && storeId !== currentRestId) {
+        return false;
       }
-
-      return false;
+      return true;
     };
 
-    if (user.hasOwnProperty("myCart") && user?.myCart?.length > 0) {
+    if (cartItems && cartItems.length > 0) {
       if (handleUserCanItemInCartFromOnlyOneStore()) {
-        const isProductAlreadyExist = user.myCart.some((p) => p._id === itemId);
+        const isProductAlreadyExist = cartItems.some((p) => p._id === itemId);
 
         if (isProductAlreadyExist) {
           toast.info("product already exist");
           return;
         }
-        // user.myCart = [...user.myCart, newProduct];
         setCurrentUser((prev) => ({
           ...prev,
-          myCart: [...prev.myCart, newProduct],
+          myCart: [...(prev.myCart || []), newProduct],
         }));
       } else {
         alert("first clear previous stores cart");
         return;
       }
     } else {
-      // user.myCart = [newProduct];
       setCurrentUser({
         ...currentUser,
         myCart: [newProduct],
       });
+    }
+
+    if (isLogin && currentUser?._id) {
+      try {
+        await addToCartApi(currentUser._id, itemId, restId, 1);
+      } catch (error) {
+        console.error("Failed to sync add to cart with DB:", error);
+      }
     }
 
     // setCurrentUser(user);
@@ -112,31 +113,66 @@ function ProductBuyCard({
   // ============== INCREASE QUANTITY ====================
   const onIncreaseQty = async (itemId) => {
     const user = currentUser;
+    const itemToUpdate = user.myCart?.find((item) => item._id === itemId);
+    if (!itemToUpdate) return;
+    const newQty = itemToUpdate.product_qty + 1;
+    if (newQty > 10) return;
 
     const updatedCart = user.myCart.map((item) => {
-      if (item._id === itemId && item.product_qty < 10) {
-        return { ...item, product_qty: item.product_qty + 1 };
+      if (item._id === itemId) {
+        return { ...item, product_qty: newQty };
       }
       return item;
     });
 
-    setUserData({ ...currentUser, user });
     setCurrentUser({ ...currentUser, myCart: updatedCart });
+
+    if (isLogin && currentUser?._id) {
+      try {
+        await updateCartQtyApi(currentUser._id, itemId, newQty);
+      } catch (error) {
+        console.error("Failed to update quantity in DB:", error);
+      }
+    }
   };
 
   // ==============DEINCREASE QUANTITY ====================
   const onDecreaseQty = async (itemId) => {
     const user = currentUser;
-    const updatedCart = user.myCart
-      .map((item) => {
+    const itemToUpdate = user.myCart?.find((item) => item._id === itemId);
+    if (!itemToUpdate) return;
+    const newQty = itemToUpdate.product_qty - 1;
+
+    let updatedCart;
+    if (newQty > 0) {
+      updatedCart = user.myCart.map((item) => {
         if (item._id === itemId) {
-          return { ...item, product_qty: item.product_qty - 1 };
+          return { ...item, product_qty: newQty };
         }
         return item;
-      })
-      .filter((item) => item.product_qty > 0);
+      });
+      setCurrentUser({ ...currentUser, myCart: updatedCart });
 
-    setCurrentUser({ ...currentUser, myCart: updatedCart });
+      if (isLogin && currentUser?._id) {
+        try {
+          await updateCartQtyApi(currentUser._id, itemId, newQty);
+        } catch (error) {
+          console.error("Failed to update quantity in DB:", error);
+        }
+      }
+    } else {
+      updatedCart = user.myCart.filter((item) => item._id !== itemId);
+      setCurrentUser({ ...currentUser, myCart: updatedCart });
+
+      if (isLogin && currentUser?._id) {
+        try {
+          await removeFromCartApi(currentUser._id, itemId);
+          toast.success("Item removed from cart");
+        } catch (error) {
+          console.error("Failed to remove item from DB:", error);
+        }
+      }
+    }
   };
 
   // ============== WISHLIST =======================

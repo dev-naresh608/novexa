@@ -1,169 +1,104 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  UserContext,
-  CartProductContext,
-  AddressContext,
-} from "../../../contexts/context";
-
+import React from "react";
+import { useCart } from "../hooks/useCart";
 import {
   EmptyCart,
-  CartItems,
+  CartItemCard,
   GoBackButton,
   OrderSummary,
-  handleAddAddressApi,
-  handleGetAddressApi,
-  onCartPlaceOrder,
-  generateAddressLine,
-} from "../../index";
+} from "../components";
 
-import axios from "axios";
-import { toast } from "react-toastify";
-import { div } from "framer-motion/client";
-
-function CartPage() {
-  const { currentUser, isLogin, setCurrentUser } = useContext(UserContext);
-  let { storeId, setStoreId } = useContext(CartProductContext);
-
-  const navigate = useNavigate();
-
-  // ============= STATES ==============
-  const [address, setAddress] = useState("");
-  const [addressList, setAddressList] = useState(null);
-  const [subTotal, setSubTotal] = useState(0);
-  const [offerPrice, setOfferPrice] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(0);
-  const [taxPrice, setTaxPrice] = useState(0);
-  const [deliveryCharge, setDeliveryCharge] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cashOnDelivery");
-  const [orderPriceDetails, setOrderPriceDetails] = useState({});
-  const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
-  const [isCartEmpty, setIsCartEmpty] = useState(true);
-
-  useEffect(() => { 
-    if (
-      !currentUser.hasOwnProperty("myCart") ||
-      currentUser?.myCart?.length === 0
-    ) {
-      return setIsCartEmpty(true);
-    } else {
-      return setIsCartEmpty(false);
-    }
-  }, [currentUser, setCurrentUser]);
-
-  useEffect(() => {
-    // ============= fetch all address =================
-    const fetchAddress = async () => {
-      const data = await handleGetAddressApi(currentUser._id);
-      if (!data.success) {
-        // return toast.error(data.message);
-        return;
-      }
-      setAddressList(data.addressList);
-      setAddress(data.addressList[0]);
-      setCurrentUser((prev) => ({
-        ...prev,
-        address: data.addressList[0],
-      }));
-    };
-    if (isLogin) {
-      fetchAddress();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (currentUser.myCart?.length > 0) {
-      const price = currentUser.myCart.reduce((acc, product) => {
-        return acc + product.product_selling_price * product.product_qty;
-      }, 0);
-
-      setSubTotal(price);
-
-      const tax = (price * 0.02).toFixed(2);
-      setFinalPrice(price + tax);
-      setTaxPrice(tax);
-
-      const deliver_charge = 0;
-
-      setOrderPriceDetails({
-        subTotal,
-        deliveryCharge,
-        taxPrice,
-        finalPrice,
-      });
-
-      setDeliveryCharge(deliver_charge);
-    } else {
-      setSubTotal(0);
-      setTaxPrice(0);
-      setFinalPrice(0);
-      setDeliveryCharge(0);
-      setOfferPrice(0);
-    }
-  }, [currentUser.myCart, finalPrice]);
+/**
+ * CartPage - Container component orchestrating the cart view layout.
+ */
+export default function CartPage() {
+  const {
+    currentUser,
+    setCurrentUser,
+    isLogin,
+    storeId,
+    address,
+    setAddress,
+    addressList,
+    paymentMethod,
+    orderPriceDetails,
+    onCartItemQtyChange,
+    onCartItemDeleteBtn,
+    handleClearCart,
+    handlePaymentMethod,
+    handlePlaceOrder,
+    isCartEmpty,
+  } = useCart();
 
   if (isCartEmpty) {
     return <EmptyCart />;
   }
-  let currentUserAddress = "";
-  const isAddressAvailable = currentUser.hasOwnProperty("myAddress");
-
-  if (isAddressAvailable) {
-    currentUserAddress = `${currentUser.myAddress.name} ${currentUser.myAddress.phone} ${currentUser.myAddress.street} ${currentUser.myAddress.city} ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode} `;
-  }
-
-  // ================ HANDLE PAYMENT FUN ====================
-  const handlePaymentMethod = (e) => {
-    setPaymentMethod(e.target.value);
-  };
-
-  // ================ ON PLACE ORDER ====================
 
   return (
-    <>
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT - CART ITEMS */}
-          <div className="flex-1 relative rounded-2xl border p-2">
-            <div className="flex justify-between items-end border-b pb-2 mb-3 px-2 font-semibold">
-              <span className="text-2xl">Shopping Cart</span>
-
-              <span className="text-indigo-600 text-sm">
-                {currentUser.myCart?.length || 0} items
-              </span>
+    <section className="bg-white rounded-2xl p-5 shadow-sm">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Side - Shopping Cart & Item List */}
+        <div className="flex-1 relative rounded-2xl border p-4">
+          <div className="flex justify-between items-end border-b pb-2 mb-3 px-2 font-semibold">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl text-gray-800">Shopping Cart</span>
+              <button
+                type="button"
+                onClick={handleClearCart}
+                className="text-xs bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 py-1 px-2.5 rounded-lg border border-red-200 duration-150 cursor-pointer focus:outline-none"
+              >
+                Clear Cart
+              </button>
             </div>
-
-            {/* ============ PRODUCT LIST ============== */}
-            <>
-              <CartItems
-                currentUser={currentUser}
-                setCurrentUser={setCurrentUser}
-              />
-            </>
-            <GoBackButton navigation="/stores">Continue Shoping</GoBackButton>
+            <span className="text-indigo-600 text-sm">
+              {currentUser.myCart?.length || 0} items
+            </span>
           </div>
 
-          {/* ============ ORDER SUMMARY ============== */}
-          <OrderSummary
-            currentUser={currentUser}
-            setCurrentUser={setCurrentUser}
-            onPlaceOrder={onCartPlaceOrder}
-            handlePaymentMethod={handlePaymentMethod}
-            paymentMethod={paymentMethod}
-            orderPriceDetails={orderPriceDetails}
-            addressList={addressList}
-            address={address}
-            setAddress={setAddress}
-            isAddressFormOpen={isAddressFormOpen}
-            setIsAddressFormOpen={setIsAddressFormOpen}
-            userId={currentUser._id}
-            storeId={storeId}
-            isLogin={isLogin}
-          />
+          {/* Table Headers */}
+          <div className="grid grid-cols-[2fr_1fr_1fr] text-gray-400 font-semibold text-xs uppercase tracking-wider px-2 py-1">
+            <span>Product Details</span>
+            <span>Subtotal</span>
+            <span>Action</span>
+          </div>
+
+          {/* Cart Item Cards */}
+          <div
+            className="space-y-1 overflow-y-auto max-h-[60vh] pr-1
+            [&::-webkit-scrollbar]:w-1.5
+            [&::-webkit-scrollbar-track]:bg-gray-50
+            [&::-webkit-scrollbar-thumb]:bg-gray-300
+            [&::-webkit-scrollbar-thumb]:rounded-full"
+          >
+            {currentUser?.myCart?.map((product, index) => (
+              <CartItemCard
+                key={product._id || index}
+                product={product}
+                onQtyChange={onCartItemQtyChange}
+                onDelete={onCartItemDeleteBtn}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 pt-3 border-t">
+            <GoBackButton navigation="/stores">Continue Shopping</GoBackButton>
+          </div>
         </div>
-      </section>
-    </>
+
+        {/* Right Side - Order Summary Panel */}
+        <OrderSummary
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          userId={currentUser._id}
+          isLogin={isLogin}
+          addressList={addressList}
+          address={address}
+          setAddress={setAddress}
+          paymentMethod={paymentMethod}
+          handlePaymentMethod={handlePaymentMethod}
+          orderPriceDetails={orderPriceDetails}
+          onPlaceOrder={handlePlaceOrder}
+        />
+      </div>
+    </section>
   );
 }
-
-export default CartPage;

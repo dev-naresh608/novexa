@@ -9,6 +9,7 @@ import api from "../../../configs/api";
 function AddProduct() {
   const [productImg, setProductImg] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { currentUser, setUserData, setCurrentUser } = useContext(UserContext);
 
   const navigate = useNavigate();
@@ -105,6 +106,7 @@ function AddProduct() {
     
 
     try {
+      setIsUploading(true);
       // ================= PRODUCT DATA =================
       const productData = {
         ...formData,
@@ -136,7 +138,7 @@ function AddProduct() {
 
       const config = {
         headers: {
-          "ContenContent-Type": "multipart/form-data",
+          "Content-Type": "multipart/form-data",
         },
       };
       const { data } = await api.post(
@@ -161,6 +163,8 @@ function AddProduct() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to add product");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -367,15 +371,47 @@ function AddProduct() {
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            className="active:scale-95 px-5 w-[60%] m-auto py-1 bg-green-600 rounded-md hover:shadow-lg"
+            disabled={isUploading}
+            className={`active:scale-95 px-5 w-[60%] m-auto py-1.5 rounded-md hover:shadow-lg text-white font-medium flex items-center justify-center gap-2 duration-150 ${
+              isUploading ? "bg-green-700 cursor-not-allowed opacity-80" : "bg-green-600 hover:bg-green-700"
+            }`}
           >
-            Add Product
+            {isUploading ? (
+              <>
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span>Uploading...</span>
+              </>
+            ) : (
+              "Add Product"
+            )}
           </button>
 
           <button
             type="button"
+            disabled={isUploading}
             onClick={resetForm}
-            className="active:scale-95 px-5 w-[60%] m-auto py-1 text-white bg-red-600 rounded-md hover:shadow-lg"
+            className={`active:scale-95 px-5 w-[60%] m-auto py-1.5 text-white rounded-md hover:shadow-lg font-medium duration-150 ${
+              isUploading ? "bg-red-700 opacity-60 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+            }`}
           >
             Reset Data
           </button>

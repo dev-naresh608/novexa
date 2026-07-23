@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { UserContext } from "../../contexts/context.js";
 import { defaultPP } from "@/assets";
 import { NavLink } from "react-router-dom";
@@ -7,9 +7,10 @@ import { dashboardCards } from "./dashboardCards.js";
 import { MiniProfileContainer, useModal, MODAL_TYPES } from "../../components/index.js"
 import { db } from "../../db/index.js";
 import { ChevronRight, Mail, MapPin, MoveRight, Phone } from "lucide-react";
+import { handleGetAddressApi } from "../../modules/address/services/address.service.api";
 
 function CustomerDashboard() {
-  const { currentUser, setCurrentUser, setUserData } = useContext(UserContext);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
   const { openModal } = useModal();
   let currentUserAddress = "";
   const isAddressAvailable = currentUser.hasOwnProperty("myAddress");
@@ -18,15 +19,33 @@ function CustomerDashboard() {
     currentUserAddress = `${currentUser.myAddress.name} ${currentUser.myAddress.phone} ${currentUser.myAddress.street} ${currentUser.myAddress.city} ${currentUser.myAddress.state}, ${currentUser.myAddress.pincode} `;
   }
 
+  // Load latest address from database on dashboard load
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (!currentUser?._id) return;
+      try {
+        const data = await handleGetAddressApi(currentUser._id);
+        if (data && data.success && data.addressList && data.addressList.length > 0) {
+          setCurrentUser((prev) => ({
+            ...prev,
+            myAddress: data.addressList[0],
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load address for dashboard:", error);
+      }
+    };
+    fetchAddress();
+  }, [currentUser?._id, setCurrentUser]);
+
   const handleAddAddress = () => {
     openModal(MODAL_TYPES.ADDRESS, {
       userId: currentUser._id,
-      setAddress: async (newAddress) => {
-        const user = await db.localUserData.get(currentUser._id);
-        user.myAddress = newAddress;
-        await db.localUserData.put(user);
-        setUserData(await db.localUserData.toArray());
-        setCurrentUser(await db.localUserData.get(currentUser._id));
+      setAddress: (newAddress) => {
+        setCurrentUser((prev) => ({
+          ...prev,
+          myAddress: newAddress,
+        }));
       }
     });
   };
@@ -170,7 +189,7 @@ function CustomerDashboard() {
                 <div>
                   <p className="text-xs text-[#A8A29E]">Phone</p>
                   <p className="text-[14px] font-semibold text-[#1C1917]">
-                    +91 {currentUser.phone}
+                    {currentUser.phone ? `+91 ${currentUser.phone}` : "Not provided"}
                   </p>
                 </div>
               </div>

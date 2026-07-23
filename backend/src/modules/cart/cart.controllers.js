@@ -1,47 +1,139 @@
-const Cart = require("./cart.model");
-const { getCartItemService } = require("./cart.service");
-const handleGetAllCartItems = async (req, res) => {
-  const allCartItems = (await Cart.find({})) || [];
+const {
+  getCartByUserIdSvc,
+  addToCartSvc,
+  updateCartQtySvc,
+  removeFromCartSvc,
+  clearCartSvc,
+  getCartItemService,
+} = require("./cart.service");
 
-  return res.json({
-    message: "get all cart items details",
-    AllCartItems: `${allCartItems?.length === 0 ? "No orders found" : allCartItems.length}`,
-  });
+const handleGetCartByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
+    }
+    const cartItems = await getCartByUserIdSvc(userId);
+    return res.status(200).json({ success: true, result: cartItems });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
-const handleAddItemToCart = async (req, res) => {
-  return res.json({ message: "item added" });
+const handleAddToCart = async (req, res) => {
+  try {
+    const { userId, productId, storeId, quantity } = req.body;
+    if (!userId || !productId || !storeId) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "userId, productId, and storeId are required",
+        });
+    }
+    const item = await addToCartSvc(userId, productId, storeId, quantity);
+    return res
+      .status(200)
+      .json({
+        success: true,
+        result: item,
+        message: "Item added to cart successfully",
+      });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const handleUpdateCartQty = async (req, res) => {
+  try {
+    const { userId, productId, quantity } = req.body;
+    if (!userId || !productId || quantity === undefined) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "userId, productId, and quantity are required",
+        });
+    }
+    const item = await updateCartQtySvc(userId, productId, quantity);
+    return res
+      .status(200)
+      .json({
+        success: true,
+        result: item,
+        message: "Quantity updated successfully",
+      });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const handleRemoveFromCart = async (req, res) => {
+  try {
+    const { userId, productId } = req.params;
+    if (!userId || !productId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "userId and productId are required" });
+    }
+    const result = await removeFromCartSvc(userId, productId);
+    return res
+      .status(200)
+      .json({
+        success: true,
+        result,
+        message: "Item removed from cart successfully",
+      });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const handleClearCart = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
+    }
+    await clearCartSvc(userId);
+    return res
+      .status(200)
+      .json({ success: true, message: "Cart cleared successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 const handleFindCartItemById = async (req, res) => {
-  const { productId } = req.params;
+  try {
+    const { productId } = req.params;
 
-  if (!productId) {
-    return res.status(400).json({
-      success: false,
-      message: "Product id required",
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product id required",
+      });
+    }
+    const product = await getCartItemService(productId);
+    return res.status(200).json({
+      success: true,
+      message: "product fetched successfully",
+      product,
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
-  const product = await getCartItemService(productId);
-  return res.status(200).json({
-    success: true,
-    message: "product fetched successfully",
-    product,
-  });
-};
-
-const handleDeleteCartItemById = async (req, res) => {
-  return res.json({ message: "item deleted successfully" });
-};
-
-const handleUpdateCartItemById = async (req, res) => {
-  return res.json({ message: "item updated successfully" });
 };
 
 module.exports = {
-  handleGetAllCartItems,
-  handleAddItemToCart,
+  handleGetCartByUser,
+  handleAddToCart,
+  handleUpdateCartQty,
+  handleRemoveFromCart,
+  handleClearCart,
   handleFindCartItemById,
-  handleDeleteCartItemById,
-  handleUpdateCartItemById,
 };

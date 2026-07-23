@@ -90,7 +90,7 @@ const updateProductService = async (product_id, store_id, updates) => {
 };
 
 const deleteProductService = async (product_id, store_id) => {
-  const result = await Product.findByIdAndDelete({
+  const result = await Product.findOneAndDelete({
     _id: product_id,
     store_id: store_id,
   });

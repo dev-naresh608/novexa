@@ -7,7 +7,6 @@ const {
   findProductSvc,
 } = require("./product.service");
 const { uploadOnCloudinary } = require("../../utils/cloudinary");
-const { default: Result_ } = require("postcss/lib/result");
 
 const handleGetAllProducts = async (req, res) => {
   const {userId} = req.params;

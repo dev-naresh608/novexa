@@ -10,35 +10,38 @@ import {
   OrderContext,
 } from "./contexts/context";
 
-import React from "react";
+import {
+  Profile,
+  PersonalInfo,
+  Setting,
+  Payments,
+  Orders,
+  OrderDetail,
+  CartPage,
+  Home,
+  ProductListPage,
+  ProductDetailPage,
+  AddProduct,
+  ActiveOrders,
+  Wishlist,
+  Category,
+  Dashboard,
+  DeliveryHistory,
+  VehicleDetails,
+  Earnings,
+  ShowAllNotifications,
+  NotFound
+} from "./index";
 
-const Profile = React.lazy(() => import("./pages/profile/Profile"));
-const PersonalInfo = React.lazy(() => import("./pages/profile/PersonalInfo"));
-const Setting = React.lazy(() => import("./pages/profile/Setting"));
-const Payments = React.lazy(() => import("./pages/profile/Payments"));
-const Orders = React.lazy(() => import("./modules/order/pages/OrdersPage.jsx"));
-const OrderDetail = React.lazy(() => import("./modules/order/pages/OrderDetailPage.jsx"));
-const CartPage = React.lazy(() => import("./modules/cart/pages/CartPage.jsx"));
-const Home = React.lazy(() => import("./pages/home/Home"));
-const ProductListPage = React.lazy(() => import("./modules/seller/pages/ProductListPage.jsx"));
-const ProductDetailPage = React.lazy(() => import("./modules/seller/pages/ProductDetailPage.jsx"));
-const AddProduct = React.lazy(() => import("./modules/seller/pages/AddProduct.jsx"));
-const ActiveOrders = React.lazy(() => import("./modules/order/ActiveOrders.jsx"));
-const Wishlist = React.lazy(() => import("./pages/profile/Wishlist"));
-const Category = React.lazy(() => import("./pages/home/Category"));
-const Dashboard = React.lazy(() => import("./pages/dashboard/Dashboard"));
-const DeliveryHistory = React.lazy(() => import("./pages/driver/DeliveryHistory"));
-const VehicleDetails = React.lazy(() => import("./pages/driver/VehicleDetails"));
-const Earnings = React.lazy(() => import("./pages/driver/Earnings"));
-const ShowAllNotifications = React.lazy(() => import("./pages/notification/ShowAllNotifications"));
-
-const AllProducts = React.lazy(() => import("./components/store/features/products/AllProducts.jsx"));
-const CategoryWiseProducts = React.lazy(() => import("./components/store/pages/CategoryWiseProducts.jsx"));
-const SearchProduct = React.lazy(() => import("./components/store/features/products/SearchProduct.jsx"));
-const AllStores = React.lazy(() => import("./components/store/pages/AllStores.jsx"));
-
-import Layout from "./components/Layout.jsx";
-import { useModal, MODAL_TYPES } from "./components";
+import {
+  AllProducts,
+  CategoryWiseProducts,
+  Layout,
+  SearchProduct,
+  AllStores,
+  useModal,
+  MODAL_TYPES,
+} from "./components";
 
 import {
   BrowserRouter,
@@ -147,6 +150,7 @@ function App() {
           </Route>
         </Route>
         {/* ! end - profile path  */}
+        <Route path="*" element={<NotFound />} />
       </Route>,
     ),
   );

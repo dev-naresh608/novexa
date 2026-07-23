@@ -1,5 +1,5 @@
 import React from "react";
-import { UserPlus2Icon, User, Phone, Mail } from "lucide-react";
+import { UserPlus2Icon, User, Phone, Mail, Loader2 } from "lucide-react";
 import {
   AuthHeader,
   AuthFooterLink,
@@ -19,6 +19,7 @@ export default function Signup() {
     currentRole,
     setCurrentRole,
     isPassVisible,
+    loading,
     handleChange,
     handleShowPassword,
     handleSubmit,
@@ -93,10 +94,15 @@ export default function Signup() {
 
         <button
           type="submit"
-          className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold"
+          disabled={loading}
+          className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <UserPlus2Icon size={20} />
-          Create Account
+          {loading ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <UserPlus2Icon size={20} />
+          )}
+          {loading ? "Creating Account..." : "Create Account"}
         </button>
 
         <AuthFooterLink

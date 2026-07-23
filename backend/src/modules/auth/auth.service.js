@@ -126,11 +126,11 @@ const userSignupSvc = async (payload) => {
     };
   }
 
-  const hashPassword = crypto
-    .createHash("sha256")
-    .update(payload.password)
-    .digest("hex");
-  payload.password = hashPassword;
+  // const hashPassword = crypto
+  //   .createHash("sha256")
+  //   .update(payload.password)
+  //   .digest("hex");
+  // payload.password = hashPassword;
 
   const user = await createUserSvc(payload);
 

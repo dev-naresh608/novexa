@@ -2,20 +2,19 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  handleGetAllCartItems,
-  handleAddItemToCart,
+  handleGetCartByUser,
+  handleAddToCart,
+  handleUpdateCartQty,
+  handleRemoveFromCart,
+  handleClearCart,
   handleFindCartItemById,
-  handleDeleteCartItemById,
-  handleUpdateCartItemById,
 } = require("./cart.controllers");
 
-router.get("/", handleGetAllCartItems);
-
-router
-  .route("/:productId")
-  .get(handleFindCartItemById)
-  .post(handleAddItemToCart)
-  .delete(handleDeleteCartItemById)
-  .patch(handleUpdateCartItemById);
+router.get("/user/:userId", handleGetCartByUser);
+router.post("/add", handleAddToCart);
+router.patch("/update", handleUpdateCartQty);
+router.delete("/remove/:userId/:productId", handleRemoveFromCart);
+router.delete("/clear/:userId", handleClearCart);
+router.get("/:productId", handleFindCartItemById);
 
 module.exports = { cartRoute: router };

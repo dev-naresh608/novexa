@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { signupUserApi } from "../services/auth.service.api";
+import { useModal, MODAL_TYPES } from "../../../components";
 
 const INITIAL_FORM_DATA = {
   username: "",
@@ -21,6 +22,7 @@ const INITIAL_FORM_DATA = {
 export function useSignupForm() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { openModal } = useModal();
 
   // URL query param (?role=seller or ?role=driver) read
   const roleParam = searchParams.get("role");
@@ -33,6 +35,7 @@ export function useSignupForm() {
 
   const [isPassVisible, setIsPassVisible] = useState(false);
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -84,19 +87,22 @@ export function useSignupForm() {
 
     const payload = buildPayload();
 
+    setLoading(true);
     try {
       const {data} = await signupUserApi(payload);
 
       if (data.success) {
         toast.success(`Signup successful`);
-        // setTimeout(() => {
-        //   navigate("/login");
-        // }, 1000);
+        setTimeout(() => {
+          openModal(MODAL_TYPES.LOGIN);
+        }, 1000);
       } else {
         toast.error(data.message);
       }
     } catch (err) {
       console.log("Error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,6 +111,7 @@ export function useSignupForm() {
     currentRole,
     setCurrentRole,
     isPassVisible,
+    loading,
     handleChange,
     handleShowPassword,
     handleSubmit,

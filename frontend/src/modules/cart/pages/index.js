@@ -1,3 +1,1 @@
-export {default as CartPage} from "./CartPage"
-export {default as CartItems} from "./CartItems"
-export {default as OrderSummary} from "./OrderSummary"
+export { default as CartPage } from "./CartPage";

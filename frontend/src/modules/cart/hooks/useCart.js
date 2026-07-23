@@ -1,0 +1,166 @@
+import { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { UserContext, CartProductContext } from "../../../contexts/context";
+import { calculateCartTotals } from "../utils/cartCalculation";
+import { onCartPlaceOrder } from "../services/cart.service";
+import { handleGetAddressApi } from "../../address/services/address.service.api";
+import {
+  getCartApi,
+  updateCartQtyApi,
+  removeFromCartApi,
+  clearCartApi,
+} from "../services/cart.api";
+
+/**
+ * Custom hook encapsulating cart business logic, reactive state, and item manipulation services.
+ */
+export const useCart = () => {
+  const { currentUser, isLogin, setCurrentUser } = useContext(UserContext);
+  const { storeId, setStoreId } = useContext(CartProductContext);
+  const navigate = useNavigate();
+
+  const [address, setAddress] = useState("");
+  const [addressList, setAddressList] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("cashOnDelivery");
+  const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
+  const [isCartEmpty, setIsCartEmpty] = useState(true);
+
+  // Monitor cart items to toggle empty cart state
+  useEffect(() => {
+    if (
+      !currentUser ||
+      !currentUser.hasOwnProperty("myCart") ||
+      currentUser.myCart.length === 0
+    ) {
+      setIsCartEmpty(true);
+    } else {
+      setIsCartEmpty(false);
+    }
+  }, [currentUser]);
+
+
+  // Retrieve delivery addresses
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (!currentUser?._id) return;
+      const data = await handleGetAddressApi(currentUser._id);
+      if (data && data.success && data.addressList && data.addressList.length > 0) {
+        setAddressList(data.addressList);
+        setAddress(data.addressList[0]);
+        setCurrentUser((prev) => ({
+          ...prev,
+          address: data.addressList[0],
+        }));
+      }
+    };
+    if (isLogin) {
+      fetchAddress();
+    }
+  }, [isLogin, currentUser?._id, setCurrentUser]);
+
+  const cartItems = currentUser?.myCart || [];
+
+  // Compute subtotal, tax, delivery fee and final price reactively
+  const orderPriceDetails = calculateCartTotals(cartItems);
+
+  // Update item quantity inside the cart
+  const onCartItemQtyChange = async (e) => {
+    const itemId = e.target.id;
+    const itemQty = Number(e.target.value);
+
+    const updatedCart = cartItems.map((item) => {
+      if (item._id === itemId) {
+        return { ...item, product_qty: itemQty };
+      }
+      return item;
+    });
+
+    setCurrentUser({
+      ...currentUser,
+      myCart: updatedCart,
+    });
+
+    if (isLogin && currentUser?._id) {
+      try {
+        await updateCartQtyApi(currentUser._id, itemId, itemQty);
+      } catch (error) {
+        console.error("Failed to update cart quantity in DB:", error);
+      }
+    }
+  };
+
+  // Delete product from the cart
+  const onCartItemDeleteBtn = async (productId) => {
+    const updatedCart = cartItems.filter((p) => p._id !== productId);
+    setCurrentUser({
+      ...currentUser,
+      myCart: updatedCart,
+    });
+
+    if (isLogin && currentUser?._id) {
+      try {
+        await removeFromCartApi(currentUser._id, productId);
+        toast.success("Item removed from cart");
+      } catch (error) {
+        console.error("Failed to remove cart item from DB:", error);
+      }
+    }
+  };
+
+  // Clear entire cart
+  const handleClearCart = async () => {
+    setCurrentUser({
+      ...currentUser,
+      myCart: [],
+    });
+    setStoreId(null);
+
+    if (isLogin && currentUser?._id) {
+      try {
+        await clearCartApi(currentUser._id);
+        toast.success("Cart cleared successfully");
+      } catch (error) {
+        console.error("Failed to clear cart in DB:", error);
+      }
+    }
+  };
+
+  // Change payment method
+  const handlePaymentMethod = (e) => {
+    setPaymentMethod(e.target.value);
+  };
+
+  // Submit order placement request
+  const handlePlaceOrder = () => {
+    onCartPlaceOrder(
+      currentUser,
+      setCurrentUser,
+      storeId,
+      orderPriceDetails,
+      address,
+      paymentMethod,
+      navigate,
+    );
+  };
+
+  return {
+    currentUser,
+    setCurrentUser,
+    isLogin,
+    storeId,
+    address,
+    setAddress,
+    addressList,
+    paymentMethod,
+    isAddressFormOpen,
+    setIsAddressFormOpen,
+    isCartEmpty,
+    orderPriceDetails,
+    onCartItemQtyChange,
+    onCartItemDeleteBtn,
+    handleClearCart,
+    handlePaymentMethod,
+    handlePlaceOrder,
+  };
+};

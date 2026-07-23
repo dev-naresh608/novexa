@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { UserContext } from "../../contexts/context";
+import { UserContext } from "../../../contexts/context";
 import { CreditCard, Clock } from "lucide-react";
 
 function Payment() {
@@ -8,10 +8,10 @@ function Payment() {
   // ── Sync sidebar active state ──────────────────────────────────────────────
   useEffect(() => {
     setActiveTab("payments");
-  }, []);
+  }, [setActiveTab]);
 
   return (
-    <div className="bg-white h-full rounded-2xl border border-[#E7E5E4] p-6 font-sans space-y-6">
+    <div className="bg-white h-full p-6 font-sans space-y-6">
 
       {/* Header */}
       <div>

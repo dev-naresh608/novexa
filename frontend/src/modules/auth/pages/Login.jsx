@@ -1,5 +1,5 @@
 import React from "react";
-import { LogIn, Mail } from "lucide-react";
+import { LogIn, Mail, Loader2 } from "lucide-react";
 import { AuthHeader, AuthFooterLink, FormInput, PasswordInput } from "../components";
 import { useLoginForm } from "../hooks/useLoginForm";
 import { useModal, MODAL_TYPES } from "../../../components";
@@ -8,6 +8,7 @@ export default function Login() {
   const {
     formData,
     isPassVisible,
+    loading,
     handleChange,
     handleShowPassword,
     handleSubmit,
@@ -44,9 +45,15 @@ export default function Login() {
 
         <button
           type="submit"
-          className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-2 rounded-lg font-semibold"
+          disabled={loading}
+          className="w-full bg-[#1c1917] active:scale-95 flex items-center justify-center gap-2 text-white py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogIn size={20} /> Sign In
+          {loading ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <LogIn size={20} />
+          )}
+          {loading ? "Signing In..." : "Sign In"}
         </button>
 
         <AuthFooterLink

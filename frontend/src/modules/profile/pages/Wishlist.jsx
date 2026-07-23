@@ -1,9 +1,9 @@
-import React, { useContext, useEffect } from "react";
-import { CartProductContext, UserContext } from "../../contexts/context";
-import { ProductBuyCard, GradientButton } from "../../components";
+import React, { useContext } from "react";
+import { UserContext } from "../../../contexts/context";
+import { ProductBuyCard, GradientButton } from "../../../components";
 
 function Wishlist() {
-  const { currentUser, setActiveTab } = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
   if (
     currentUser.hasOwnProperty("myWishlist") &&
     currentUser.myWishlist.length > 0
@@ -11,15 +11,13 @@ function Wishlist() {
     return (
       <div
         className="space-y-5 h-full max-h-[90vh] overflow-y-auto 
-  [&::-webkit-scrollbar]:w-2
-  [&::-webkit-scrollbar-track]:bg-gray-100
-  [&::-webkit-scrollbar-thumb]:bg-gray-300
-  [&::-webkit-scrollbar-thumb]:rounded-full
-  "
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:bg-gray-100
+          [&::-webkit-scrollbar-thumb]:bg-gray-300
+          [&::-webkit-scrollbar-thumb]:rounded-full"
       >
         <div>
           <GradientButton
-            // componentType="text"
             className="cursor-text font-bold rounded-3xl"
           >
             Wishlist Products

@@ -25,3 +25,28 @@ export const handleAddAddressApi = async (userId, payload) => {
     return toast.error(error.message);
   }
 };
+
+export const handleDeleteAddressApi = async (addressId) => {
+  if (!addressId) return;
+  try {
+    const { data } = await api.delete(
+      `/address/delete/${addressId}`
+    );
+    return data;
+  } catch (error) {
+    return toast.error(error.message);
+  }
+};
+
+export const handleUpdateAddressApi = async (addressId, payload) => {
+  if (!addressId || !payload) return;
+  try {
+    const { data } = await api.patch(
+      `/address/update/${addressId}`,
+      payload
+    );
+    return data;
+  } catch (error) {
+    return toast.error(error.message);
+  }
+};

@@ -1,4 +1,4 @@
-const { findAddressSvc, addAddressSvc } = require("./address.service");
+const { findAddressSvc, addAddressSvc, deleteAddressSvc, updateAddressSvc } = require("./address.service");
 
 const handleGetAddressApi = async (req, res) => {
   try {
@@ -68,7 +68,42 @@ const handleAddAddressApi = async (req, res) => {
   }
 };
 
+const handleDeleteAddressApi = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    if (!addressId) {
+      return res.status(400).json({ success: false, message: "Address ID is required" });
+    }
+    const result = await deleteAddressSvc(addressId);
+    if (!result) {
+      return res.status(400).json({ success: false, message: "Address not found or failed to delete" });
+    }
+    return res.status(200).json({ success: true, message: "Address deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const handleUpdateAddressApi = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const payload = req.body;
+    if (!addressId || !payload) {
+      return res.status(400).json({ success: false, message: "Address ID and payload are required" });
+    }
+    const result = await updateAddressSvc(addressId, payload);
+    if (!result) {
+      return res.status(400).json({ success: false, message: "Address not found or failed to update" });
+    }
+    return res.status(200).json({ success: true, message: "Address updated successfully", address: result });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   handleGetAddressApi,
   handleAddAddressApi,
+  handleDeleteAddressApi,
+  handleUpdateAddressApi,
 };

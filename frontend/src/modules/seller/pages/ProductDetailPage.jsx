@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../../../contexts/context";
 import { toast } from "react-toastify";
+import { useModal, MODAL_TYPES } from "../../../components";
 import {
   getProductByIdApi,
   updateProductApi,
+  handleDeleteProductApi,
   ProductHeaderDetail,
   ProductImageCard,
   ProductPricingCard,
@@ -15,7 +17,9 @@ import {
 
 function ProductDetailPage() {
   const { productId } = useParams();
-  const { currentUser } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { openModal } = useModal();
+  const { currentUser, setCurrentUser } = useContext(UserContext);
 
   const [product, setProduct] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -143,6 +147,25 @@ function ProductDetailPage() {
     }
   };
 
+  const handleDelete = () => {
+    openModal(MODAL_TYPES.CONFIRM, {
+      title: "Delete Product?",
+      message: `Are you sure you want to delete "${product.product_name || "this product"}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+      onConfirm: async () => {
+        try {
+          await handleDeleteProductApi(productId, currentUser, setCurrentUser);
+          toast.success("Product deleted successfully");
+          navigate("/product-list");
+        } catch (error) {
+          toast.error(error.message || "Failed to delete product");
+        }
+      },
+    });
+  };
+
   if (!product) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -165,6 +188,7 @@ function ProductDetailPage() {
         onCancel={handleCancel}
         isInStock={isEditing ? formData.is_product_in_stock : product.is_product_in_stock}
         isOfferAvailable={isEditing ? formData.is_offer_available : product.is_offer_available}
+        onDelete={handleDelete}
       />
 
       {/* Grid Layout (like OrderDetailPage) */}

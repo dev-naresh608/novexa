@@ -1,8 +1,5 @@
-
-import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../contexts/context";
-import { toast, ToastContainer } from "react-toastify";
-import { db } from "../../db";
+import React, { useState } from "react";
+import { useSetting } from "../hooks";
 import { defaultPP } from "@/assets";
 import {
   User,
@@ -13,6 +10,8 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
+  MapPin,
+  Pencil,
 } from "lucide-react";
 
 // ─── Field row ────────────────────────────────────────────────────────────────
@@ -74,110 +73,24 @@ const PasswordInput = ({
 };
 
 function Setting() {
-  const { currentUser, setCurrentUser, setUserData } = useContext(UserContext);
-
-  const [formData, setFormData] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [isOldPassMatch, setIsOldPassMatch] = useState(true);
-  const [isConfirmPassMatch, setIsConfirmPassMatch] = useState(true);
-
-  // Live validation
-  useEffect(() => {
-    // only validate old pass when user has typed something
-    if (formData.oldPassword.length > 0) {
-      setIsOldPassMatch(formData.oldPassword === currentUser.password);
-    } else {
-      setIsOldPassMatch(true);
-    }
-
-    // only validate confirm when user has typed something
-    if (formData.confirmPassword.length > 0) {
-      setIsConfirmPassMatch(formData.newPassword === formData.confirmPassword);
-    } else {
-      setIsConfirmPassMatch(true);
-    }
-  }, [formData.oldPassword, formData.newPassword, formData.confirmPassword]);
-
-  const onPasswordChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Profile picture upload
-  const handleImageUpload = (e) => {
-    try {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        await db.localUserData.update(currentUser.id, {
-          imageUrl: reader.result,
-        });
-        setUserData(await db.localUserData.toArray());
-        setCurrentUser(await db.localUserData.get(currentUser.id));
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.log("Upload error:", err);
-    }
-  };
-
-  //Remove profile picture
-  const handleRemoveProfilePicture = async () => {
-    const user = await db.localUserData.get(currentUser.id);
-    if (user.hasOwnProperty("imageUrl")) {
-      delete user.imageUrl;
-      await db.localUserData.put(user);
-      setUserData(await db.localUserData.toArray());
-      setCurrentUser(await db.localUserData.get(currentUser.id));
-    } else {
-      toast.error("No custom picture to remove");
-    }
-  };
-
-  // Submit password change
-  const onFormDataSubmit = async (e) => {
-    e.preventDefault();
-
-    if (formData.oldPassword !== currentUser.password) {
-      toast.error("Current password is incorrect");
-      return;
-    }
-    if (formData.newPassword !== formData.confirmPassword) {
-      toast.error("New passwords don't match");
-      return;
-    }
-    if (formData.oldPassword === formData.newPassword) {
-      toast.error("New password must be different from current password");
-      return;
-    }
-    if (formData.newPassword.length < 3) {
-      toast.error("Password must be at least 3 characters");
-      return;
-    }
-
-    await db.localUserData.update(currentUser.id, {
-      password: formData.newPassword,
-    });
-    setUserData(await db.localUserData.toArray());
-    setCurrentUser(await db.localUserData.get(currentUser.id));
-
-    toast.success("Password updated successfully!");
-    setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-  };
+  const {
+    currentUser,
+    formData,
+    isOldPassMatch,
+    isConfirmPassMatch,
+    onPasswordChange,
+    handleImageUpload,
+    handleRemoveProfilePicture,
+    onFormDataSubmit,
+    addresses,
+    loadingAddresses,
+    onDeleteAddress,
+    onAddAddress,
+    onEditAddress,
+  } = useSetting();
 
   return (
-    <div className="space-y-5 font-sans">
-      <ToastContainer
-        autoClose={1000}
-        // pauseOnHover={false}
-        position="top-right"
-      />
-
+    <div className="space-y-5 p-2 font-sans">
       {/* Header */}
       <div className="bg-white rounded-2xl border border-[#E7E5E4] p-5">
         <h2 className="text-lg font-semibold text-[#1C1917]">Settings</h2>
@@ -228,6 +141,82 @@ function Setting() {
         </p>
         <FieldRow icon={User} label="Username" value={currentUser.username} />
         <FieldRow icon={Mail} label="Email" value={currentUser.email} />
+      </div>
+
+      {/* Saved Addresses */}
+      <div className="bg-white rounded-2xl border border-[#E7E5E4] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold text-[#1C1917]">
+            Saved Addresses
+          </p>
+          <button
+            type="button"
+            onClick={onAddAddress}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] transition-colors bg-transparent border-none cursor-pointer p-0 outline-none"
+          >
+            + Add Address
+          </button>
+        </div>
+
+        {loadingAddresses ? (
+          <div className="text-center py-4 text-xs text-gray-500 font-sans">
+            Loading...
+          </div>
+        ) : addresses.length > 0 ? (
+          <div className="space-y-3">
+            {addresses.map((addr, idx) => {
+              const fullAddress = `${addr.street}, ${addr.city}, ${addr.state} – ${addr.pincode}`;
+              return (
+                <div key={addr._id || idx} className="bg-[#FAFAF9] border border-[#E7E5E4] rounded-xl p-3.5 flex items-start justify-between gap-3 font-sans">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <MapPin size={13} className="text-[#78716C]" strokeWidth={2} />
+                    </div>
+                    <div className="min-w-0">
+                      {addr.name && (
+                        <p className="text-xs font-semibold text-[#1C1917] truncate">
+                          {addr.name}
+                        </p>
+                      )}
+                      {addr.phone && (
+                        <p className="text-[10px] text-[#78716C] mt-0.5">
+                          +91 {addr.phone}
+                        </p>
+                      )}
+                      <p className="text-xs text-[#78716C] mt-1 leading-normal font-sans">
+                        {fullAddress}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onEditAddress(addr)}
+                      className="p-1.5 hover:bg-[#F5F5F4] rounded-lg text-[#6366F1] transition-colors"
+                      title="Edit"
+                    >
+                      <Pencil size={12} strokeWidth={2} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteAddress(addr._id)}
+                      className="p-1.5 hover:bg-[#F5F5F4] rounded-lg text-[#EF4444] transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 size={12} strokeWidth={2} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-[#FAFAF9] border border-dashed border-[#E7E5E4] rounded-xl p-5 text-center">
+            <p className="text-xs text-[#78716C] font-sans">
+              No addresses saved yet
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Change password */}

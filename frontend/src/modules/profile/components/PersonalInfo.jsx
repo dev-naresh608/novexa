@@ -1,17 +1,11 @@
-import React, { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { AddressContext, UserContext } from "../../contexts/context";
-import { useModal, MODAL_TYPES } from "../../components";
-import { db } from "../../db";
+import React from "react";
+import { usePersonalInfo } from "../hooks";
 import {
   User,
   Mail,
   Phone,
   MapPin,
   ShoppingBag,
-  Pencil,
-  Trash2,
-  PlusCircle,
   ChevronRight,
 } from "lucide-react";
 
@@ -34,55 +28,19 @@ const InfoCard = ({ icon: Icon, label, value, accent = "#6366F1" }) => (
 );
 
 function PersonalInfo() {
-  const { currentUser, setCurrentUser, setUserData, setActiveTab } =
-    useContext(UserContext);
-  const navigate = useNavigate();
-  const { openModal } = useModal();
-
-  let isAddressAvail = currentUser.hasOwnProperty("myAddress");
-  const addr = isAddressAvail ? currentUser.myAddress : null;
-  const fullAddress = addr
-    ? `${addr.street}, ${addr.city}, ${addr.state} – ${addr.pincode}`
-    : null;
-
-  useEffect(() => setActiveTab("personalinformation"), []);
-
-  const onDeleteAddress = () => {
-    openModal(MODAL_TYPES.CONFIRM, {
-      title: "Delete Address",
-      message: "Are you sure you want to delete your saved address?",
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      type: "danger",
-      onConfirm: async () => {
-        const user = await db.localUserData.get(currentUser.id);
-        delete user.myAddress;
-        await db.localUserData.put(user);
-        setUserData(await db.localUserData.toArray());
-        setCurrentUser(await db.localUserData.get(currentUser.id));
-      }
-    });
-  };
-
-  const onAddOrEditAddress = () => {
-    openModal(MODAL_TYPES.ADDRESS, {
-      userId: currentUser.id,
-      setAddress: async (newAddress) => {
-        const user = await db.localUserData.get(currentUser.id);
-        user.myAddress = newAddress;
-        await db.localUserData.put(user);
-        setUserData(await db.localUserData.toArray());
-        setCurrentUser(await db.localUserData.get(currentUser.id));
-      }
-    });
-  };
-
-  const totalOrders = currentUser?.myOrders?.length || 0;
+  const {
+    currentUser,
+    lastUsedAddress,
+    loading,
+    totalOrders,
+    setActiveTab,
+    navigate,
+  } = usePersonalInfo();
 
   return (
-    <div className="bg-white h-full rounded-2xl border border-[#E7E5E4] p-6 space-y-6 font-sans">
+    <div className=" p-2 space-y-6 font-sans">
       {/* ── Header ── */}
-      <div>
+      <div className="bg-white rounded-2xl border border-[#E7E5E4] p-5">
         <h2 className="text-lg font-semibold text-[#1C1917]">
           Personal Information
         </h2>
@@ -149,46 +107,44 @@ function PersonalInfo() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-[#1C1917]">
-            Saved Address
+            Last Used Address
           </h3>
+          <button
+            onClick={() => {
+              setActiveTab("setting");
+              navigate("/profile/setting");
+            }}
+            className="text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] transition-colors bg-transparent border-none p-0 cursor-pointer outline-none"
+          >
+            Manage Addresses
+          </button>
         </div>
 
-        {isAddressAvail ? (
+        {loading ? (
+          <div className="text-center py-6 text-sm text-gray-500 font-sans">
+            Loading...
+          </div>
+        ) : lastUsedAddress ? (
           <div className="bg-[#FAFAF9] border border-[#E7E5E4] rounded-2xl p-4">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#F5F5F4] flex items-center justify-center flex-shrink-0 mt-0.5">
                 <MapPin size={15} className="text-[#78716C]" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
-                {addr.name && (
+                {lastUsedAddress.name && (
                   <p className="text-sm font-semibold text-[#1C1917]">
-                    {addr.name}
+                    {lastUsedAddress.name}
                   </p>
                 )}
-                {addr.phone && (
+                {lastUsedAddress.phone && (
                   <p className="text-xs text-[#78716C] mt-0.5">
-                    +91 {addr.phone}
+                    +91 {lastUsedAddress.phone}
                   </p>
                 )}
-                <p className="text-sm text-[#78716C] mt-1 leading-snug">
-                  {fullAddress}
+                <p className="text-sm text-[#78716C] mt-1 leading-snug font-sans">
+                  {`${lastUsedAddress.street}, ${lastUsedAddress.city}, ${lastUsedAddress.state} – ${lastUsedAddress.pincode}`}
                 </p>
               </div>
-            </div>
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#F5F5F4]">
-              <button
-                onClick={onAddOrEditAddress}
-                className="flex items-center gap-1.5 text-xs font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors"
-              >
-                <Pencil size={12} strokeWidth={2} /> Edit
-              </button>
-              <span className="text-[#E7E5E4]">|</span>
-              <button
-                onClick={onDeleteAddress}
-                className="flex items-center gap-1.5 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] transition-colors"
-              >
-                <Trash2 size={12} strokeWidth={2} /> Delete
-              </button>
             </div>
           </div>
         ) : (
@@ -196,15 +152,9 @@ function PersonalInfo() {
             <div className="w-10 h-10 rounded-xl bg-[#F5F5F4] flex items-center justify-center mx-auto mb-3">
               <MapPin size={18} className="text-[#A8A29E]" strokeWidth={1.5} />
             </div>
-            <p className="text-sm text-[#78716C] font-medium">
+            <p className="text-sm text-[#78716C] font-medium font-sans">
               No address saved yet
             </p>
-            <button
-              onClick={onAddOrEditAddress}
-              className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-[#EF4444] hover:text-[#B91C1C] transition-colors"
-            >
-              <PlusCircle size={13} strokeWidth={2} /> Add Address
-            </button>
           </div>
         )}
       </div>

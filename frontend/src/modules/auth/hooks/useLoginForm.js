@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { UserContext } from "../../../contexts/context";
 import { loginUserApi } from "../services/auth.service.api";
+import { useModal } from "../../../components";
 
 export function useLoginForm() {
   const navigate = useNavigate();
+  const { closeModal } = useModal();
   const { setCurrentUser, setCurrentUserRole, setIsLogin } =
     useContext(UserContext);
 
@@ -14,6 +16,7 @@ export function useLoginForm() {
     password: "",
   });
   const [isPassVisible, setIsPassVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -34,6 +37,7 @@ export function useLoginForm() {
       return;
     }
 
+    setLoading(true);
     try {
       const res = await loginUserApi(formData);
 
@@ -44,6 +48,7 @@ export function useLoginForm() {
         setCurrentUserRole(res.data.user.role);
         setTimeout(() => {
           setIsLogin(true);
+          closeModal();
           navigate("/dashboard");
         }, 1000);
       } else {
@@ -51,12 +56,15 @@ export function useLoginForm() {
       }
     } catch (err) {
       console.log("Error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
     formData,
     isPassVisible,
+    loading,
     handleChange,
     handleShowPassword,
     handleSubmit,

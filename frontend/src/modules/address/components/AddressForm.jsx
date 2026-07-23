@@ -1,7 +1,6 @@
-import { div } from "framer-motion/client";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { handleAddAddressApi } from "../../index";
+import { handleAddAddressApi, handleUpdateAddressApi } from "../../index";
 import { useModal } from "../../../components";
 
 function AddressForm({ closeBtnAction, userId, setAddress }) {
@@ -22,30 +21,41 @@ function AddressForm({ closeBtnAction, userId, setAddress }) {
   };
 
   // ==== STATE =======
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (payload?.address) {
+      setFormData({
+        name: payload.address.name || "",
+        phone: payload.address.phone || "",
+        city: payload.address.city || "",
+        street: payload.address.street || "",
+        state: payload.address.state || "",
+        pincode: String(payload.address.pincode || ""),
+      });
+    } else {
+      setFormData(initialFormData);
+    }
+  }, [payload?.address]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value.trim(),
+      [name]: value,
     }));
   };
 
-  useEffect(() => {
-    // console.log(formData);
-  }, [formData]);
-
   const handleSubmit = () => {
     //  ===== validation =====
-    if (formData.pincode <= 0) {
+    if (!formData.pincode || Number(formData.pincode) <= 0) {
       return toast.error("Invalid pincode number");
     }
-    if (formData.pincode.length !== 6) {
+    if (String(formData.pincode).length !== 6) {
       return toast.error("Pincode length must be 6");
     }
 
-    if (!actualUserId) {
+    if (!actualUserId && !payload?.address?._id) {
       return toast.error("No user id found");
     }
 
@@ -58,29 +68,37 @@ function AddressForm({ closeBtnAction, userId, setAddress }) {
       pincode: Number(formData.pincode),
     };
 
-    const addAddress = async () => {
-      const data = await handleAddAddressApi(actualUserId, requestPayload);
-      if (!data.success) {
-        return toast.error(data.message);
+    const saveAddress = async () => {
+      let data;
+      if (payload?.address?._id) {
+        data = await handleUpdateAddressApi(payload.address._id, requestPayload);
+      } else {
+        data = await handleAddAddressApi(actualUserId, requestPayload);
+      }
+
+      if (!data || !data.success) {
+        return toast.error(data?.message || "Failed to save address");
       }
       if (actualSetAddress) {
         actualSetAddress(data.address);
       }
     };
-    addAddress();
+    saveAddress();
 
     setTimeout(() => {
       if (handleClose) {
         handleClose();
       }
       setFormData(initialFormData);
-      toast.success("Address added successfully");
+      toast.success(payload?.address?._id ? "Address updated successfully" : "Address added successfully");
     }, 0);
   };
 
   const formContent = (
     <>
-      <p className="font-bold text-center text-xl">Add Address</p>
+      <p className="font-bold text-center text-xl">
+        {payload?.address?._id ? "Edit Address" : "Add Address"}
+      </p>
       {!isInsideModal && (
         <div className="absolute top-0 right-2">
           <button onClick={handleClose}>✘</button>
