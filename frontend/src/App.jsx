@@ -126,17 +126,8 @@ const ProtectedRoute = () => {
 const CustomerOnlyBrowsingRoute = () => {
   const { isAuthenticated, user, isCheckingAuth } = useSelector((state) => state.auth);
 
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-semibold text-gray-400">Loading...</p>
-      </div>
-    );
-  }
-
   // If authenticated as driver or seller, redirect away to dashboard
-  if (isAuthenticated && (user?.role === "driver" || user?.role === "seller")) {
+  if (!isCheckingAuth && isAuthenticated && (user?.role === "driver" || user?.role === "seller")) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -147,17 +138,8 @@ const CustomerOnlyBrowsingRoute = () => {
 const DriverBlockedRoute = () => {
   const { isAuthenticated, user, isCheckingAuth } = useSelector((state) => state.auth);
 
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-semibold text-gray-400">Loading...</p>
-      </div>
-    );
-  }
-
   // If authenticated as driver, redirect away to dashboard
-  if (isAuthenticated && user?.role === "driver") {
+  if (!isCheckingAuth && isAuthenticated && user?.role === "driver") {
     return <Navigate to="/dashboard" replace />;
   }
 

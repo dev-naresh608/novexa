@@ -11,6 +11,7 @@ import {
   PriceBreakdown,
   OrderItemsComponent,
   OrderIdInfo,
+  OrderDetailSkeleton,
 } from "../index";
 
 function OrderDetail() {
@@ -49,12 +50,7 @@ function OrderDetail() {
   const cfg = order ? STATUS_CONFIG[order.order_status] : null;
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-        <p className="text-sm font-semibold text-gray-500">Loading order details...</p>
-      </div>
-    );
+    return <OrderDetailSkeleton />;
   }
 
   if (!order) {

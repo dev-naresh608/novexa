@@ -1,9 +1,8 @@
-import React from 'react'
+import React from "react";
+import { OrdersPageSkeleton } from "./OrdersSkeleton";
 
 function LoadingOrders() {
-  return (
-    <>loading bar</>
-  )
+  return <OrdersPageSkeleton />;
 }
 
-export default LoadingOrders
+export default LoadingOrders;

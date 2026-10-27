@@ -6,8 +6,11 @@ import {
   handleDeleteAddressApi,
   handleUpdateAddressApi,
 } from "./address.controllers.js";
+import { authenticateAccessToken } from "../../middlewares/auth.middleware.js";
 
 const addressRouter = express.Router();
+
+addressRouter.use(authenticateAccessToken);
 
 addressRouter.get("/all/:userId", handleGetAddressApi);
 addressRouter.post("/add/:userId", handleAddAddressApi);

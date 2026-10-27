@@ -23,6 +23,7 @@ import {
   driverAcceptOrderApi,
   driverRejectOrderApi,
 } from "../../services/activeOrders.api";
+import { DriverActiveOrdersSkeleton } from "../../components";
 
 function DriverActiveOrders() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -119,11 +120,7 @@ function DriverActiveOrders() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-9 h-9 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <DriverActiveOrdersSkeleton />;
   }
 
   return (

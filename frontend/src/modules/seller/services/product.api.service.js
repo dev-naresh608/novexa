@@ -64,11 +64,3 @@ export const toggleStoreStatusApi = async (storeId, isStoreOpen) => {
   });
   return data;
 };
-
-export const searchProductsSvc = (products = [], searchValue = "") => {
-  if (!products) return [];
-  if (!searchValue) return products;
-  return products.filter((p) =>
-    p.product_name?.toLowerCase().includes(searchValue.toLowerCase().trim())
-  );
-};

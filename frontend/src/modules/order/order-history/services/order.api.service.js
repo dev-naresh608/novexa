@@ -53,11 +53,6 @@ export const createOrderApi = async (orderData) => {
   return data;
 };
 
-export const updateOrderStatusApi = async (orderId, status) => {
-  const { data } = await api.patch(`/order/detail/${orderId}`, { status });
-  return data;
-};
-
 export const deleteOrderApi = async (orderId) => {
   const { data } = await api.delete(`/order/detail/${orderId}`);
   return data;

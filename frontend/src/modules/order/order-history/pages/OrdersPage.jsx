@@ -4,8 +4,10 @@ import { updateUser } from "@/modules/auth/store/authSlice";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import {
-  DashboardCard,
+  OrderDashboardCard as DashboardCard,
   EmptyOrders,
+  OrdersPageSkeleton,
+  OrdersTableBodySkeleton,
   dashboardCardsConfig,
   OrdersTable,
   searchOrdersSvc,
@@ -106,14 +108,9 @@ function Orders() {
   }, [currentUser, setActiveCard, allOrders, summaryStats]);
 
   // ===================== 1. LOADING STATE =====================
-  // While fetching data, show a centered spinner with zero card flashing
+  // While fetching data on first load, render smooth YouTube-style skeleton
   if (loading && allOrders.length === 0 && !searchValue) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-400 space-y-3">
-        <Loader2 size={32} className="animate-spin text-emerald-600" />
-        <p className="text-sm font-medium text-gray-500">Loading orders...</p>
-      </div>
-    );
+    return <OrdersPageSkeleton />;
   }
 
   // ===================== 2. CLEAN EMPTY STATE =====================
@@ -172,10 +169,7 @@ function Orders() {
 
         {/* ================= LOADING & CONTENT STATE ================= */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400 space-y-2">
-            <Loader2 size={26} className="animate-spin text-emerald-600" />
-            <p className="text-xs font-medium">Updating orders...</p>
-          </div>
+          <OrdersTableBodySkeleton count={limit > 6 ? 6 : limit} />
         ) : filteredOrders.length === 0 ? (
           <EmptyOrders
             currentUserRole={currentUser?.role}

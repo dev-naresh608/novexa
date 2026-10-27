@@ -80,11 +80,13 @@ export const addAddressSvc = async (userId, payload) => {
   return address;
 };
 
-export const deleteAddressSvc = async (addressId) => {
-  return await Address.findByIdAndDelete(addressId);
+export const deleteAddressSvc = async (addressId, userId) => {
+  const query = { _id: addressId };
+  if (userId) query.user_id = userId;
+  return await Address.findOneAndDelete(query);
 };
 
-export const updateAddressSvc = async (addressId, payload) => {
+export const updateAddressSvc = async (addressId, payload, userId) => {
   const updateData = { ...payload };
 
   if (
@@ -139,7 +141,10 @@ export const updateAddressSvc = async (addressId, payload) => {
     }
   }
 
-  return await Address.findByIdAndUpdate(addressId, updateData, {
+  const query = { _id: addressId };
+  if (userId) query.user_id = userId;
+
+  return await Address.findOneAndUpdate(query, updateData, {
     returnDocument: "after",
     runValidators: true,
   });

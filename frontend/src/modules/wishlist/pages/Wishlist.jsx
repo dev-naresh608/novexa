@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { StoreCard } from "@/modules/seller";
+import { StoreCard, StoreGridSkeleton } from "@/modules/seller";
 import { defaultRest } from "@/assets";
 import { getWishlistStoresApi } from "../services/wishlist.api";
 
@@ -45,8 +45,16 @@ function Wishlist() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-5 h-full max-h-[90vh]">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Favourite Stores
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Your saved grocery and convenience stores
+          </p>
+        </div>
+        <StoreGridSkeleton count={4} />
       </div>
     );
   }

@@ -23,6 +23,7 @@ import {
   updateOrderStatusApi,
   retryDriverAllocationApi,
 } from "../../services/activeOrders.api";
+import { SellerActiveOrdersSkeleton } from "../../components";
 
 function SellerActiveOrders() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -130,11 +131,7 @@ function SellerActiveOrders() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-9 h-9 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <SellerActiveOrdersSkeleton />;
   }
 
   // Filter orders into Kanban Columns

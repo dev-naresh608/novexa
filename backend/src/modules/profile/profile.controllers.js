@@ -33,7 +33,7 @@ Error: ${details.error}
 export const uploadProfilePicture = async (req, res) => {
   try {
     const { userId } = req.body;
-    const targetUserId = userId || req.user?._id || req.user?.id;
+    const targetUserId = req.user?.sub || req.user?._id || req.user?.id || userId;
 
     if (!targetUserId) {
       if (req.file && fs.existsSync(req.file.path)) {
@@ -158,7 +158,7 @@ export const uploadProfilePicture = async (req, res) => {
 export const removeProfilePicture = async (req, res) => {
   try {
     const { userId } = req.body;
-    const targetUserId = userId || req.user?._id || req.user?.id;
+    const targetUserId = req.user?.sub || req.user?._id || req.user?.id || userId;
 
     if (!targetUserId) {
       return res.status(400).json({
@@ -256,7 +256,7 @@ export const removeProfilePicture = async (req, res) => {
 export const updateAccountInfo = async (req, res) => {
   try {
     const { userId, username, email, phone } = req.body;
-    const targetUserId = userId || req.user?._id || req.user?.id;
+    const targetUserId = req.user?.sub || req.user?._id || req.user?.id || userId;
 
     if (!targetUserId) {
       return res.status(400).json({
@@ -367,7 +367,7 @@ export const updateAccountInfo = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { userId, oldPassword, newPassword } = req.body;
-    const targetUserId = userId || req.user?._id || req.user?.id;
+    const targetUserId = req.user?.sub || req.user?._id || req.user?.id || userId;
 
     if (!targetUserId) {
       return res.status(400).json({
@@ -383,10 +383,10 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    if (newPassword.length < 3) {
+    if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "New password must be at least 3 characters long",
+        message: "New password must be at least 6 characters long",
       });
     }
 

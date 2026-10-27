@@ -33,33 +33,43 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, postman)
+      // Allow requests with no origin (mobile apps, server-to-server, curl)
       if (!origin) return callback(null, true);
 
-      // Check if origin matches allowed list or vercel subdomains or localhost
+      // Check if origin matches allowed list or novexa preview vercel domains or localhost
       const isAllowed =
         allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") ||
+        /^https:\/\/novexa(-[a-z0-9]+)?\.vercel\.app$/.test(origin) ||
         origin.startsWith("http://localhost:") ||
         origin.startsWith("http://127.0.0.1:");
 
       if (isAllowed) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(null, false);
     },
     credentials: true,
   }),
 );
+
+// Standard HTTP Security Headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
 app.use(
   express.json({
-    limit: "100mb",
+    limit: "10mb",
   }),
 );
 app.use(
   express.urlencoded({
     extended: true,
-    limit: "100mb",
+    limit: "10mb",
   }),
 );
 
@@ -85,5 +95,28 @@ app.use("/api/distance", distanceRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/profile", profileRouter);
+
+// 404 Handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Resource not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Central Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err);
+  const status = err.status || 500;
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Internal Server Error"
+      : err.message || "Internal Server Error";
+
+  res.status(status).json({
+    success: false,
+    message,
+  });
+});
 
 export default app;

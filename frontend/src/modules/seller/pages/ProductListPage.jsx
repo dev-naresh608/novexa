@@ -22,6 +22,7 @@ import {
 
 import {
   EmptyProducts,
+  ProductListSkeleton,
   getAllProductsApi,
   toggleProductMenuStatusApi,
   deleteProductApi,
@@ -291,12 +292,7 @@ function ProductListPage() {
 
   // ================= LOADING STATE =================
   if (loading && allProducts.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-        <div className="w-9 h-9 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-semibold text-gray-500">Loading products inventory...</p>
-      </div>
-    );
+    return <ProductListSkeleton />;
   }
 
   // ================= EMPTY STATE (NO PRODUCTS) =================

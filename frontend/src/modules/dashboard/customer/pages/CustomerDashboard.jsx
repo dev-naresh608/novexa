@@ -55,6 +55,31 @@ const renderStatusBadge = (status) => {
   );
 };
 
+// YouTube-style shimmer skeleton for recent orders
+const RecentOrdersSkeleton = () => (
+  <div aria-hidden="true" className="space-y-3 sm:space-y-4 select-none pointer-events-none">
+    {[1, 2].map((i) => (
+      <div
+        key={i}
+        className="border border-gray-200/80 rounded-xl p-3.5 sm:p-4 bg-white space-y-3 shadow-xs"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <div className="h-4 sm:h-4.5 bg-gray-200/90 rounded w-44 sm:w-56 skeleton-shimmer" />
+            <div className="h-3 bg-gray-200/70 rounded w-32 skeleton-shimmer" />
+          </div>
+          <div className="h-6 w-20 bg-gray-100 rounded-full skeleton-shimmer shrink-0" />
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="h-4 bg-gray-200/90 rounded w-16 skeleton-shimmer" />
+          <div className="h-7 w-20 bg-emerald-50/70 rounded-lg border border-emerald-100/50 skeleton-shimmer" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 function CustomerDashboard() {
   const navigate = useNavigate();
   const {
@@ -130,10 +155,7 @@ function CustomerDashboard() {
 
           {/* ORDER LIST / EMPTY STATE */}
           {loadingOrders ? (
-            <div className="py-10 flex flex-col items-center justify-center text-gray-400">
-              <Loader2 size={24} className="animate-spin text-emerald-600 mb-2" />
-              <p className="text-xs font-medium">Loading recent orders...</p>
-            </div>
+            <RecentOrdersSkeleton />
           ) : pastTwoOrders.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
               {pastTwoOrders.map((order, idx) => (

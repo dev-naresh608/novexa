@@ -6,8 +6,11 @@ import {
   changePassword,
 } from "./profile.controllers.js";
 import { upload } from "../../middlewares/multer.middleware.js";
+import { authenticateAccessToken } from "../../middlewares/auth.middleware.js";
 
 const profileRouter = express.Router();
+
+profileRouter.use(authenticateAccessToken);
 
 profileRouter.post(
   "/upload-picture",
