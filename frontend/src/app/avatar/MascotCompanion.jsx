@@ -59,6 +59,38 @@ const AMBIENT_IDLE_MOODS = [
   "proud",
 ];
 
+// Helper to compute snap coordinate to nearest allowed wall (Left, Right, or Bottom — NEVER Top, NEVER Center)
+const snapToNearestWall = (rawX, rawY) => {
+  if (typeof window === "undefined") return { x: rawX, y: rawY, wall: "right" };
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const isMobile = W < 640;
+  const size = isMobile ? 50 : 70;
+  const padX = 14;
+  const padBottom = isMobile ? 80 : 24;
+  const minTop = 80; // "upar me nai"
+  const maxBottomY = Math.max(minTop + 50, H - size - padBottom);
+
+  // Clamp within viewport bounds
+  const clampX = Math.max(padX, Math.min(W - size - padX, rawX));
+  const clampY = Math.max(minTop, Math.min(maxBottomY, rawY));
+
+  // Compute distances to the 3 allowed walls (Left, Right, Bottom)
+  const distLeft = clampX - padX;
+  const distRight = W - size - padX - clampX;
+  const distBottom = maxBottomY - clampY;
+
+  const minDist = Math.min(distLeft, distRight, distBottom);
+
+  if (minDist === distLeft) {
+    return { x: padX, y: clampY, wall: "left" };
+  } else if (minDist === distRight) {
+    return { x: W - size - padX, y: clampY, wall: "right" };
+  } else {
+    return { x: clampX, y: maxBottomY, wall: "bottom" };
+  }
+};
+
 export const MascotCompanion = () => {
   const location = useLocation();
   const avatarRef = useRef(null);
@@ -74,8 +106,29 @@ export const MascotCompanion = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isDocked, setIsDocked] = useState(false); // Smooth edge-docking state
   const [isSleeping, setIsSleeping] = useState(false);
-  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Sound preference state: user's manual preference is strictly preserved
+  const [soundPref, setSoundPref] = useState(() => isSoundEnabled());
+
+  // Dynamic Draggable Position State (restored from localStorage)
+  const [position, setPosition] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("novexa_mascot_pos");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return null; // null uses default responsive bottom-right
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({
+    mouseX: 0,
+    mouseY: 0,
+    elX: 0,
+    elY: 0,
+    hasMoved: false,
+  });
 
   // Timers
   const resetTimerRef = useRef(null);
@@ -98,10 +151,40 @@ export const MascotCompanion = () => {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Handle window resize: re-snap if positioned
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition((prev) => {
+        if (!prev) return null;
+        const reSnapped = snapToNearestWall(prev.x, prev.y);
+        try {
+          localStorage.setItem("novexa_mascot_pos", JSON.stringify(reSnapped));
+        } catch {}
+        return reSnapped;
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Centralized Sound Player:
+  // - If minimized -> AUTOMATICALLY OFF (0 sound)
+  // - If user muted (soundPref === false) -> AUTOMATICALLY OFF
+  // - When unminimized -> sound immediately restores to user's saved soundPref
+  const playSound = useCallback(
+    (type, isSpeechSound = false) => {
+      if (isMinimized) return; // Completely silent when minimized
+      if (!soundPref) return; // Silent if user muted
+      if (isSpeechSound && !showBubble) return; // Silent if speech hints are closed
+
+      playMascotSound(type);
+    },
+    [isMinimized, soundPref, showBubble]
+  );
+
   // Safe animation trigger via ref (silenced completely when minimized)
   const playAnimation = useCallback(
     (animName, text = null, durationMs = 2800, isPersistent = false) => {
-      // If minimized, do not play any animations, suggestions, or popups
       if (isMinimized) return;
 
       if (resetTimerRef.current) {
@@ -112,7 +195,7 @@ export const MascotCompanion = () => {
       if (prefersReducedMotion) {
         avatarRef.current?.setExpression?.("neutral");
         setCurrentMood(animName);
-        if (text && !isMinimized) {
+        if (text && !isMinimized && showBubble) {
           setSpeechMessage(text);
           setShowBubble(true);
         }
@@ -124,7 +207,7 @@ export const MascotCompanion = () => {
       }
       setCurrentMood(animName);
 
-      if (text && !isMinimized) {
+      if (text && !isMinimized && showBubble) {
         setSpeechMessage(text);
         setShowBubble(true);
 
@@ -136,7 +219,6 @@ export const MascotCompanion = () => {
         }, Math.max(durationMs + 2000, 6000));
       }
 
-      // If this is a temporary reaction (not persistent and not idle/sleeping), reset back to idle after duration
       if (!isPersistent && animName !== "idle" && animName !== "sleeping") {
         resetTimerRef.current = setTimeout(() => {
           if (avatarRef.current?.play) {
@@ -146,7 +228,7 @@ export const MascotCompanion = () => {
         }, durationMs);
       }
     },
-    [prefersReducedMotion, showMoodTray, isMinimized]
+    [prefersReducedMotion, showMoodTray, isMinimized, showBubble]
   );
 
   // Click outside listener: closes modal/mood tray instantly and smoothly docks mascot
@@ -165,7 +247,7 @@ export const MascotCompanion = () => {
             setCurrentMood("idle");
           }
         }
-        // Smoothly dock towards edge when user clicks away on the side
+        // Smoothly dock towards nearest wall when clicking outside
         setIsDocked(true);
       }
     };
@@ -178,18 +260,18 @@ export const MascotCompanion = () => {
     };
   }, [showMoodTray, showBubble, currentMood]);
 
-  // 1. Initial page load reaction: "waking" -> "idle" after 2.4s (Page 7 of Guide)
+  // 1. Initial page load reaction: "waking" -> "idle" after 2.4s
   useEffect(() => {
     if (hasMountedRef.current || isMinimized) return;
     hasMountedRef.current = true;
 
-    playMascotSound("wake");
+    playSound("wake");
     playAnimation(
       "waking",
       "Good day! Novie is ready to assist your shopping! ✨",
       2400
     );
-  }, [playAnimation, isMinimized]);
+  }, [playAnimation, isMinimized, playSound]);
 
   // 2. React to route changes / sections navigation (silent when minimized)
   useEffect(() => {
@@ -217,14 +299,14 @@ export const MascotCompanion = () => {
     playAnimation("curious", tip, 3000);
   }, [location.pathname, playAnimation, isSleeping, isMinimized]);
 
-  // 3. User inactivity detection: 30s no activity -> "drowsy" -> "sleeping" (disabled when minimized)
+  // 3. User inactivity detection: 30s no activity -> "drowsy" -> "sleeping"
   const wakeUpFromSleep = useCallback(() => {
     if (isSleeping && !isMinimized) {
       setIsSleeping(false);
-      playMascotSound("wake");
+      playSound("wake");
       playAnimation("waking", "I'm back! Let's find some groceries! ✨", 2200);
     }
-  }, [isSleeping, playAnimation, isMinimized]);
+  }, [isSleeping, playAnimation, isMinimized, playSound]);
 
   useEffect(() => {
     if (prefersReducedMotion || isMinimized) return;
@@ -244,7 +326,7 @@ export const MascotCompanion = () => {
         drowsyTimerRef.current = setTimeout(() => {
           if (isMinimized) return;
           setIsSleeping(true);
-          playMascotSound("sleep");
+          playSound("sleep");
           playAnimation(
             "sleeping",
             "Zzz... taking a power nap. Move your mouse or tap me to wake me up! 😴",
@@ -266,9 +348,9 @@ export const MascotCompanion = () => {
       if (drowsyTimerRef.current) clearTimeout(drowsyTimerRef.current);
       events.forEach((evt) => window.removeEventListener(evt, resetIdleTimer));
     };
-  }, [isSleeping, playAnimation, wakeUpFromSleep, prefersReducedMotion, isMinimized]);
+  }, [isSleeping, playAnimation, wakeUpFromSleep, prefersReducedMotion, isMinimized, playSound]);
 
-  // 4. Ambient Lively Mood Changer (completely silent & stopped when minimized)
+  // 4. Ambient Lively Mood Changer
   useEffect(() => {
     if (prefersReducedMotion || isMinimized) return;
 
@@ -300,7 +382,7 @@ export const MascotCompanion = () => {
     };
   }, [currentMood, isSleeping, showMoodTray, isDocked, playAnimation, prefersReducedMotion, isMinimized]);
 
-  // 5. React on main buttons hover: "excited" (disabled when minimized)
+  // 5. React on main buttons hover: "excited"
   useEffect(() => {
     if (prefersReducedMotion || isMinimized) return;
 
@@ -335,16 +417,16 @@ export const MascotCompanion = () => {
     };
   }, [currentMood, isSleeping, showMoodTray, playAnimation, prefersReducedMotion, isMinimized]);
 
-  // 6. Global Custom Event Bus Listeners (disabled when minimized)
+  // 6. Global Custom Event Bus Listeners
   useEffect(() => {
     const handlePlayEvent = (e) => {
       if (isMinimized) return;
       const { animation, speechText, durationMs } = e.detail || {};
       if (animation) {
-        if (animation === "celebrate") playMascotSound("celebrate");
-        else if (animation === "confused") playMascotSound("confused");
-        else if (animation === "angry") playMascotSound("angry");
-        else playMascotSound("pop");
+        if (animation === "celebrate") playSound("celebrate");
+        else if (animation === "confused") playSound("confused");
+        else if (animation === "angry") playSound("angry");
+        else playSound("pop");
 
         setIsDocked(false);
         playAnimation(animation, speechText, durationMs || 3000);
@@ -370,7 +452,7 @@ export const MascotCompanion = () => {
         setIsDocked(false);
         setSpeechMessage(message);
         setShowBubble(true);
-        playMascotSound("click");
+        playSound("click", true);
         if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
         speechTimerRef.current = setTimeout(() => {
           setShowBubble(false);
@@ -387,17 +469,83 @@ export const MascotCompanion = () => {
       window.removeEventListener("novexa:mascot:expression", handleExpressionEvent);
       window.removeEventListener("novexa:mascot:say", handleSayEvent);
     };
-  }, [playAnimation, isMinimized]);
+  }, [playAnimation, isMinimized, playSound]);
 
-  // Click on Novie: cycles through rich set of happy animations + witty quotes
+  // Drag handlers for free dragging across the screen
+  const handleDragStart = (clientX, clientY) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    dragStartRef.current = {
+      mouseX: clientX,
+      mouseY: clientY,
+      elX: rect.left,
+      elY: rect.top,
+      hasMoved: false,
+    };
+
+    const handleMove = (moveX, moveY) => {
+      const dx = moveX - dragStartRef.current.mouseX;
+      const dy = moveY - dragStartRef.current.mouseY;
+
+      if (!dragStartRef.current.hasMoved && Math.hypot(dx, dy) > 5) {
+        dragStartRef.current.hasMoved = true;
+        setIsDragging(true);
+        setShowMoodTray(false);
+        setShowBubble(false);
+        setIsDocked(false);
+      }
+
+      if (dragStartRef.current.hasMoved) {
+        const nextX = dragStartRef.current.elX + dx;
+        const nextY = dragStartRef.current.elY + dy;
+        setPosition({ x: nextX, y: nextY, wall: "dragging" });
+      }
+    };
+
+    const handleEnd = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+
+      if (dragStartRef.current.hasMoved) {
+        setIsDragging(false);
+        // Snap to nearest allowed wall: Left, Right, or Bottom (NEVER top, NEVER center)
+        setPosition((prev) => {
+          if (!prev) return null;
+          const snapped = snapToNearestWall(prev.x, prev.y);
+          try {
+            localStorage.setItem("novexa_mascot_pos", JSON.stringify(snapped));
+          } catch {}
+          return snapped;
+        });
+      }
+    };
+
+    const onMouseMove = (e) => handleMove(e.clientX, e.clientY);
+    const onMouseUp = () => handleEnd();
+    const onTouchMove = (e) => {
+      if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    };
+    const onTouchEnd = () => handleEnd();
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("touchend", onTouchEnd);
+  };
+
+  // Click on Novie: only fires if not dragged
   const handleMascotClick = () => {
+    if (dragStartRef.current.hasMoved) return; // Prevent clicking while dragging
     setIsDocked(false);
     if (isSleeping) {
       wakeUpFromSleep();
       return;
     }
 
-    playMascotSound("pop");
+    playSound("pop");
     const nextMood = CLICK_MOODS[quoteIndexRef.current % CLICK_MOODS.length];
     const quote = FUN_QUOTES[quoteIndexRef.current % FUN_QUOTES.length];
     quoteIndexRef.current += 1;
@@ -407,29 +555,29 @@ export const MascotCompanion = () => {
 
   // Next Tip action inside speech bubble
   const handleNextTip = () => {
-    playMascotSound("click");
+    playSound("click", true);
     const quote = FUN_QUOTES[quoteIndexRef.current % FUN_QUOTES.length];
     quoteIndexRef.current += 1;
     playAnimation("happy", quote, 3000);
   };
 
-  // Toggle Sound preference
+  // Toggle Sound preference (persists user manual preference)
   const handleToggleSound = () => {
-    const nextState = !soundOn;
-    setSoundOn(nextState);
+    const nextState = !soundPref;
+    setSoundPref(nextState);
     setSoundEnabled(nextState);
-    if (nextState) {
+    if (nextState && !isMinimized) {
       playMascotSound("pop");
     }
   };
 
   // Select mood from playground (with loud sound and persistent playback)
   const handleSelectMood = (mood) => {
-    if (mood === "celebrate") playMascotSound("celebrate");
-    else if (mood === "confused") playMascotSound("confused");
-    else if (mood === "sleeping") playMascotSound("sleep");
-    else if (mood === "angry") playMascotSound("angry");
-    else playMascotSound("pop");
+    if (mood === "celebrate") playSound("celebrate");
+    else if (mood === "confused") playSound("confused");
+    else if (mood === "sleeping") playSound("sleep");
+    else if (mood === "angry") playSound("angry");
+    else playSound("pop");
 
     const moodSpeech =
       mood === "angry"
@@ -439,18 +587,47 @@ export const MascotCompanion = () => {
     playAnimation(mood, moodSpeech, 0, true);
   };
 
+  // Determine wall orientation for speech bubble & docking
+  const activeWall = position?.wall || "right";
+  const alignSide = activeWall === "left" ? "left" : "right";
+
+  // Compute docked translate classes based on active wall
+  const getDockClasses = () => {
+    if (!isDocked || isMinimized || isDragging) return "translate-x-0 translate-y-0 opacity-100";
+    if (activeWall === "left") {
+      return "-translate-x-6 sm:-translate-x-8 opacity-85 hover:translate-x-0 hover:opacity-100";
+    } else if (activeWall === "bottom") {
+      return "translate-y-6 sm:translate-y-7 opacity-85 hover:translate-y-0 hover:opacity-100";
+    } else {
+      return "translate-x-6 sm:translate-x-8 opacity-85 hover:translate-x-0 hover:opacity-100";
+    }
+  };
+
   return (
     <aside
       ref={containerRef}
       aria-label="Novie Mascot Assistant"
-      className="fixed z-[90] pointer-events-none select-none bottom-20 right-2 sm:bottom-6 sm:right-5 transition-all duration-300"
+      className={`fixed z-[90] pointer-events-none select-none ${
+        position ? "" : "bottom-20 right-2 sm:bottom-6 sm:right-5"
+      }`}
+      style={
+        position
+          ? {
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              bottom: "auto",
+              right: "auto",
+              transition: isDragging
+                ? "none"
+                : "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.3s ease, top 0.3s ease",
+            }
+          : undefined
+      }
     >
       <div
-        className={`flex flex-col items-end pointer-events-auto transition-transform duration-300 ease-out group ${
-          isDocked && !isMinimized
-            ? "translate-x-6 sm:translate-x-8 opacity-85 hover:translate-x-0 hover:opacity-100"
-            : "translate-x-0 opacity-100"
-        }`}
+        className={`flex flex-col ${
+          alignSide === "left" ? "items-start" : "items-end"
+        } pointer-events-auto transition-transform duration-300 ease-out group ${getDockClasses()}`}
         onMouseEnter={() => {
           // "hover karne pe bahar aye"
           if (isDocked && !isMinimized) setIsDocked(false);
@@ -461,8 +638,9 @@ export const MascotCompanion = () => {
           <MascotMoodTray
             currentMood={currentMood}
             onSelectMood={handleSelectMood}
+            align={alignSide}
             onReset={() => {
-              playMascotSound("pop");
+              playSound("pop");
               playAnimation("idle", "Back to calm and steady idle! 💫", 2000);
             }}
             onClose={() => {
@@ -477,11 +655,12 @@ export const MascotCompanion = () => {
           <MascotSpeechBubble
             message={speechMessage}
             mood={currentMood}
-            isSoundOn={soundOn}
+            isSoundOn={soundPref}
             onToggleSound={handleToggleSound}
             onClose={() => setShowBubble(false)}
             onNextTip={handleNextTip}
             isSleeping={isSleeping}
+            align={alignSide}
           />
         )}
 
@@ -492,26 +671,31 @@ export const MascotCompanion = () => {
             onClick={() => {
               setIsMinimized(false);
               setIsDocked(false);
-              playMascotSound("wake");
+              // Unminimizing restores sound preference as it was!
+              if (soundPref) playMascotSound("wake");
               playAnimation("happy", "I'm back! Let's explore Novexa! 🌟", 2200);
             }}
             title="Expand Novie Mascot"
-            className="group flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-xs font-semibold"
+            className="group flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-xs font-semibold cursor-pointer"
           >
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
             <span>Novie</span>
             <Maximize2 size={13} className="opacity-75 group-hover:opacity-100" />
           </button>
         ) : (
-          /* Full Mascot Widget (40% reduced size: 70px desktop, 50px mobile) */
+          /* Full Mascot Widget (Draggable & Clickable) */
           <div className="relative flex flex-col items-center">
             {/* Quick Action Pills above Novie */}
-            <div className="absolute -top-6 sm:-top-7 right-0 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity bg-white/95 backdrop-blur-md px-1.5 sm:px-2 py-0.5 rounded-full shadow-md border border-indigo-100 text-[10px] sm:text-[11px] font-medium text-gray-600">
+            <div
+              className={`absolute -top-6 sm:-top-7 ${
+                alignSide === "left" ? "left-0" : "right-0"
+              } flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity bg-white/95 backdrop-blur-md px-1.5 sm:px-2 py-0.5 rounded-full shadow-md border border-indigo-100 text-[10px] sm:text-[11px] font-medium text-gray-600`}
+            >
               {/* Moods Playground button */}
               <button
                 type="button"
                 onClick={() => {
-                  playMascotSound("click");
+                  playSound("click");
                   setShowMoodTray((prev) => !prev);
                   if (showBubble) setShowBubble(false);
                 }}
@@ -528,7 +712,7 @@ export const MascotCompanion = () => {
               <button
                 type="button"
                 onClick={() => {
-                  playMascotSound("click");
+                  playSound("click");
                   setShowBubble((prev) => !prev);
                 }}
                 title={showBubble ? "Hide message" : "Show tip"}
@@ -555,19 +739,26 @@ export const MascotCompanion = () => {
               </button>
             </div>
 
-            {/* Clickable Mascot Canvas with Angry red and shaking support */}
+            {/* Clickable & Draggable Mascot Canvas with Angry red and shaking support */}
             <button
               type="button"
+              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+              onTouchStart={(e) => {
+                if (e.touches[0])
+                  handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+              }}
               onClick={handleMascotClick}
               onDoubleClick={() => {
-                playMascotSound("celebrate");
+                playSound("celebrate");
                 playAnimation("celebrate", "Double tap! You're awesome! 🎉🌟", 3200);
               }}
-              title="Click Novie to interact! Double click to celebrate!"
-              aria-label="Novie mascot - Click to interact"
-              className={`relative cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full ${
-                isAngry ? "is-angry-shaking" : "hover:scale-105 active:scale-95"
-              }`}
+              title="Drag Novie to place anywhere along left, right or bottom walls! Click to interact!"
+              aria-label="Novie mascot - Drag to reposition or click to interact"
+              className={`relative transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full ${
+                isDragging
+                  ? "cursor-grabbing scale-110 shadow-2xl"
+                  : "cursor-grab hover:scale-105 active:scale-95"
+              } ${isAngry ? "is-angry-shaking" : ""}`}
             >
               {/* Soft ambient ground glow (red when angry) */}
               <div
@@ -579,7 +770,7 @@ export const MascotCompanion = () => {
 
               {/* The Novie 3D Avatar (Red & scaled slightly when angry) */}
               <div
-                className={`w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] drop-shadow-md transition-all duration-300 ${
+                className={`w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] drop-shadow-md transition-all duration-300 pointer-events-none ${
                   isAngry ? "is-angry-red scale-110" : ""
                 }`}
               >

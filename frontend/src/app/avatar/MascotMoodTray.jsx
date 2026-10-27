@@ -33,6 +33,7 @@ export const MascotMoodTray = ({
   onSelectMood,
   onReset,
   onClose,
+  align = "right",
 }) => {
   return (
     <div
@@ -40,9 +41,13 @@ export const MascotMoodTray = ({
       aria-label="Novie Mood Playground"
       className="relative z-50 mb-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/95 backdrop-blur-md p-4 shadow-2xl border border-indigo-200/80 animate-in fade-in zoom-in-95 duration-200 select-none text-gray-800"
     >
-      {/* Pointer tail aligned to smaller mascot */}
+      {/* Pointer tail aligned to mascot */}
       <div
-        className="absolute -bottom-2 right-6 sm:right-7 w-4 h-4 bg-white border-r border-b border-indigo-200/80 transform rotate-45 shadow-sm"
+        className={`absolute -bottom-2 w-4 h-4 bg-white transform rotate-45 shadow-sm ${
+          align === "left"
+            ? "left-6 sm:left-7 border-l border-b border-indigo-200/80"
+            : "right-6 sm:right-7 border-r border-b border-indigo-200/80"
+        }`}
         aria-hidden="true"
       />
 

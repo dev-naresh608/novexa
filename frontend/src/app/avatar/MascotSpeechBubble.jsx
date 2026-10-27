@@ -9,6 +9,7 @@ export const MascotSpeechBubble = ({
   onClose,
   onNextTip,
   isSleeping,
+  align = "right",
 }) => {
   if (!message) return null;
 
@@ -25,6 +26,7 @@ export const MascotSpeechBubble = ({
     confused: { label: "Confused? 🤔", color: "bg-rose-50 text-rose-700 border-rose-200" },
     curious: { label: "Curious 👀", color: "bg-violet-50 text-violet-700 border-violet-200" },
     proud: { label: "Proud 🌟", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+    angry: { label: "Angry! 😡", color: "bg-red-50 text-red-700 border-red-200" },
   };
 
   const badge = moodBadges[mood] || {
@@ -38,9 +40,13 @@ export const MascotSpeechBubble = ({
       aria-live="polite"
       className="relative z-50 mb-2 w-64 sm:w-72 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/95 backdrop-blur-md p-3.5 shadow-xl border border-indigo-100/80 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-2 select-none"
     >
-      {/* Speech bubble pointer / triangle tail pointing towards Strobi */}
+      {/* Speech bubble pointer / triangle tail pointing towards Novie */}
       <div
-        className="absolute -bottom-2 right-6 sm:right-7 w-4 h-4 bg-white border-r border-b border-indigo-100/80 transform rotate-45 shadow-sm"
+        className={`absolute -bottom-2 w-4 h-4 bg-white transform rotate-45 shadow-sm ${
+          align === "left"
+            ? "left-6 sm:left-7 border-l border-b border-indigo-100/80"
+            : "right-6 sm:right-7 border-r border-b border-indigo-100/80"
+        }`}
         aria-hidden="true"
       />
 
