@@ -1,5 +1,5 @@
 import React from "react";
-import { Volume2, VolumeX, X, Sparkles, Lightbulb } from "lucide-react";
+import { Volume2, VolumeX, X, Lightbulb } from "lucide-react";
 
 export const MascotSpeechBubble = ({
   message,
@@ -10,6 +10,8 @@ export const MascotSpeechBubble = ({
   onNextTip,
   isSleeping,
   align = "right",
+  direction = "up",
+  style = {},
 }) => {
   if (!message) return null;
 
@@ -38,14 +40,19 @@ export const MascotSpeechBubble = ({
     <div
       role="status"
       aria-live="polite"
-      className="relative z-50 mb-2 w-64 sm:w-72 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/95 backdrop-blur-md p-3.5 shadow-xl border border-indigo-100/80 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-2 select-none"
+      style={style}
+      className="fixed z-[100] w-64 sm:w-72 max-w-[calc(100vw-20px)] rounded-2xl bg-white/95 backdrop-blur-md p-3.5 shadow-xl border border-indigo-100/80 transition-all duration-300 ease-out animate-in fade-in select-none pointer-events-auto"
     >
       {/* Speech bubble pointer / triangle tail pointing towards Novie */}
       <div
-        className={`absolute -bottom-2 w-4 h-4 bg-white transform rotate-45 shadow-sm ${
+        className={`absolute w-3.5 h-3.5 bg-white transform rotate-45 shadow-xs pointer-events-none ${
+          direction === "up"
+            ? "-bottom-1.5 border-r border-b border-indigo-100/80"
+            : "-top-1.5 border-l border-t border-indigo-100/80"
+        } ${
           align === "left"
-            ? "left-6 sm:left-7 border-l border-b border-indigo-100/80"
-            : "right-6 sm:right-7 border-r border-b border-indigo-100/80"
+            ? "left-6 sm:left-8"
+            : "right-6 sm:right-8"
         }`}
         aria-hidden="true"
       />
@@ -68,7 +75,7 @@ export const MascotSpeechBubble = ({
             type="button"
             onClick={onToggleSound}
             title={isSoundOn ? "Mute sounds" : "Enable sounds"}
-            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
             aria-label={isSoundOn ? "Mute sounds" : "Enable sounds"}
           >
             {isSoundOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
@@ -79,7 +86,7 @@ export const MascotSpeechBubble = ({
             type="button"
             onClick={onClose}
             title="Dismiss tip"
-            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
             aria-label="Close speech bubble"
           >
             <X size={13} />
@@ -99,7 +106,7 @@ export const MascotSpeechBubble = ({
           <button
             type="button"
             onClick={onNextTip}
-            className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold transition-colors hover:underline"
+            className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold transition-colors hover:underline cursor-pointer"
           >
             <Lightbulb size={12} />
             <span>Next Tip</span>

@@ -59,42 +59,43 @@ const AMBIENT_IDLE_MOODS = [
   "proud",
 ];
 
-// Helper to compute snap coordinate to nearest allowed wall (Left, Right, or Bottom — NEVER Top, NEVER Center)
+// Helper to compute snap coordinate to nearest allowed wall at the VERY BOTTOM of the screen
 const snapToNearestWall = (rawX, rawY) => {
-  if (typeof window === "undefined") return { x: rawX, y: rawY, wall: "right" };
+  if (typeof window === "undefined") return { x: rawX, y: rawY, wall: "bottom" };
   const W = window.innerWidth;
   const H = window.innerHeight;
   const isMobile = W < 640;
   const size = isMobile ? 50 : 70;
-  const padX = 14;
-  const padBottom = isMobile ? 80 : 24;
-  const minTop = 80; // "upar me nai"
-  const maxBottomY = Math.max(minTop + 50, H - size - padBottom);
+  const padX = 12;
+  const padBottom = isMobile ? 12 : 16;
+  const bottomY = H - size - padBottom;
 
-  // Clamp within viewport bounds
+  // Clamp horizontally within viewport
   const clampX = Math.max(padX, Math.min(W - size - padX, rawX));
-  const clampY = Math.max(minTop, Math.min(maxBottomY, rawY));
 
-  // Compute distances to the 3 allowed walls (Left, Right, Bottom)
+  // Snap horizontally towards left or right edges if close, else stay bottom
   const distLeft = clampX - padX;
   const distRight = W - size - padX - clampX;
-  const distBottom = maxBottomY - clampY;
 
-  const minDist = Math.min(distLeft, distRight, distBottom);
+  let wall = "bottom";
+  let targetX = clampX;
 
-  if (minDist === distLeft) {
-    return { x: padX, y: clampY, wall: "left" };
-  } else if (minDist === distRight) {
-    return { x: W - size - padX, y: clampY, wall: "right" };
-  } else {
-    return { x: clampX, y: maxBottomY, wall: "bottom" };
+  if (distLeft < 50) {
+    targetX = padX;
+    wall = "left";
+  } else if (distRight < 50) {
+    targetX = W - size - padX;
+    wall = "right";
   }
+
+  return { x: targetX, y: bottomY, wall };
 };
 
 export const MascotCompanion = () => {
   const location = useLocation();
   const avatarRef = useRef(null);
   const containerRef = useRef(null);
+  const mascotBtnRef = useRef(null);
 
   // States
   const [currentMood, setCurrentMood] = useState("idle");
@@ -111,15 +112,18 @@ export const MascotCompanion = () => {
   // Sound preference state: user's manual preference is strictly preserved
   const [soundPref, setSoundPref] = useState(() => isSoundEnabled());
 
-  // Dynamic Draggable Position State (restored from localStorage)
+  // Dynamic Draggable Position State (restored from localStorage, strictly clamped to bottom)
   const [position, setPosition] = useState(() => {
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("novexa_mascot_pos");
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return snapToNearestWall(parsed.x, window.innerHeight);
+        }
       } catch {}
     }
-    return null; // null uses default responsive bottom-right
+    return null; // null uses default responsive bottom-right: bottom-3 right-3 sm:bottom-4 sm:right-5
   });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({
@@ -129,6 +133,68 @@ export const MascotCompanion = () => {
     elY: 0,
     hasMoved: false,
   });
+
+  // Position calculation for popups (Mood Playground & Speech Bubble)
+  const [modalPos, setModalPos] = useState({
+    direction: "up",
+    align: "right",
+    style: {},
+  });
+
+  const updateModalPosition = useCallback(() => {
+    const el = mascotBtnRef.current || containerRef.current;
+    if (!el || typeof window === "undefined") return;
+    const rect = el.getBoundingClientRect();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    // Available space above and below the mascot button
+    const spaceAbove = rect.top;
+    const spaceBelow = H - rect.bottom;
+
+    // Standard behavior: open upwards unless dragged high up into the screen
+    const openUp = spaceAbove >= 260 || spaceAbove >= spaceBelow;
+    const direction = openUp ? "up" : "down";
+
+    // Horizontal alignment: right if in right half of screen, left if in left half
+    const mascotCenterX = rect.left + rect.width / 2;
+    const align = mascotCenterX > W / 2 ? "right" : "left";
+
+    const style = {
+      position: "fixed",
+      zIndex: 100,
+    };
+
+    if (openUp) {
+      // Sits 28px above mascot's top (above quick action pills)
+      const bottomPx = Math.max(10, H - rect.top + 28);
+      style.bottom = `${bottomPx}px`;
+      style.top = "auto";
+      // Ensure modal never overflows top of viewport
+      const maxH = Math.min(480, Math.max(220, H - bottomPx - 20));
+      style.maxHeight = `${maxH}px`;
+    } else {
+      // Sits 12px below mascot's bottom
+      const topPx = Math.max(10, rect.bottom + 12);
+      style.top = `${topPx}px`;
+      style.bottom = "auto";
+      // Ensure modal never overflows bottom of viewport
+      const maxH = Math.min(480, Math.max(220, H - topPx - 20));
+      style.maxHeight = `${maxH}px`;
+    }
+
+    if (align === "right") {
+      const rightPx = Math.max(10, W - rect.right);
+      style.right = `${rightPx}px`;
+      style.left = "auto";
+    } else {
+      const leftPx = Math.max(10, rect.left);
+      style.left = `${leftPx}px`;
+      style.right = "auto";
+    }
+
+    setModalPos({ direction, align, style });
+  }, []);
 
   // Timers
   const resetTimerRef = useRef(null);
@@ -156,7 +222,7 @@ export const MascotCompanion = () => {
     const handleResize = () => {
       setPosition((prev) => {
         if (!prev) return null;
-        const reSnapped = snapToNearestWall(prev.x, prev.y);
+        const reSnapped = snapToNearestWall(prev.x, window.innerHeight);
         try {
           localStorage.setItem("novexa_mascot_pos", JSON.stringify(reSnapped));
         } catch {}
@@ -234,22 +300,29 @@ export const MascotCompanion = () => {
   // Click outside listener: closes modal/mood tray instantly and smoothly docks mascot
   useEffect(() => {
     const handleOutsideClick = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        if (showMoodTray || showBubble) {
-          setShowMoodTray(false);
-          setShowBubble(false);
-          if (
-            avatarRef.current?.play &&
-            currentMood !== "idle" &&
-            currentMood !== "sleeping"
-          ) {
-            avatarRef.current.play("idle");
-            setCurrentMood("idle");
-          }
-        }
-        // Smoothly dock towards nearest wall when clicking outside
-        setIsDocked(true);
+      // Don't close if clicked inside the mascot container, mood tray dialog, or speech bubble status
+      if (
+        (containerRef.current && containerRef.current.contains(e.target)) ||
+        e.target.closest("[role='dialog']") ||
+        e.target.closest("[role='status']")
+      ) {
+        return;
       }
+
+      if (showMoodTray || showBubble) {
+        setShowMoodTray(false);
+        setShowBubble(false);
+        if (
+          avatarRef.current?.play &&
+          currentMood !== "idle" &&
+          currentMood !== "sleeping"
+        ) {
+          avatarRef.current.play("idle");
+          setCurrentMood("idle");
+        }
+      }
+      // Smoothly dock towards nearest wall when clicking outside
+      setIsDocked(true);
     };
 
     document.addEventListener("mousedown", handleOutsideClick);
@@ -259,6 +332,20 @@ export const MascotCompanion = () => {
       document.removeEventListener("touchstart", handleOutsideClick);
     };
   }, [showMoodTray, showBubble, currentMood]);
+
+  // Reposition modal on open, window resize, scroll, or mascot position update
+  useEffect(() => {
+    if (showMoodTray || showBubble) {
+      updateModalPosition();
+      const onReposition = () => updateModalPosition();
+      window.addEventListener("resize", onReposition);
+      window.addEventListener("scroll", onReposition, { passive: true });
+      return () => {
+        window.removeEventListener("resize", onReposition);
+        window.removeEventListener("scroll", onReposition);
+      };
+    }
+  }, [showMoodTray, showBubble, position, isDocked, updateModalPosition]);
 
   // 1. Initial page load reaction: "waking" -> "idle" after 2.4s
   useEffect(() => {
@@ -473,7 +560,8 @@ export const MascotCompanion = () => {
 
   // Drag handlers for free dragging across the screen
   const handleDragStart = (clientX, clientY) => {
-    const rect = containerRef.current?.getBoundingClientRect();
+    const el = mascotBtnRef.current || containerRef.current;
+    const rect = el?.getBoundingClientRect();
     if (!rect) return;
 
     dragStartRef.current = {
@@ -498,8 +586,12 @@ export const MascotCompanion = () => {
 
       if (dragStartRef.current.hasMoved) {
         const nextX = dragStartRef.current.elX + dx;
-        const nextY = dragStartRef.current.elY + dy;
-        setPosition({ x: nextX, y: nextY, wall: "dragging" });
+        const H = window.innerHeight;
+        const isMobile = window.innerWidth < 640;
+        const size = isMobile ? 50 : 70;
+        const padBottom = isMobile ? 12 : 16;
+        const bottomY = H - size - padBottom;
+        setPosition({ x: nextX, y: bottomY, wall: "bottom" });
       }
     };
 
@@ -511,15 +603,16 @@ export const MascotCompanion = () => {
 
       if (dragStartRef.current.hasMoved) {
         setIsDragging(false);
-        // Snap to nearest allowed wall: Left, Right, or Bottom (NEVER top, NEVER center)
+        // Snap strictly to bottom-left, bottom-right, or bottom edge
         setPosition((prev) => {
           if (!prev) return null;
-          const snapped = snapToNearestWall(prev.x, prev.y);
+          const snapped = snapToNearestWall(prev.x, window.innerHeight);
           try {
             localStorage.setItem("novexa_mascot_pos", JSON.stringify(snapped));
           } catch {}
           return snapped;
         });
+        requestAnimationFrame(() => updateModalPosition());
       }
     };
 
@@ -604,199 +697,221 @@ export const MascotCompanion = () => {
   };
 
   return (
-    <aside
-      ref={containerRef}
-      aria-label="Novie Mascot Assistant"
-      className={`fixed z-[90] pointer-events-none select-none ${
-        position ? "" : "bottom-20 right-2 sm:bottom-6 sm:right-5"
-      }`}
-      style={
-        position
-          ? {
-              left: `${position.x}px`,
-              top: `${position.y}px`,
-              bottom: "auto",
-              right: "auto",
-              transition: isDragging
-                ? "none"
-                : "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.3s ease, top 0.3s ease",
-            }
-          : undefined
-      }
-    >
-      <div
-        className={`flex flex-col ${
-          alignSide === "left" ? "items-start" : "items-end"
-        } pointer-events-auto transition-transform duration-300 ease-out group ${getDockClasses()}`}
-        onMouseEnter={() => {
-          // "hover karne pe bahar aye"
-          if (isDocked && !isMinimized) setIsDocked(false);
-        }}
+    <>
+      <aside
+        ref={containerRef}
+        aria-label="Novie Mascot Assistant"
+        className={`fixed z-[90] pointer-events-none select-none ${
+          position ? "" : "bottom-3 right-3 sm:bottom-4 sm:right-5"
+        }`}
+        style={
+          position
+            ? {
+                left: `${position.x}px`,
+                top: `${position.y}px`,
+                bottom: "auto",
+                right: "auto",
+                transition: isDragging
+                  ? "none"
+                  : "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.3s ease, top 0.3s ease",
+              }
+            : undefined
+        }
       >
-        {/* Mood Playground Tray (Never shown when minimized) */}
-        {!isMinimized && showMoodTray && (
-          <MascotMoodTray
-            currentMood={currentMood}
-            onSelectMood={handleSelectMood}
-            align={alignSide}
-            onReset={() => {
-              playSound("pop");
-              playAnimation("idle", "Back to calm and steady idle! 💫", 2000);
-            }}
-            onClose={() => {
-              setShowMoodTray(false);
-              playAnimation("idle", null, 0);
-            }}
-          />
-        )}
-
-        {/* Speech Bubble (Completely hidden when minimized, as requested) */}
-        {!isMinimized && !showMoodTray && showBubble && (
-          <MascotSpeechBubble
-            message={speechMessage}
-            mood={currentMood}
-            isSoundOn={soundPref}
-            onToggleSound={handleToggleSound}
-            onClose={() => setShowBubble(false)}
-            onNextTip={handleNextTip}
-            isSleeping={isSleeping}
-            align={alignSide}
-          />
-        )}
-
-        {/* Minimized floating button (Clean, silent badge with no popup) */}
-        {isMinimized ? (
-          <button
-            type="button"
-            onClick={() => {
-              setIsMinimized(false);
-              setIsDocked(false);
-              // Unminimizing restores sound preference as it was!
-              if (soundPref) playMascotSound("wake");
-              playAnimation("happy", "I'm back! Let's explore Novexa! 🌟", 2200);
-            }}
-            title="Expand Novie Mascot"
-            className="group flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-xs font-semibold cursor-pointer"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span>Novie</span>
-            <Maximize2 size={13} className="opacity-75 group-hover:opacity-100" />
-          </button>
-        ) : (
-          /* Full Mascot Widget (Draggable & Clickable) */
-          <div className="relative flex flex-col items-center">
-            {/* Quick Action Pills above Novie */}
-            <div
-              className={`absolute -top-6 sm:-top-7 ${
-                alignSide === "left" ? "left-0" : "right-0"
-              } flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity bg-white/95 backdrop-blur-md px-1.5 sm:px-2 py-0.5 rounded-full shadow-md border border-indigo-100 text-[10px] sm:text-[11px] font-medium text-gray-600`}
-            >
-              {/* Moods Playground button */}
-              <button
-                type="button"
-                onClick={() => {
-                  playSound("click");
-                  setShowMoodTray((prev) => !prev);
-                  if (showBubble) setShowBubble(false);
-                }}
-                title="Open Mood Playground"
-                className="flex items-center gap-1 px-1 py-0.5 rounded hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-              >
-                <Sparkles size={11} className="text-amber-500" />
-                <span>Moods</span>
-              </button>
-
-              <span className="text-gray-300">|</span>
-
-              {/* Chat tip toggle */}
-              <button
-                type="button"
-                onClick={() => {
-                  playSound("click");
-                  setShowBubble((prev) => !prev);
-                }}
-                title={showBubble ? "Hide message" : "Show tip"}
-                className="p-1 rounded hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-              >
-                <MessageSquare size={11} />
-              </button>
-
-              <span className="text-gray-300">|</span>
-
-              {/* Minimize button: completely closes popups and turns off suggestions */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMinimized(true);
-                  setShowMoodTray(false);
-                  setShowBubble(false);
-                }}
-                title="Minimize Novie"
-                className="p-1 rounded hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                aria-label="Minimize Novie"
-              >
-                <Minus size={11} />
-              </button>
-            </div>
-
-            {/* Clickable & Draggable Mascot Canvas with Angry red and shaking support */}
+        <div
+          ref={mascotBtnRef}
+          className={`flex flex-col ${
+            alignSide === "left" ? "items-start" : "items-end"
+          } pointer-events-auto transition-transform duration-300 ease-out group ${getDockClasses()}`}
+          onMouseEnter={() => {
+            // "hover karne pe bahar aye"
+            if (isDocked && !isMinimized) setIsDocked(false);
+          }}
+        >
+          {/* Minimized floating button (Clean, silent badge with no popup) */}
+          {isMinimized ? (
             <button
               type="button"
-              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
-              onTouchStart={(e) => {
-                if (e.touches[0])
-                  handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+              onClick={() => {
+                setIsMinimized(false);
+                setIsDocked(false);
+                // Unminimizing restores sound preference as it was!
+                if (soundPref) playMascotSound("wake");
+                playAnimation("happy", "I'm back! Let's explore Novexa! 🌟", 2200);
               }}
-              onClick={handleMascotClick}
-              onDoubleClick={() => {
-                playSound("celebrate");
-                playAnimation("celebrate", "Double tap! You're awesome! 🎉🌟", 3200);
-              }}
-              title="Drag Novie to place anywhere along left, right or bottom walls! Click to interact!"
-              aria-label="Novie mascot - Drag to reposition or click to interact"
-              className={`relative transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full ${
-                isDragging
-                  ? "cursor-grabbing scale-110 shadow-2xl"
-                  : "cursor-grab hover:scale-105 active:scale-95"
-              } ${isAngry ? "is-angry-shaking" : ""}`}
+              title="Expand Novie Mascot"
+              className="group flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-xs font-semibold cursor-pointer"
             >
-              {/* Soft ambient ground glow (red when angry) */}
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span>Novie</span>
+              <Maximize2 size={13} className="opacity-75 group-hover:opacity-100" />
+            </button>
+          ) : (
+            /* Full Mascot Widget (Draggable & Clickable) */
+            <div className="relative flex flex-col items-center">
+              {/* Quick Action Pills above Novie */}
               <div
-                className={`absolute inset-x-1 -bottom-0.5 h-3 blur-sm rounded-full pointer-events-none transition-colors duration-300 ${
-                  isAngry ? "bg-red-500/50" : "bg-indigo-500/20"
-                }`}
-                aria-hidden="true"
-              />
-
-              {/* The Novie 3D Avatar (Red & scaled slightly when angry) */}
-              <div
-                className={`w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] drop-shadow-md transition-all duration-300 pointer-events-none ${
-                  isAngry ? "is-angry-red scale-110" : ""
-                }`}
+                className={`absolute -top-6 sm:-top-7 ${
+                  alignSide === "left" ? "left-0" : "right-0"
+                } flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity bg-white/95 backdrop-blur-md px-1.5 sm:px-2 py-0.5 rounded-full shadow-md border border-indigo-100 text-[10px] sm:text-[11px] font-medium text-gray-600`}
               >
-                <Avatar
-                  ref={avatarRef}
-                  defaultAnimation="idle"
-                  size="100%"
-                  className="w-full h-full"
-                  ariaLabel="Novie 3D Animated Mascot"
-                />
+                {/* Moods Playground button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSound("click");
+                    setIsDocked(false);
+                    setShowMoodTray((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        setShowBubble(false);
+                        requestAnimationFrame(() => updateModalPosition());
+                      }
+                      return next;
+                    });
+                  }}
+                  title="Open Mood Playground"
+                  className="flex items-center gap-1 px-1 py-0.5 rounded hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                >
+                  <Sparkles size={11} className="text-amber-500" />
+                  <span>Moods</span>
+                </button>
+
+                <span className="text-gray-300">|</span>
+
+                {/* Chat tip toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSound("click");
+                    setIsDocked(false);
+                    setShowBubble((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        setShowMoodTray(false);
+                        requestAnimationFrame(() => updateModalPosition());
+                      }
+                      return next;
+                    });
+                  }}
+                  title={showBubble ? "Hide message" : "Show tip"}
+                  className="p-1 rounded hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                >
+                  <MessageSquare size={11} />
+                </button>
+
+                <span className="text-gray-300">|</span>
+
+                {/* Minimize button: completely closes popups and turns off suggestions */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMinimized(true);
+                    setShowMoodTray(false);
+                    setShowBubble(false);
+                  }}
+                  title="Minimize Novie"
+                  className="p-1 rounded hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer"
+                  aria-label="Minimize Novie"
+                >
+                  <Minus size={11} />
+                </button>
               </div>
 
-              {/* Comic anger icon if angry */}
-              {isAngry && (
-                <span
-                  className="absolute -top-3 -right-2 text-base select-none animate-bounce"
+              {/* Clickable & Draggable Mascot Canvas with Angry red and shaking support */}
+              <button
+                type="button"
+                onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+                onTouchStart={(e) => {
+                  if (e.touches[0])
+                    handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+                }}
+                onClick={handleMascotClick}
+                onDoubleClick={() => {
+                  playSound("celebrate");
+                  playAnimation("celebrate", "Double tap! You're awesome! 🎉🌟", 3200);
+                }}
+                title="Drag Novie to place anywhere along left, right or bottom walls! Click to interact!"
+                aria-label="Novie mascot - Drag to reposition or click to interact"
+                className={`relative transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full ${
+                  isDragging
+                    ? "cursor-grabbing scale-110 shadow-2xl"
+                    : "cursor-grab hover:scale-105 active:scale-95"
+                } ${isAngry ? "is-angry-shaking" : ""}`}
+              >
+                {/* Soft ambient ground glow (red when angry) */}
+                <div
+                  className={`absolute inset-x-1 -bottom-0.5 h-3 blur-sm rounded-full pointer-events-none transition-colors duration-300 ${
+                    isAngry ? "bg-red-500/50" : "bg-indigo-500/20"
+                  }`}
                   aria-hidden="true"
+                />
+
+                {/* The Novie 3D Avatar (Red & scaled slightly when angry) */}
+                <div
+                  className={`w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] drop-shadow-md transition-all duration-300 pointer-events-none ${
+                    isAngry ? "is-angry-red scale-110" : ""
+                  }`}
                 >
-                  💢
-                </span>
-              )}
-            </button>
-          </div>
-        )}
-      </div>
-    </aside>
+                  <Avatar
+                    ref={avatarRef}
+                    defaultAnimation="idle"
+                    size="100%"
+                    className="w-full h-full"
+                    ariaLabel="Novie 3D Animated Mascot"
+                  />
+                </div>
+
+                {/* Comic anger icon if angry */}
+                {isAngry && (
+                  <span
+                    className="absolute -top-3 -right-2 text-base select-none animate-bounce"
+                    aria-hidden="true"
+                  >
+                    💢
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Mood Playground Tray (Always positioned safely on screen above/below Novie) */}
+      {!isMinimized && showMoodTray && (
+        <MascotMoodTray
+          currentMood={currentMood}
+          onSelectMood={handleSelectMood}
+          align={modalPos.align}
+          direction={modalPos.direction}
+          style={modalPos.style}
+          onReset={() => {
+            playSound("pop");
+            playAnimation("idle", "Back to calm and steady idle! 💫", 2000);
+          }}
+          onClose={() => {
+            setShowMoodTray(false);
+            playAnimation("idle", null, 0);
+          }}
+        />
+      )}
+
+      {/* Speech Bubble (Always positioned safely on screen above/below Novie) */}
+      {!isMinimized && !showMoodTray && showBubble && (
+        <MascotSpeechBubble
+          message={speechMessage}
+          mood={currentMood}
+          isSoundOn={soundPref}
+          onToggleSound={handleToggleSound}
+          onClose={() => setShowBubble(false)}
+          onNextTip={handleNextTip}
+          isSleeping={isSleeping}
+          align={modalPos.align}
+          direction={modalPos.direction}
+          style={modalPos.style}
+        />
+      )}
+    </>
   );
 };
 

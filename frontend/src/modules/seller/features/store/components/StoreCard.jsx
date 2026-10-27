@@ -5,9 +5,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { updateUser } from "@/modules/auth/store/authSlice";
 import { toggleWishlistApi } from "@/modules/wishlist";
+import { defaultRest as defaultStoreImg } from "@/assets";
 
 function StoreCard({
-  defaultRest,
+  defaultRest = defaultStoreImg,
   name,
   address,
   id,
@@ -106,8 +107,11 @@ function StoreCard({
       {/* Store Image */}
       <div className="relative shrink-0 w-20 h-20 sm:w-22 sm:h-22 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
         <img
-          src={defaultRest}
+          src={defaultRest || defaultStoreImg}
           alt={name}
+          onError={(e) => {
+            e.currentTarget.src = defaultStoreImg;
+          }}
           className="w-full h-full object-cover aspect-square rounded-xl"
         />
         {!is_store_open && (

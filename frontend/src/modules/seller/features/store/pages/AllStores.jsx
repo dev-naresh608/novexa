@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { EmptyStore, StoreCard, StoreGridSkeleton } from "../components";
 import api from "@/configs/api";
+import { defaultRest } from "@/assets";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Filter, Check, X, Store as StoreIcon, Search, ChevronDown } from "lucide-react";
