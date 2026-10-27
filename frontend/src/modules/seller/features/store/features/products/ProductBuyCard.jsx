@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import { ShoppingCartIcon, Loader2 } from "lucide-react";
 import api from "@/configs/api";
 import { addToCartApi, updateCartQtyApi, removeFromCartApi } from "@/modules/cart/services/cart.api";
+import { mascot } from "@/app/avatar";
 
 function ProductBuyCard({
   name,
@@ -123,8 +124,10 @@ function ProductBuyCard({
         }
 
         toast.success("Added to cart");
+        mascot.celebrate(`Added ${name || "item"} to cart! 🛒🎉`);
       } catch (error) {
         toast.error("Failed to add product to cart");
+        mascot.confused("Could not add product to cart.");
       } finally {
         setIsAdding(false);
       }

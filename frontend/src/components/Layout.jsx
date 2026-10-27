@@ -7,6 +7,8 @@ import { CartDrawer } from "@/modules/cart";
 import ScrollToTop from "./common/ScrollToTop";
 import { ErrorBoundary } from "./common";
 
+import { MascotCompanion } from "@/app/avatar";
+
 function Layout() {
   const location = useLocation();
 
@@ -23,6 +25,9 @@ function Layout() {
       </div>
       <ErrorBoundary resetKey={location.pathname}>
         <CartDrawer />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <MascotCompanion />
       </ErrorBoundary>
       <ToastContainer
           position="top-right"
