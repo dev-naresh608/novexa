@@ -1,12 +1,23 @@
 import Stripe from "stripe";
 import { config } from "../../configs/config.js";
 
-const stripeKey =
-  config.stripe?.secret_key ||
-  config.STRIPE?.secret_key ||
-  process.env.STRIPE_SECRET_KEY;
+let stripeClient = null;
 
-const stripe = new Stripe(stripeKey);
+const getStripe = () => {
+  const stripeKey =
+    config.stripe?.secret_key ||
+    config.STRIPE?.secret_key ||
+    process.env.STRIPE_SECRET_KEY;
+
+  if (!stripeKey) {
+    return null;
+  }
+
+  if (!stripeClient) {
+    stripeClient = new Stripe(stripeKey);
+  }
+  return stripeClient;
+};
 
 const isValidHttpsUrl = (url) => {
   try {
@@ -21,6 +32,15 @@ const isValidHttpsUrl = (url) => {
 
 export const handleCreateCheckout = async (req, res) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Stripe is not configured. Please add STRIPE_SECRET_KEY to your server environment variables.",
+      });
+    }
+
     const { product, items, products, priceDetails, orderId, customerId } =
       req.body;
 

@@ -8,7 +8,6 @@ const requiredEnv = [
   "JWT_REFRESH_TOKEN_SECRET",
   "JWT_ACCESS_TOKEN_EXPIRE",
   "JWT_REFRESH_TOKEN_EXPIRE",
-  "STRIPE_SECRET_KEY",
 ];
 
 const missingEnv = requiredEnv.filter((key) => !process.env[key]);
@@ -16,6 +15,12 @@ const missingEnv = requiredEnv.filter((key) => !process.env[key]);
 if (missingEnv.length > 0) {
   throw new Error(
     `Missing required environment variables: ${missingEnv.join(", ")}`,
+  );
+}
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn(
+    "⚠️ STRIPE_SECRET_KEY is not set. Stripe online checkout will be disabled until added in environment variables."
   );
 }
 
