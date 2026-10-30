@@ -16,16 +16,11 @@ export const handleGetAddressApi = async (req, res) => {
     }
 
     const addressList = await findAddressSvc(targetUserId);
-    if (!addressList || addressList.length === 0)
-      return res.status(200).json({
-        success: false,
-        message: "Address not found",
-      });
 
     return res.status(200).json({
       success: true,
       message: "Address fetched successfully",
-      addressList,
+      addressList: addressList || [],
     });
   } catch (error) {
     return res.status(500).json({

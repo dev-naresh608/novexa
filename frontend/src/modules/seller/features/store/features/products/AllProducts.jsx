@@ -92,6 +92,41 @@ function AllProducts() {
 
   const isStoreOpen = storeInfo ? storeInfo.is_store_open !== false : true;
 
+  // 1. Unified Full Page Skeleton while loading - no half-static elements
+  if (isLoading) {
+    return (
+      <div
+        aria-hidden="true"
+        className={`py-0 min-h-screen select-none pointer-events-none space-y-4 ${
+          isLogin ? "" : "px-3 sm:px-8 mt-2 sm:mt-4 mb-10 max-w-7xl mx-auto w-full"
+        }`}
+      >
+        {/* Shimmer Breadcrumb */}
+        <div className="h-4 w-40 bg-gray-200/90 rounded-md skeleton-shimmer" />
+
+        {/* Shimmer Grid of Product Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4">
+          {[...Array(6)].map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white border border-gray-100 rounded-2xl shadow-xs p-2.5 sm:p-3 space-y-2.5"
+            >
+              <div className="w-full aspect-square bg-gray-100/90 rounded-xl skeleton-shimmer" />
+              <div className="space-y-1.5">
+                <div className="h-3.5 bg-gray-200/90 rounded w-3/4 skeleton-shimmer" />
+                <div className="h-3 bg-gray-100 rounded w-1/3 skeleton-shimmer" />
+                <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-50">
+                  <div className="h-4 bg-gray-200/90 rounded w-12 skeleton-shimmer" />
+                  <div className="h-7 bg-emerald-50 rounded-xl w-14 sm:w-16 skeleton-shimmer" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`py-0 min-h-screen ${
@@ -141,34 +176,7 @@ function AllProducts() {
         </ol>
       </nav>
 
-      {/* Loading Progress Bar */}
-      {isLoading && (
-        <div className="w-full bg-emerald-50 h-1.5 overflow-hidden rounded-full mb-4 border border-emerald-100/50">
-          <div className="h-full bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600 rounded-full animate-indeterminate"></div>
-        </div>
-      )}
-
-      {/* LOADING SKELETONS GRID */}
-      {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4">
-          {[...Array(6)].map((_, idx) => (
-            <div
-              key={idx}
-              className="bg-white border border-gray-100 rounded-2xl shadow-xs p-2.5 sm:p-3 space-y-2.5 animate-pulse"
-            >
-              <div className="w-full aspect-square bg-gray-100 rounded-xl"></div>
-              <div className="space-y-1.5">
-                <div className="h-3.5 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-100 rounded w-1/3"></div>
-                <div className="flex items-center justify-between mt-2 pt-1">
-                  <div className="h-4 bg-gray-200 rounded w-12"></div>
-                  <div className="h-7 bg-gray-100 rounded w-14 sm:w-16"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : !isStoreOpen ? (
+      {!isStoreOpen ? (
         /* CLOSED STORE VIEW */
         <div className="bg-white rounded-3xl p-6 sm:p-14 text-center border border-gray-200/90 shadow-xs max-w-2xl mx-auto my-8">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-50 text-amber-600 border border-amber-200/80 rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-5 shadow-xs">

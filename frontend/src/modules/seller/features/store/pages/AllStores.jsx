@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import { EmptyStore, StoreCard, StoreGridSkeleton } from "../components";
+import {
+  EmptyStore,
+  StoreCard,
+  StoreGridSkeleton,
+  StoresPageSkeleton,
+} from "../components";
 import api from "@/configs/api";
 import { defaultRest } from "@/assets";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Filter, Check, X, Store as StoreIcon, Search, ChevronDown } from "lucide-react";
+import { Filter, Check, X, Store as StoreIcon, Search } from "lucide-react";
 
 const STORE_CATEGORIES = [
   { catName: "Fruits & Vegetables", catIcon: "🥕" },
@@ -140,7 +145,7 @@ function AllStores() {
       // Direct substring match on store_type
       if (sType.includes(cLower)) return true;
 
-      // Match individual keywords (e.g. "fruits", "vegetables", "dairy", "bakery", "spices", "oils")
+      // Match individual keywords
       const keywords = cLower
         .replace(/[&,]/g, " ")
         .split(/\s+/)
@@ -150,7 +155,17 @@ function AllStores() {
     });
   });
 
-  if (!isLoading && allStores.length === 0 && !searchQuery && selectedCategories.length === 0) {
+  // 1. Unified Full Page Skeleton while loading - no half-static screen
+  if (isLoading) {
+    return (
+      <div className={`${isLogin ? "" : "px-4 sm:px-10 mb-10 max-w-7xl mx-auto w-full"}`}>
+        <StoresPageSkeleton />
+      </div>
+    );
+  }
+
+  // 2. Clean empty state if database has no stores at all
+  if (allStores.length === 0 && !searchQuery && selectedCategories.length === 0) {
     return (
       <div className={`min-h-[65vh] flex items-center justify-center p-4 ${isLogin ? "" : "max-w-7xl mx-auto w-full"}`}>
         <EmptyStore searchQuery="" />
@@ -158,6 +173,7 @@ function AllStores() {
     );
   }
 
+  // 3. Loaded full view with real components
   return (
     <div className={`${isLogin ? "" : "px-4 sm:px-10 mb-10 max-w-7xl mx-auto w-full"}`}>
       {/* Breadcrumb */}
@@ -199,7 +215,7 @@ function AllStores() {
           </div>
         </div>
 
-        {/* Search & Category Filter Dropdown - ON THE EXACT SAME LINE */}
+        {/* Search & Category Filter Dropdown */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           {/* Inline Search Bar */}
           <div className="flex-1 flex items-center h-10 border border-gray-200/90 bg-gray-50/80 focus-within:bg-white focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/10 rounded-xl px-3 gap-2.5 transition-all duration-200">
@@ -238,44 +254,40 @@ function AllStores() {
                 <span>
                   {selectedCategories.length === 0
                     ? "All Categories"
-                    : selectedCategories.length === 1
-                    ? selectedCategories[0]
                     : `${selectedCategories.length} Categories`}
                 </span>
               </div>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${
-                  isCategoryDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
+              <span className="text-gray-400 text-[10px]">▼</span>
             </button>
 
             {/* Dropdown Menu */}
             {isCategoryDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-30 transition-all duration-200">
-                <div className="flex items-center justify-between px-3.5 py-1.5 border-b border-gray-100 mb-1">
-                  <span className="text-xs font-bold text-gray-800">Select Categories</span>
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50 animate-fadeIn">
+                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-gray-100 mb-1">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Filter Categories
+                  </span>
                   {selectedCategories.length > 0 && (
                     <button
                       type="button"
                       onClick={clearCategories}
-                      className="text-[11px] font-semibold text-red-600 hover:underline cursor-pointer border-none bg-transparent outline-none"
+                      className="text-[11px] font-bold text-red-600 hover:underline bg-transparent border-none cursor-pointer"
                     >
-                      Clear All
+                      Reset
                     </button>
                   )}
                 </div>
 
-                <div className="max-h-60 overflow-y-auto custom-scrollbar px-1.5 py-1 space-y-0.5">
+                <div className="max-h-60 overflow-y-auto space-y-1 custom-scrollbar">
                   {STORE_CATEGORIES.map((cat) => {
                     const isSelected = selectedCategories.includes(cat.catName);
                     return (
                       <div
                         key={cat.catName}
                         onClick={() => toggleCategory(cat.catName)}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors select-none ${
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors ${
                           isSelected
-                            ? "bg-green-50 text-green-800 font-semibold"
+                            ? "bg-green-50 text-green-800"
                             : "hover:bg-gray-50 text-gray-700"
                         }`}
                       >
@@ -296,10 +308,8 @@ function AllStores() {
         </div>
       </div>
 
-      {/* Stores List / Skeletons / Empty State */}
-      {isLoading ? (
-        <StoreGridSkeleton count={6} />
-      ) : filteredStores.length === 0 ? (
+      {/* Stores List / Empty State */}
+      {filteredStores.length === 0 ? (
         <div className="bg-white rounded-3xl p-10 text-center border border-gray-100 shadow-sm">
           <EmptyStore searchQuery={searchQuery} />
           {selectedCategories.length > 0 && (
@@ -322,19 +332,17 @@ function AllStores() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-5">
-          {filteredStores.map((r, i) => {
-            return (
-              <StoreCard
-                key={r._id || i}
-                defaultRest={defaultRest}
-                name={r.store_name}
-                address={r.store_address}
-                id={r._id}
-                storeType={r.store_type}
-                is_store_open={r.is_store_open !== false}
-              />
-            );
-          })}
+          {filteredStores.map((rest) => (
+            <StoreCard
+              key={rest._id}
+              defaultRest={defaultRest}
+              name={rest.store_name}
+              address={rest.store_address}
+              id={rest._id}
+              storeType={rest.store_type}
+              is_store_open={rest.is_store_open}
+            />
+          ))}
         </div>
       )}
     </div>

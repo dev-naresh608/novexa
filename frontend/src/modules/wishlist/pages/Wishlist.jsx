@@ -1,33 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { StoreCard, StoreGridSkeleton } from "@/modules/seller";
+import { useNavigate } from "react-router-dom";
+import { StoreCard, WishlistSkeleton } from "@/modules/seller";
 import { defaultRest } from "@/assets";
 import { getWishlistStoresApi } from "../services/wishlist.api";
+import { Heart, ArrowRight } from "lucide-react";
 
 function Wishlist() {
+  const navigate = useNavigate();
   const { user: currentUser } = useSelector((state) => state.auth);
   const [wishlistStores, setWishlistStores] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchWishlist = async () => {
-      if (!currentUser?._id) {
-        setLoading(false);
+      if (!currentUser?._id && !currentUser?.id) {
+        if (isMounted) setLoading(false);
         return;
       }
+      const userId = currentUser._id || currentUser.id;
       try {
-        const data = await getWishlistStoresApi(currentUser._id);
-        if (data.success) {
+        const data = await getWishlistStoresApi(userId);
+        if (!isMounted) return;
+        if (data && data.success) {
           setWishlistStores(data.stores || []);
         }
       } catch (error) {
-        console.error("Failed to fetch wishlist stores:", error);
+        if (isMounted) console.error("Failed to fetch wishlist stores:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchWishlist();
-  }, [currentUser?._id]);
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?._id, currentUser?.id]);
 
   // Keep wishlistStores in sync with Redux currentUser.myWishlist
   useEffect(() => {
@@ -43,22 +52,12 @@ function Wishlist() {
     }
   }, [currentUser?.myWishlist]);
 
+  // Full body unified skeleton while loading
   if (loading) {
-    return (
-      <div className="space-y-5 h-full max-h-[90vh]">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Favourite Stores
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Your saved grocery and convenience stores
-          </p>
-        </div>
-        <StoreGridSkeleton count={4} />
-      </div>
-    );
+    return <WishlistSkeleton />;
   }
 
+  // Loaded with stores
   if (wishlistStores.length > 0) {
     return (
       <div
@@ -72,6 +71,9 @@ function Wishlist() {
           <h1 className="text-2xl font-bold text-gray-800">
             Favourite Stores
           </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Your saved grocery and convenience stores
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-5">
           {wishlistStores.map((store) => (
@@ -88,18 +90,30 @@ function Wishlist() {
         </div>
       </div>
     );
-  } else {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <h2 className="text-lg font-semibold text-gray-600">
-          No Favourite Stores yet 🏪
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Start adding stores to your favourites to see them here
-        </p>
-      </div>
-    );
   }
+
+  // Clean empty state when 0 stores
+  return (
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center mb-3 shadow-xs">
+        <Heart size={30} strokeWidth={2} className="text-emerald-600" />
+      </div>
+      <h2 className="text-lg font-bold text-gray-800">
+        No Favourite Stores Yet 🏪
+      </h2>
+      <p className="text-xs text-gray-500 mt-1 max-w-sm leading-relaxed">
+        You haven't added any stores to your favourites yet. Explore local stores and tap the heart icon to save them here.
+      </p>
+      <button
+        type="button"
+        onClick={() => navigate("/stores")}
+        className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer border-none"
+      >
+        <span>Explore Stores</span>
+        <ArrowRight size={14} />
+      </button>
+    </div>
+  );
 }
 
 export default Wishlist;

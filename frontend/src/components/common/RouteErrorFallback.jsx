@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouteError, isRouteErrorResponse } from "react-router-dom";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
@@ -14,13 +14,35 @@ export function RouteErrorFallback() {
     errorMessage = error.statusText || error.data?.message || errorMessage;
   } else if (error instanceof Error) {
     errorMessage = error.message;
+  } else if (typeof error === "string") {
+    errorMessage = error;
   }
 
+  // Automatic seamless recovery for dynamic chunk failure
+  useEffect(() => {
+    const isChunkError =
+      errorMessage &&
+      (errorMessage.includes("dynamically imported module") ||
+        errorMessage.includes("Failed to fetch dynamically imported module") ||
+        errorMessage.includes("Loading chunk") ||
+        errorMessage.includes("error loading dynamically imported module"));
+
+    if (isChunkError) {
+      const hasReloaded = sessionStorage.getItem("novexa_chunk_reload");
+      if (!hasReloaded) {
+        sessionStorage.setItem("novexa_chunk_reload", "true");
+        window.location.reload();
+      }
+    }
+  }, [errorMessage]);
+
   const handleReload = () => {
+    sessionStorage.removeItem("novexa_chunk_reload");
     window.location.reload();
   };
 
   const handleHome = () => {
+    sessionStorage.removeItem("novexa_chunk_reload");
     window.location.href = "/";
   };
 

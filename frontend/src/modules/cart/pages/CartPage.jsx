@@ -26,12 +26,15 @@ export default function CartPage() {
     handlePaymentMethod,
     handlePlaceOrder,
     isCartEmpty,
+    cartItems,
     isPlacingOrder,
   } = useCart();
 
   if (isCartEmpty) {
     return <EmptyCart />;
   }
+
+  const items = cartItems || currentUser?.myCart || [];
 
   return (
     <section className="bg-white rounded-2xl p-3 sm:p-5 shadow-xs">
@@ -50,7 +53,7 @@ export default function CartPage() {
               </button>
             </div>
             <span className="text-emerald-700 font-bold text-xs sm:text-sm">
-              {currentUser.myCart?.length || 0} items
+              {items.length} {items.length === 1 ? "item" : "items"}
             </span>
           </div>
 
@@ -69,7 +72,7 @@ export default function CartPage() {
             [&::-webkit-scrollbar-thumb]:bg-gray-300
             [&::-webkit-scrollbar-thumb]:rounded-full"
           >
-            {currentUser?.myCart?.map((product, index) => (
+            {items.map((product, index) => (
               <CartItemCard
                 key={product._id || index}
                 product={product}
@@ -88,7 +91,7 @@ export default function CartPage() {
         <OrderSummary
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
-          userId={currentUser._id}
+          userId={currentUser?._id || currentUser?.id}
           isLogin={isLogin}
           addressList={addressList}
           address={address}

@@ -8,15 +8,29 @@ const requiredEnv = [
   "JWT_REFRESH_TOKEN_SECRET",
   "JWT_ACCESS_TOKEN_EXPIRE",
   "JWT_REFRESH_TOKEN_EXPIRE",
+  "STRIPE_SECRET_KEY",
 ];
 
 const missingEnv = requiredEnv.filter((key) => !process.env[key]);
 
 if (missingEnv.length > 0) {
   throw new Error(
-    `Missing required environment variables: ${missingEnv.join(", ")}`
+    `Missing required environment variables: ${missingEnv.join(", ")}`,
   );
 }
+
+const clientUrl =
+  process.env.CLIENT_URL &&
+  process.env.CLIENT_URL !== "jobhihe" &&
+  process.env.CLIENT_URL.startsWith("http")
+    ? process.env.CLIENT_URL.replace(/\/$/, "")
+    : process.env.FRONTEND_URL || "http://localhost:3000";
+
+const stripeConfig = {
+  secret_key: process.env.STRIPE_SECRET_KEY,
+  client_url: clientUrl,
+  currency: process.env.STRIPE_CURRENCY || "inr",
+};
 
 export const config = {
   env: process.env.NODE_ENV || "development",
@@ -45,4 +59,6 @@ export const config = {
   services: {
     openRouterApiKey: process.env.OPEN_ROUTER_SERVICE_API_KEY,
   },
+  stripe: stripeConfig,
+  STRIPE: stripeConfig,
 };

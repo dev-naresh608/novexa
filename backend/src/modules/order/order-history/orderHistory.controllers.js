@@ -3,12 +3,20 @@ import Seller from "../../seller/seller.model.js";
 import { addOrderSvc, findSingleOrderSvc } from "./orderHistory.service.js";
 import { paginate, getPaginationParams } from "../../../utils/pagination.js";
 
-const HISTORICAL_STATUSES = ["completed", "delivered", "rejected", "cancelled"];
+const ACTIVE_STATUSES = [
+  "pending",
+  "preparing",
+  "confirmed",
+  "processing",
+  "shipped",
+  "ready",
+  "out_for_delivery",
+];
 
 export const handleGetAllOrders = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { role } = req.query;
+    const { role, status } = req.query;
     const { page, limit, sort, search } = getPaginationParams(req);
 
     if (!userId) {
@@ -24,7 +32,6 @@ export const handleGetAllOrders = async (req, res) => {
       case "customer": {
         filter = {
           customer_id: userId,
-          order_status: { $in: HISTORICAL_STATUSES },
         };
         break;
       }
@@ -38,14 +45,12 @@ export const handleGetAllOrders = async (req, res) => {
         }
         filter = {
           $or: [{ store_id: userId }, { store_id: sellerStoreId }],
-          order_status: { $in: HISTORICAL_STATUSES },
         };
         break;
       }
       case "driver": {
         filter = {
           driver_id: userId,
-          order_status: { $in: HISTORICAL_STATUSES },
         };
         break;
       }
@@ -56,39 +61,68 @@ export const handleGetAllOrders = async (req, res) => {
             { store_id: userId },
             { driver_id: userId },
           ],
-          order_status: { $in: HISTORICAL_STATUSES },
         };
         break;
       }
     }
 
+    // Optional status filter
+    if (status) {
+      if (status === "active") {
+        filter.order_status = { $in: ACTIVE_STATUSES };
+      } else if (status === "completed") {
+        filter.order_status = { $in: ["completed", "delivered"] };
+      } else if (status === "cancelled") {
+        filter.order_status = { $in: ["rejected", "cancelled"] };
+      } else {
+        filter.order_status = status;
+      }
+    }
+
     if (search) {
-      filter.$or = [
-        { payment_method: { $regex: search, $options: "i" } },
-        { order_status: { $regex: search, $options: "i" } },
+      filter.$and = [
+        ...(filter.$and || []),
+        {
+          $or: [
+            { payment_method: { $regex: search, $options: "i" } },
+            { order_status: { $regex: search, $options: "i" } },
+            { store_name: { $regex: search, $options: "i" } },
+            { customer_name: { $regex: search, $options: "i" } },
+          ],
+        },
       ];
     }
 
-    // Run pagination and summary counts in parallel for optimal speed
-    const [paginated, completedCount, cancelledCount] = await Promise.all([
-      paginate(Order, filter, { page, limit, sort }),
-      Order.countDocuments({
-        ...filter,
-        order_status: { $in: ["completed", "delivered"] },
-      }),
-      Order.countDocuments({
-        ...filter,
-        order_status: { $in: ["rejected", "cancelled"] },
-      }),
-    ]);
+    // Base filter without order_status for summary statistics
+    const baseFilter = { ...filter };
+    delete baseFilter.order_status;
+
+    // Run pagination and summary counts in parallel
+    const [paginated, activeCount, completedCount, cancelledCount] =
+      await Promise.all([
+        paginate(Order, filter, { page, limit, sort }),
+        Order.countDocuments({
+          ...baseFilter,
+          order_status: { $in: ACTIVE_STATUSES },
+        }),
+        Order.countDocuments({
+          ...baseFilter,
+          order_status: { $in: ["completed", "delivered"] },
+        }),
+        Order.countDocuments({
+          ...baseFilter,
+          order_status: { $in: ["rejected", "cancelled"] },
+        }),
+      ]);
 
     return res.json({
       success: true,
-      message: "Order history fetched successfully",
+      message: "Orders fetched successfully",
       orders: paginated.data,
       pagination: paginated.pagination,
       summary: {
         total: paginated.pagination.totalItems,
+        active: activeCount,
         completed: completedCount,
         cancelled: cancelledCount,
       },
@@ -108,12 +142,14 @@ export const handleAddOrder = async (req, res) => {
       });
     }
     const result = await addOrderSvc(payload);
-    if (!result.success) {
+
+    if (!result?.success) {
       return res.status(400).json({
         success: false,
-        message: result.message,
+        message: result?.message || "Order placement failed",
       });
     }
+
     return res.status(201).json({
       success: true,
       message: "Order placed successfully",
@@ -163,8 +199,14 @@ export const handleDeleteOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
     await Order.findByIdAndDelete(orderId);
-    return res.json({ success: true, message: "Deleted successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "Order deleted successfully",
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

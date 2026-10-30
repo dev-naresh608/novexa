@@ -3,4 +3,9 @@ export { default as StoreCard } from "./StoreCard";
 export { default as StoreGrid } from "./StoreGrid";
 export { default as StoreHeader } from "./StoreHeader";
 export { default as EmptyStore } from "./EmptyStore";
-export { default as StoreCardSkeleton, StoreGridSkeleton } from "./StoreCardSkeleton";
+export {
+  default as StoreCardSkeleton,
+  StoreGridSkeleton,
+  StoresPageSkeleton,
+  WishlistSkeleton,
+} from "./StoreCardSkeleton";

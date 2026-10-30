@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import { updateUser } from "@/modules/auth/store/authSlice";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Sparkles, Clock } from "lucide-react";
 
 import {
   OrderDashboardCard as DashboardCard,
@@ -33,21 +34,23 @@ function Orders() {
   const [summaryStats, setSummaryStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const userId = currentUser?._id || currentUser?.id;
+
   useEffect(() => {
     const fetchOrderData = async () => {
-      if (!currentUser?._id) return;
+      if (!userId) return;
       try {
         setLoading(true);
         const { data } = await getAllOrdersSvc(
-          currentUser._id,
-          currentUser.role,
+          userId,
+          currentUser.role || "customer",
           page,
           limit,
           searchValue
         );
 
-        if (!data.success) {
-          return toast.error(data.message || "Failed to fetch orders");
+        if (!data || !data.success) {
+          return toast.error(data?.message || "Failed to fetch orders");
         }
 
         const ordersList = data.orders || data.allOrders || [];
@@ -69,12 +72,19 @@ function Orders() {
     };
 
     fetchOrderData();
-  }, [currentUser?._id, currentUser?.role, page, limit, searchValue, dispatch]);
+  }, [userId, currentUser?.role, page, limit, searchValue, dispatch]);
 
   const filteredOrders = useMemo(() => {
     let list = allOrders;
 
-    if (activeCard === "completed") {
+    if (activeCard === "active") {
+      list = list.filter(
+        (o) =>
+          !["completed", "delivered", "rejected", "cancelled"].includes(
+            o.order_status
+          )
+      );
+    } else if (activeCard === "completed") {
       list = list.filter(
         (o) => o.order_status === "completed" || o.order_status === "delivered"
       );
@@ -108,13 +118,13 @@ function Orders() {
   }, [currentUser, setActiveCard, allOrders, summaryStats]);
 
   // ===================== 1. LOADING STATE =====================
-  // While fetching data on first load, render smooth YouTube-style skeleton
+  // While fetching data on first load, render smooth shimmer skeleton
   if (loading && allOrders.length === 0 && !searchValue) {
     return <OrdersPageSkeleton />;
   }
 
   // ===================== 2. CLEAN EMPTY STATE =====================
-  // If no orders exist in history, render pure empty state with no cards/search bars
+  // If no orders exist in entire history, render pure empty state
   if (!loading && allOrders.length === 0 && !searchValue) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center p-4">
@@ -128,12 +138,45 @@ function Orders() {
 
   return (
     <div className="space-y-4 font-sans max-w-7xl mx-auto">
+      {/* Active Orders Banner */}
+      {summaryStats?.active > 0 && (
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/20">
+              <Clock className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-emerald-950">
+                  You have {summaryStats.active} active order{summaryStats.active > 1 ? "s" : ""} in progress!
+                </h3>
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </div>
+              <p className="text-xs text-emerald-700 font-medium">
+                Live delivery and preparation status updates are in progress.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/active-orders"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shadow-xs whitespace-nowrap self-start sm:self-auto"
+          >
+            <span>Track Live</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
+
       {/* ================= HEADER CARDS ================= */}
       <div className={`${commonCss} p-3`}>
         <div className="flex items-center gap-3 overflow-x-auto">
           {dashboardCards.map((card, i) => (
             <DashboardCard
-              key={i}
+              key={card.id || i}
               card={card}
               isActive={activeCard === card.id}
             />
@@ -171,99 +214,57 @@ function Orders() {
         {loading ? (
           <OrdersTableBodySkeleton count={limit > 6 ? 6 : limit} />
         ) : filteredOrders.length === 0 ? (
-          <EmptyOrders
-            currentUserRole={currentUser?.role}
-            isSearchResult={Boolean(searchValue)}
-            searchValue={searchValue}
-            onClearSearch={() => setSearchValue("")}
-          />
+          <div className="py-12 text-center space-y-3">
+            <EmptyOrders
+              currentUserRole={currentUser?.role}
+              isSearchResult={Boolean(searchValue)}
+              searchValue={searchValue}
+              onClearSearch={() => setSearchValue("")}
+            />
+            {activeCard !== "total" && !searchValue && (
+              <button
+                type="button"
+                onClick={() => setActiveCard("total")}
+                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 transition cursor-pointer"
+              >
+                View All Orders
+              </button>
+            )}
+          </div>
         ) : (
-          /* ================= ORDER LIST TABLE ================= */
           <OrdersTable
             currentUserRole={currentUser?.role}
             allOrders={filteredOrders}
           />
         )}
 
-        {/* ================= PAGINATION CONTROLS UI ================= */}
-        {paginationMeta && paginationMeta.totalItems > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 text-xs">
-            {/* Range info */}
-            <div className="text-gray-500">
-              Showing{" "}
-              <span className="font-semibold text-gray-900">
-                {paginationMeta.skip + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-semibold text-gray-900">
-                {Math.min(
-                  paginationMeta.skip + paginationMeta.limit,
-                  paginationMeta.totalItems
-                )}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-gray-900">
-                {paginationMeta.totalItems}
-              </span>{" "}
-              orders
-            </div>
+        {/* ================= PAGINATION CONTROLS ================= */}
+        {paginationMeta && paginationMeta.totalPages > 1 && (
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-xs text-gray-500 font-medium">
+            <span>
+              Showing page {paginationMeta.currentPage} of{" "}
+              {paginationMeta.totalPages} ({paginationMeta.totalItems} orders)
+            </span>
 
-            {/* Navigation Buttons */}
             <div className="flex items-center gap-1.5">
-              {/* Previous Page */}
               <button
                 type="button"
-                disabled={!paginationMeta.hasPrevPage || loading}
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-semibold flex items-center gap-1"
+                disabled={!paginationMeta.hasPrevPage}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition font-semibold"
               >
-                <ChevronLeft size={14} /> Previous
+                <ChevronLeft size={14} />
+                <span>Prev</span>
               </button>
 
-              {/* Number Buttons */}
-              <div className="flex items-center gap-1">
-                {Array.from(
-                  { length: paginationMeta.totalPages },
-                  (_, idx) => idx + 1
-                )
-                  .filter(
-                    (p) =>
-                      p === 1 ||
-                      p === paginationMeta.totalPages ||
-                      Math.abs(p - paginationMeta.currentPage) <= 1
-                  )
-                  .map((p, idx, arr) => {
-                    const showEllipsis = idx > 0 && p - arr[idx - 1] > 1;
-                    return (
-                      <React.Fragment key={p}>
-                        {showEllipsis && (
-                          <span className="px-1 text-gray-400">...</span>
-                        )}
-                        <button
-                          type="button"
-                          disabled={loading}
-                          onClick={() => setPage(p)}
-                          className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
-                            paginationMeta.currentPage === p
-                              ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
-                              : "bg-white text-gray-800 border-gray-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      </React.Fragment>
-                    );
-                  })}
-              </div>
-
-              {/* Next Page */}
               <button
                 type="button"
-                disabled={!paginationMeta.hasNextPage || loading}
+                disabled={!paginationMeta.hasNextPage}
                 onClick={() => setPage((prev) => prev + 1)}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-semibold flex items-center gap-1"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition font-semibold"
               >
-                Next <ChevronRight size={14} />
+                <span>Next</span>
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>

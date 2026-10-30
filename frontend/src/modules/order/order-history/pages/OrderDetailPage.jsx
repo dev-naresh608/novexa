@@ -23,31 +23,42 @@ function OrderDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchOrder = async () => {
       if (!orderId) return;
       setLoading(true);
       try {
-        const { data } = await api.get(
-          `/order/detail/${orderId}`,
-        );
-        if (!data.success) {
-          toast.error(data.message);
+        const { data } = await api.get(`/order/detail/${orderId}`);
+        if (!isMounted) return;
+
+        if (!data || !data.success) {
+          toast.error(data?.message || "Failed to load order details");
           return;
         }
         setOrder(data.result);
         setOrderItems(data.result?.order_items || []);
       } catch (error) {
-        toast.error(error.message);
+        if (isMounted) {
+          toast.error(error.message || "Failed to load order details");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchOrder();
+    return () => {
+      isMounted = false;
+    };
   }, [orderId]);
 
   // ================== STATUS CONFIG ====================
   const STATUS_CONFIG = orderStatusConfig();
-  const cfg = order ? STATUS_CONFIG[order.order_status] : null;
+  const cfg = order
+    ? STATUS_CONFIG[order.order_status] || {
+        label: order.order_status ? order.order_status.replace(/_/g, " ") : "Order",
+        pillStyle: "bg-gray-100 text-gray-700",
+      }
+    : null;
 
   if (loading) {
     return <OrderDetailSkeleton />;
@@ -75,7 +86,7 @@ function OrderDetail() {
       <div className="pb-2">
         <button
           onClick={() => navigate("/orders")}
-          className="flex items-center gap-1 text-green-700 hover:text-green-800 font-semibold duration-100"
+          className="flex items-center gap-1 text-green-700 hover:text-green-800 font-semibold duration-100 cursor-pointer border-none bg-transparent"
         >
           <ArrowLeftIcon size={18} strokeWidth={2.5} />
           <span className="text-sm">Back to Orders</span>

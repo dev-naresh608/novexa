@@ -8,50 +8,97 @@ import {
   CreditCard,
   Store,
   ChevronRight,
+  PackageOpen,
+  ArrowRight,
 } from "lucide-react";
-import { EmptyOrders } from "@/modules/order/order-history/components";
 import { getActiveOrdersApi } from "../../services/activeOrders.api";
 import { CustomerActiveOrdersSkeleton } from "../../components";
 
 function CustomerActiveOrders() {
   const navigate = useNavigate();
   const { user: currentUser } = useSelector((state) => state.auth);
-  const [activeOrders, setActiveOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activeOrders, setActiveOrders] = useState(currentUser?.myCurrentOrders || []);
+  const [loading, setLoading] = useState(!currentUser?.myCurrentOrders || currentUser.myCurrentOrders.length === 0);
+
+  const userId = currentUser?._id || currentUser?.id;
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchActiveOrders = async () => {
-      if (!currentUser?._id && !currentUser?.id) {
-        setLoading(false);
+      if (!userId) {
+        if (isMounted) setLoading(false);
         return;
       }
-      const userId = currentUser._id || currentUser.id;
       try {
         const data = await getActiveOrdersApi(userId, "customer");
+        if (!isMounted) return;
+
         if (data && data.success) {
           setActiveOrders(data.activeOrders || []);
         } else if (currentUser?.myCurrentOrders) {
           setActiveOrders(currentUser.myCurrentOrders);
         }
       } catch (error) {
-        console.error("Failed to fetch active orders:", error);
-        if (currentUser?.myCurrentOrders) {
-          setActiveOrders(currentUser.myCurrentOrders);
+        if (isMounted) {
+          console.error("Failed to fetch active orders:", error);
+          if (currentUser?.myCurrentOrders) {
+            setActiveOrders(currentUser.myCurrentOrders);
+          }
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchActiveOrders();
-  }, [currentUser?._id]);
+    const interval = setInterval(fetchActiveOrders, 4000);
 
-  if (loading) {
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [userId]);
+
+  if (loading && activeOrders.length === 0) {
     return <CustomerActiveOrdersSkeleton />;
   }
 
   if (!activeOrders || activeOrders.length === 0) {
-    return <EmptyOrders />;
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100/80 flex items-center justify-center mb-3 shadow-xs">
+          <PackageOpen size={30} strokeWidth={2} />
+        </div>
+
+        <h3 className="text-base font-bold text-gray-800">
+          No Current Active Orders
+        </h3>
+
+        <p className="mt-1 text-xs text-gray-500 max-w-sm leading-relaxed">
+          You don't have any ongoing deliveries right now. You can check your completed orders in Order History or browse local stores.
+        </p>
+
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            type="button"
+            onClick={() => navigate("/stores")}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer border-none"
+          >
+            <span>Explore Stores</span>
+            <ArrowRight size={14} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/orders")}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-all cursor-pointer border-none"
+          >
+            <span>Order History</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const styleFlex =
@@ -78,19 +125,22 @@ function CustomerActiveOrders() {
   };
 
   return (
-    <div className="space-y-4 font-sans">
+    <div className="space-y-4 font-sans max-w-5xl mx-auto">
       {/* HEADER CARD */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Current Orders</h1>
-        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          Click any order to view full details
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Current Orders</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Live status and delivery progress of your ongoing orders</p>
+        </div>
+        <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+          {activeOrders.length} active order{activeOrders.length > 1 ? "s" : ""}
         </span>
       </div>
 
       {/* ORDERS */}
       {activeOrders.map((order, index) => {
         const orderId = order._id || order.id || order.orderId;
-        const storeName = order.store_name || order.storeName;
+        const storeName = order.store_name || order.storeName || "Store";
         const storeAddress = order.store_address || order.storeAddress;
         const status = order.order_status || order.orderStatus || "pending";
         const items = order.order_items || order.items || [];
@@ -153,9 +203,7 @@ function CustomerActiveOrders() {
                           status === "ready" ||
                           status === "out_for_delivery"
                         ? "text-blue-700 bg-blue-100 border border-blue-200"
-                        : status === "completed" || status === "delivered"
-                        ? "font-bold text-green-800 bg-green-200"
-                        : "text-red-700 bg-red-100 border border-red-200"
+                        : "text-gray-700 bg-gray-100 border border-gray-200"
                     }`}
                   >
                     {status === "ready"
@@ -224,7 +272,7 @@ function CustomerActiveOrders() {
                   className="flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 border rounded-xl bg-gray-100 overflow-hidden p-1.5">
+                    <div className="w-14 h-14 border rounded-xl bg-gray-100 overflow-hidden p-1.5 flex items-center justify-center">
                       <img
                         src={item.product_url}
                         alt={item.product_name}

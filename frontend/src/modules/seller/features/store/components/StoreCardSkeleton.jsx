@@ -69,4 +69,50 @@ export const StoreGridSkeleton = ({ count = 6 }) => {
   );
 };
 
+// Full page skeleton for /stores so top controls and cards load together
+export const StoresPageSkeleton = () => {
+  return (
+    <div
+      aria-hidden="true"
+      className="space-y-4 font-sans select-none pointer-events-none"
+    >
+      {/* Breadcrumb Skeleton */}
+      <div className="h-4 w-32 bg-gray-200/80 rounded-md skeleton-shimmer mb-3" />
+
+      {/* Header & Search Bar Card Skeleton */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm space-y-4">
+        <div className="space-y-2">
+          <div className="h-6 w-48 bg-gray-200/90 rounded-lg skeleton-shimmer" />
+          <div className="h-3.5 w-64 bg-gray-200/70 rounded-md skeleton-shimmer" />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2.5">
+          <div className="flex-1 h-10 bg-gray-100/90 border border-gray-200/60 rounded-xl skeleton-shimmer" />
+          <div className="w-full sm:w-36 h-10 bg-gray-100/90 border border-gray-200/60 rounded-xl skeleton-shimmer shrink-0" />
+        </div>
+      </div>
+
+      {/* Grid of Stores Skeleton */}
+      <StoreGridSkeleton count={6} />
+    </div>
+  );
+};
+
+// Full page skeleton for /wishlist
+export const WishlistSkeleton = () => {
+  return (
+    <div
+      aria-hidden="true"
+      className="space-y-5 h-full max-h-[90vh] select-none pointer-events-none"
+    >
+      <div className="space-y-2">
+        <div className="h-7 w-48 bg-gray-200/90 rounded-xl skeleton-shimmer" />
+        <div className="h-4 w-64 bg-gray-200/70 rounded-md skeleton-shimmer" />
+      </div>
+
+      <StoreGridSkeleton count={6} />
+    </div>
+  );
+};
+
 export default StoreCardSkeleton;

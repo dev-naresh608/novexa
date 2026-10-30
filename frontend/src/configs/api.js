@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-export const setupApiInterceptors = (store) => {
+export const setupApiInterceptors = (store, rotateTokenAction) => {
   api.interceptors.request.use(
     (config) => {
       const accessToken = store.getState().auth.accessToken;
@@ -39,9 +39,9 @@ export const setupApiInterceptors = (store) => {
       ) {
         originalRequest._retry = true;
         try {
-          const { rotateToken } = await import("../modules/auth/store/authThunk.js");
-          const resultAction = await store.dispatch(rotateToken());
-          if (rotateToken.fulfilled.match(resultAction)) {
+          const action = rotateTokenAction || (await import("../modules/auth/store/authThunk.js")).rotateToken;
+          const resultAction = await store.dispatch(action());
+          if (action.fulfilled.match(resultAction)) {
             const newAccessToken = resultAction.payload.accessToken;
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(originalRequest);

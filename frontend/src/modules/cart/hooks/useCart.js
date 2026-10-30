@@ -32,7 +32,7 @@ export const useCart = () => {
   const locationPath = typeof window !== "undefined" ? window.location.pathname : "";
   const isCartRoute = locationPath.includes("/cart");
 
-  const [address, setAddress] = useState(currentUser?.myAddress || "");
+  const [address, setAddress] = useState(currentUser?.myAddress || currentUser?.address || null);
   const [addressList, setAddressList] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cashOnDelivery");
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
@@ -41,44 +41,66 @@ export const useCart = () => {
   const cartItems = isLogin ? (currentUser?.myCart || []) : guestCart;
   const isCartEmpty = !cartItems || cartItems.length === 0;
 
-  // Retrieve delivery addresses only when needed (cart drawer open or on cart page)
+  // Sync cached address from Redux if state is empty
   useEffect(() => {
-    const cachedAddress = currentUser?.myAddress;
+    const cachedAddress = currentUser?.myAddress || currentUser?.address;
     if (cachedAddress && !address) {
       setAddress(cachedAddress);
     }
+  }, [currentUser?.myAddress, currentUser?.address, address]);
 
+  // Retrieve delivery addresses whenever drawer opens or user is on /cart
+  useEffect(() => {
+    const userId = currentUser?._id || currentUser?.id;
+    if (!userId || !isLogin) return;
+    if (!isCartDrawerOpen && !isCartRoute) return;
+
+    let isMounted = true;
     const fetchAddress = async () => {
-      if (!currentUser?._id || addressList) return;
-      if (!isCartDrawerOpen && !isCartRoute) return;
-
       try {
-        const data = await handleGetAddressApi(currentUser._id);
-        if (data && data.success && data.addressList && data.addressList.length > 0) {
+        const data = await handleGetAddressApi(userId);
+        if (!isMounted) return;
+
+        if (data && data.success && Array.isArray(data.addressList)) {
           setAddressList(data.addressList);
-          setAddress(data.addressList[0]);
-          dispatch(
-            updateUser({
-              myAddress: data.addressList[0],
-            })
-          );
+          if (data.addressList.length > 0) {
+            setAddress((prev) => {
+              if (prev && data.addressList.some((a) => (a._id || a.id) === (prev._id || prev.id))) {
+                return prev;
+              }
+              const defaultAddr = data.addressList[0];
+              dispatch(
+                updateUser({
+                  myAddress: defaultAddr,
+                  address: defaultAddr,
+                })
+              );
+              return defaultAddr;
+            });
+          } else {
+            setAddress(null);
+          }
+        } else {
+          setAddressList([]);
         }
       } catch (err) {
-        console.error("Failed to fetch address in useCart:", err);
+        if (isMounted) {
+          console.error("Failed to fetch address in useCart:", err);
+          setAddressList([]);
+        }
       }
     };
 
-    if (isLogin && (isCartDrawerOpen || isCartRoute)) {
-      fetchAddress();
-    }
+    fetchAddress();
+    return () => {
+      isMounted = false;
+    };
   }, [
     isLogin,
     isCartDrawerOpen,
     isCartRoute,
     currentUser?._id,
-    currentUser?.myAddress,
-    address,
-    addressList,
+    currentUser?.id,
     dispatch,
   ]);
 
@@ -106,7 +128,7 @@ export const useCart = () => {
           try {
             await updateCartQtyApi(currentUser._id, itemId, itemQty);
           } catch (error) {
-            console.error("Failed to update cart quantity in DB:", error);
+            console.error("Failed to update cart qty in DB:", error);
           }
         }
       } else {
@@ -116,31 +138,28 @@ export const useCart = () => {
     [cartItems, isLogin, currentUser?._id, dispatch]
   );
 
-  // Delete product from the cart
+  // Remove single item from cart
   const onCartItemDeleteBtn = useCallback(
-    async (productId) => {
-      const updatedCart = cartItems.filter((p) => p._id !== productId);
+    async (itemId) => {
+      const updatedCart = cartItems.filter((item) => item._id !== itemId);
 
       if (isLogin) {
         dispatch(updateUser({ myCart: updatedCart }));
-        if (updatedCart.length === 0) {
-          dispatch(setStoreId(null));
-        }
         if (currentUser?._id) {
           try {
-            await removeFromCartApi(currentUser._id, productId);
-            toast.success("Item removed from cart");
+            await removeFromCartApi(currentUser._id, itemId);
           } catch (error) {
-            console.error("Failed to remove cart item from DB:", error);
+            console.error("Failed to remove item from cart DB:", error);
           }
         }
       } else {
         dispatch(setGuestCart(updatedCart));
-        if (updatedCart.length === 0) {
-          dispatch(setStoreId(null));
-        }
-        toast.success("Item removed from cart");
       }
+
+      if (updatedCart.length === 0) {
+        dispatch(setStoreId(null));
+      }
+      toast.success("Item removed from cart");
     },
     [cartItems, isLogin, currentUser?._id, dispatch]
   );
@@ -180,12 +199,44 @@ export const useCart = () => {
       return;
     }
 
+    if (!cartItems || cartItems.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
+    if (!address) {
+      toast.error("Please add or select a delivery address");
+      openModal(MODAL_TYPES.ADDRESS, {
+        userId: currentUser?._id || currentUser?.id,
+        setAddress: (newAddr) => {
+          setAddress(newAddr);
+          setAddressList((prev) => (prev ? [newAddr, ...prev] : [newAddr]));
+          dispatch(updateUser({ myAddress: newAddr, address: newAddr }));
+        },
+      });
+      return;
+    }
+
+    const resolvedStoreId =
+      storeId ||
+      cartItems[0]?.store_id ||
+      cartItems[0]?.storeId;
+
+    if (!resolvedStoreId) {
+      toast.error("Could not determine store information. Please re-add items.");
+      return;
+    }
+
+    if (!storeId && resolvedStoreId) {
+      dispatch(setStoreId(resolvedStoreId));
+    }
+
     setIsPlacingOrder(true);
     try {
       await onCartPlaceOrder(
         currentUser,
         (updatedUser) => dispatch(updateUser(updatedUser)),
-        storeId,
+        resolvedStoreId,
         orderPriceDetails,
         address,
         paymentMethod,
@@ -200,6 +251,7 @@ export const useCart = () => {
     isLogin,
     openModal,
     currentUser,
+    cartItems,
     storeId,
     orderPriceDetails,
     address,
@@ -223,10 +275,12 @@ export const useCart = () => {
     address,
     setAddress,
     addressList,
+    setAddressList,
     paymentMethod,
     isAddressFormOpen,
     setIsAddressFormOpen,
     isCartEmpty,
+    cartItems,
     isPlacingOrder,
     orderPriceDetails,
     onCartItemQtyChange,

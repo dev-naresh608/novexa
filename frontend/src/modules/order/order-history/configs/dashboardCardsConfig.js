@@ -1,4 +1,4 @@
-import { Store, Package, CheckCircle2, XCircle } from "lucide-react";
+import { Store, Package, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 const dashboardCardsConfig = (
   currentUser,
@@ -7,6 +7,14 @@ const dashboardCardsConfig = (
   summaryStats = null
 ) => {
   const totalVal = summaryStats ? summaryStats.total : allOrders.length || 0;
+  const activeVal = summaryStats
+    ? summaryStats.active
+    : allOrders.filter(
+        (o) =>
+          !["completed", "delivered", "rejected", "cancelled"].includes(
+            o.order_status
+          )
+      ).length;
   const completedVal = summaryStats
     ? summaryStats.completed
     : allOrders.filter(
@@ -26,20 +34,33 @@ const dashboardCardsConfig = (
         currentUser?.role
           ? currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)
           : "User",
-      cardStyle: "bg-blue-100 text-blue-500 border border-blue-200",
+      cardStyle: "bg-blue-100 text-blue-700 border border-blue-200",
     },
 
     {
       id: "total",
       icon: Package,
-      text: "TOTAL HISTORY",
+      text: "ALL ORDERS",
       value: totalVal,
       onClick: () => {
         setActiveCard("total");
       },
       cardStyle:
-        "bg-orange-100 text-orange-500 border border-orange-200 cursor-pointer",
+        "bg-orange-100 text-orange-600 border border-orange-200 cursor-pointer",
       borderStyle: "border-b-[3px] border-orange-400",
+    },
+
+    {
+      id: "active",
+      icon: Clock,
+      text: "ACTIVE",
+      value: activeVal,
+      onClick: () => {
+        setActiveCard("active");
+      },
+      cardStyle:
+        "bg-indigo-100 text-indigo-700 border border-indigo-200 cursor-pointer",
+      borderStyle: "border-b-[3px] border-indigo-500",
     },
 
     {
@@ -51,14 +72,14 @@ const dashboardCardsConfig = (
         setActiveCard("completed");
       },
       cardStyle:
-        "bg-emerald-100 text-emerald-600 border border-emerald-200 cursor-pointer",
+        "bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-pointer",
       borderStyle: "border-b-[3px] border-emerald-500",
     },
 
     {
       id: "cancelled",
       icon: XCircle,
-      text: "CANCELLED / REJECTED",
+      text: "CANCELLED",
       value: cancelledVal,
       onClick: () => {
         setActiveCard("cancelled");

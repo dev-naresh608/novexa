@@ -14,6 +14,19 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error("Uncaught application error:", error, errorInfo);
     this.setState({ errorInfo });
+
+    const msg = error?.message || error?.toString?.() || "";
+    if (
+      msg.includes("dynamically imported module") ||
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("Loading chunk")
+    ) {
+      const hasReloaded = sessionStorage.getItem("novexa_chunk_reload");
+      if (!hasReloaded) {
+        sessionStorage.setItem("novexa_chunk_reload", "true");
+        window.location.reload();
+      }
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -23,6 +36,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   handleReset = () => {
+    sessionStorage.removeItem("novexa_chunk_reload");
     this.setState({ hasError: false, error: null, errorInfo: null });
     if (typeof window !== "undefined") {
       window.location.reload();
@@ -30,6 +44,7 @@ export class ErrorBoundary extends React.Component {
   };
 
   handleGoHome = () => {
+    sessionStorage.removeItem("novexa_chunk_reload");
     this.setState({ hasError: false, error: null, errorInfo: null });
     if (typeof window !== "undefined") {
       window.location.href = "/";

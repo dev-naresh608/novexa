@@ -15,6 +15,7 @@ import notificationRouter from "./modules/notification/notification.routes.js";
 import wishlistRouter from "./modules/customer/wishlist.routes.js";
 import profileRouter from "./modules/profile/profile.routes.js";
 import driverRouter from "./modules/driver/driver.routes.js";
+import { stripeRouter } from "./modules/payment/index.js";
 
 const app = express();
 
@@ -95,6 +96,8 @@ app.use("/api/distance", distanceRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/payment", stripeRouter);
+app.use("/api/stripe", stripeRouter);
 
 // 404 Handler for undefined routes
 app.use((req, res) => {

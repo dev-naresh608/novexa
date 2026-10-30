@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { closeCartDrawer } from "../store/cartSlice";
 import { useCart } from "../hooks/useCart";
+import { useModal, MODAL_TYPES } from "@/components";
 import {
   ShoppingCart,
   X,
@@ -16,20 +17,24 @@ import {
   Minus,
   CheckCircle2,
   Loader2,
+  PlusCircle,
 } from "lucide-react";
 import AddressSelector from "./address/AddressSelector";
 
 export default function CartDrawer() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openModal } = useModal();
   const isCartDrawerOpen = useSelector((state) => state.cart.isCartDrawerOpen);
 
   const {
     currentUser,
+    setCurrentUser,
     isLogin,
     address,
     setAddress,
     addressList,
+    setAddressList,
     paymentMethod,
     orderPriceDetails,
     onCartItemQtyChange,
@@ -38,6 +43,7 @@ export default function CartDrawer() {
     handlePaymentMethod,
     handlePlaceOrder,
     isCartEmpty,
+    cartItems: activeCartItems,
     isPlacingOrder,
   } = useCart();
 
@@ -72,7 +78,20 @@ export default function CartDrawer() {
     handlePlaceOrder();
   };
 
-  const cartItems = currentUser?.myCart || [];
+  const handleOpenAddAddressModal = () => {
+    const targetUserId = currentUser?._id || currentUser?.id;
+    openModal(MODAL_TYPES.ADDRESS, {
+      userId: targetUserId,
+      setAddress: (newAddr) => {
+        setAddress(newAddr);
+        if (setAddressList) {
+          setAddressList((prev) => (prev ? [newAddr, ...prev] : [newAddr]));
+        }
+      },
+    });
+  };
+
+  const cartItems = activeCartItems || currentUser?.myCart || [];
   const itemCount = cartItems.length;
 
   return createPortal(
@@ -98,12 +117,14 @@ export default function CartDrawer() {
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50/50 to-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-green-700 text-white flex items-center justify-center shadow-md shadow-green-700/20">
+            <div className="w-9 h-9 rounded-xl bg-green-700 text-white flex items-center justify-center shadow-md shadow-green-700/20">
               <ShoppingCart className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 leading-none">Your Cart</h2>
-              <p className="text-xs text-gray-500 mt-1">
+              <h2 className="text-base font-bold text-gray-900 leading-tight">
+                Your Cart
+              </h2>
+              <p className="text-xs text-gray-500 font-medium">
                 {itemCount} {itemCount === 1 ? "item" : "items"} selected
               </p>
             </div>
@@ -114,7 +135,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={handleClearCart}
-                className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-xl border border-red-200/80 transition-colors cursor-pointer outline-none"
+                className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg border border-red-100 transition-colors cursor-pointer"
               >
                 Clear
               </button>
@@ -122,23 +143,25 @@ export default function CartDrawer() {
             <button
               type="button"
               onClick={handleClose}
-              className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors cursor-pointer outline-none border-none"
-              aria-label="Close cart"
+              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all cursor-pointer border-none bg-transparent"
+              aria-label="Close cart drawer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Drawer Content */}
+        {/* Drawer Body - Scrollable */}
         {isCartEmpty ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-24 h-24 rounded-full bg-green-50 border border-green-100 flex items-center justify-center mb-4">
-              <ShoppingBasket className="w-12 h-12 text-green-600" />
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-20 h-20 bg-green-50 text-green-700 rounded-3xl flex items-center justify-center mb-4 border border-green-100 shadow-sm">
+              <ShoppingBasket className="w-10 h-10" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Your cart is empty</h3>
-            <p className="text-sm text-gray-500 mb-6 max-w-xs">
-              Looks like you haven't added anything to your cart yet. Explore stores and add items!
+            <h3 className="text-lg font-bold text-gray-800">
+              Your cart is empty
+            </h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-xs leading-relaxed">
+              Explore our fresh local grocery stores and add your favorite items to start shopping!
             </p>
             <button
               type="button"
@@ -146,51 +169,68 @@ export default function CartDrawer() {
                 handleClose();
                 navigate("/stores");
               }}
-              className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-green-700/20 transition-all cursor-pointer border-none"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-green-700 hover:bg-green-800 text-white font-bold text-xs rounded-xl shadow-md shadow-green-700/20 transition-all cursor-pointer border-none"
             >
-              Start Shopping
+              <span>Explore Stores</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
             {/* Cart Items List */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                Cart Items ({itemCount})
-              </h3>
-              <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <span>Cart Items ({itemCount})</span>
+              </div>
+
+              <div className="space-y-2.5">
                 {cartItems.map((item, index) => {
-                  const isOfferActive =
-                    item.is_offer_available === true &&
-                    Number(item.product_offer_price) > 0;
-                  const unitPrice = isOfferActive
-                    ? Number(item.product_offer_price)
+                  const isOfferActive = Boolean(item.isOfferAvailable || item.is_offer_available);
+                  const effectivePrice = isOfferActive
+                    ? Number(item.product_offer_price || item.product_selling_price || 0)
                     : Number(item.product_selling_price || 0);
-                  const itemSubtotal = (
-                    unitPrice * (Number(item.product_qty) || 1)
-                  ).toFixed(2);
+                  const itemSubtotal = (effectivePrice * (Number(item.product_qty) || 1)).toFixed(2);
 
                   return (
                     <div
                       key={item._id || index}
-                      className="flex gap-3 bg-gray-50/70 p-3 rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors"
+                      className="flex gap-3 p-3 bg-gray-50/70 hover:bg-gray-50 rounded-2xl border border-gray-100 transition-colors"
                     >
-                      <img
-                        src={item.product_url}
-                        alt={item.product_name}
-                        className="w-16 h-16 rounded-xl object-contain bg-white p-1 border border-gray-100 shrink-0"
-                      />
+                      {/* Product Image */}
+                      <div className="w-16 h-16 rounded-xl bg-white border border-gray-200/80 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                        {item.product_url ? (
+                          <img
+                            src={item.product_url}
+                            alt={item.product_name}
+                            className="w-full h-full object-contain rounded-lg"
+                          />
+                        ) : (
+                          <ShoppingBasket className="w-6 h-6 text-gray-300" />
+                        )}
+                      </div>
+
+                      {/* Product Info & Controls */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-sm font-semibold text-gray-900 truncate capitalize">
-                            {item.product_name}
-                          </h4>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-gray-900 truncate">
+                              {item.product_name}
+                            </h4>
+                            {item.product_weight && (
+                              <p className="text-[11px] text-gray-400 font-medium">
+                                {item.product_weight}
+                                {item.product_weight_type === "none"
+                                  ? ""
+                                  : ` ${item.product_weight_type}`}
+                              </p>
+                            )}
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => onCartItemDeleteBtn(item._id)}
-                            className="text-gray-400 hover:text-red-600 p-1 transition-colors cursor-pointer outline-none border-none bg-transparent"
-                            aria-label={`Remove ${item.product_name}`}
+                            className="text-gray-400 hover:text-red-600 p-1 rounded-md transition-colors cursor-pointer border-none bg-transparent"
+                            title="Remove from cart"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -234,17 +274,62 @@ export default function CartDrawer() {
             </div>
 
             {/* Delivery Address Section */}
-            {isLogin && (
+            {isLogin ? (
               <div className="pt-3 border-t border-gray-100">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-green-700" />
+                    Delivery Address
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handleOpenAddAddressModal}
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer border-none bg-transparent outline-none"
+                  >
+                    {addressList && addressList.length > 0 ? "+ Add New" : "+ Add"}
+                  </button>
+                </div>
+
+                {!addressList && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-100 bg-gray-50 text-xs text-gray-500">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                    <span>Loading address...</span>
+                  </div>
+                )}
+
+                {addressList && addressList.length === 0 && (
+                  <div className="p-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 text-center space-y-1.5">
+                    <p className="text-xs text-amber-800 font-medium">No saved delivery address found.</p>
+                    <button
+                      type="button"
+                      onClick={handleOpenAddAddressModal}
+                      className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-xs border-none"
+                    >
+                      + Add Delivery Address
+                    </button>
+                  </div>
+                )}
+
+                {addressList && addressList.length > 0 && (
+                  <AddressSelector
+                    addressList={addressList}
+                    address={address}
+                    selectedAddress={address}
+                    setAddress={setAddress}
+                    onSelectAddress={setAddress}
+                    setCurrentUser={setCurrentUser}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="pt-3 border-t border-gray-100">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-green-700" />
                   Delivery Address
                 </h3>
-                <AddressSelector
-                  addressList={addressList}
-                  selectedAddress={address}
-                  onSelectAddress={setAddress}
-                />
+                <p className="bg-gray-50 rounded-xl border border-gray-200/80 text-xs px-3 py-2 text-gray-500">
+                  Login to select or add your delivery address.
+                </p>
               </div>
             )}
 

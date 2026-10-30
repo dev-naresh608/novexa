@@ -30,6 +30,7 @@ function OrdersTable({ currentUserRole, allOrders }) {
           : CarIcon,
     },
     { colLabel: "Created Date", icon: Clock },
+    { colLabel: "Status", icon: Activity },
     { colLabel: "Payment", icon: CreditCard },
     { colLabel: "Total", icon: IndianRupee },
   ];
@@ -92,6 +93,11 @@ function OrdersTable({ currentUserRole, allOrders }) {
                 {/* DATE / TIME */}
                 <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
                   <p>{formatDate(o.createdAt)}</p>
+                </td>
+
+                {/* STATUS */}
+                <td className="px-5 py-4 whitespace-nowrap">
+                  <OrderStatusPill status={o.order_status} />
                 </td>
 
                 {/* PAYMENT */}

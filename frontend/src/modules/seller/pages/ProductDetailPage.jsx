@@ -15,6 +15,7 @@ import {
   ProductDescriptionCard,
   ProductIdInfo,
 } from "../index";
+import { ArrowLeft, Loader2, PackageX } from "lucide-react";
 
 function ProductDetailPage() {
   const { productId } = useParams();
@@ -24,6 +25,7 @@ function ProductDetailPage() {
   const { user: currentUser } = useSelector((state) => state.auth);
 
   const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,12 +42,17 @@ function ProductDetailPage() {
   });
 
   useEffect(() => {
+    let isMounted = true;
     const fetchProduct = async () => {
+      setLoading(true);
       try {
         const data = await getProductByIdApi(productId);
+        if (!isMounted) return;
 
-        if (!data.success) {
-          return toast.error(data.message);
+        if (!data || !data.success || !data.product) {
+          toast.error(data?.message || "Product not found");
+          setProduct(null);
+          return;
         }
         setProduct(data.product);
         setFormData({
@@ -61,10 +68,18 @@ function ProductDetailPage() {
           show_in_menu: data.product.show_in_menu !== false,
         });
       } catch (error) {
-        return toast.error(error.message);
+        if (isMounted) {
+          toast.error(error.message || "Failed to load product");
+          setProduct(null);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
     fetchProduct();
+    return () => {
+      isMounted = false;
+    };
   }, [productId]);
 
   const handleChange = (e) => {
@@ -99,55 +114,51 @@ function ProductDetailPage() {
     setIsEditing(false);
   };
 
-  const handleSave = async () => {
-    // Form validation
-    if (!formData.product_name.trim()) {
+  const handleSave = async (extraFields = {}) => {
+    const mergedData = { ...formData, ...extraFields };
+
+    if (!mergedData.product_name.trim()) {
       return toast.error("Product name cannot be empty");
     }
-    if (Number(formData.product_cost_price) <= 0) {
-      return toast.error("Invalid cost price");
+    if (!mergedData.product_selling_price || Number(mergedData.product_selling_price) <= 0) {
+      return toast.error("Selling price must be greater than 0");
     }
-    if (Number(formData.product_selling_price) <= 0) {
-      return toast.error("Invalid selling price");
-    }
-    if (Number(formData.product_cost_price) > Number(formData.product_selling_price)) {
-      return toast.error("Selling price must exceed cost price");
-    }
-    if (formData.is_offer_available) {
-      if (Number(formData.product_offer_price) <= 0) {
-        return toast.error("Invalid offer price");
+    if (mergedData.is_offer_available) {
+      if (!mergedData.product_offer_price || Number(mergedData.product_offer_price) <= 0) {
+        return toast.error("Offer price must be greater than 0 when offer is active");
       }
-      if (Number(formData.product_offer_price) > Number(formData.product_selling_price)) {
-        return toast.error("Offer price cannot exceed selling price");
+      if (Number(mergedData.product_offer_price) >= Number(mergedData.product_selling_price)) {
+        return toast.error("Offer price must be less than regular selling price");
       }
     }
 
     setSaving(true);
     try {
-      const updates = {
-        product_name: formData.product_name.trim(),
-        product_weight: Number(formData.product_weight),
-        product_weight_type: formData.product_weight_type,
-        product_cost_price: Number(formData.product_cost_price),
-        product_selling_price: Number(formData.product_selling_price),
-        product_offer_price: Number(formData.product_offer_price),
-        product_description: formData.product_description.trim(),
-        is_product_in_stock: formData.is_product_in_stock,
-        is_offer_available: formData.is_offer_available,
-        show_in_menu: formData.show_in_menu,
+      const payload = {
+        product_name: mergedData.product_name.trim(),
+        product_weight: mergedData.product_weight ? Number(mergedData.product_weight) : undefined,
+        product_weight_type: mergedData.product_weight_type,
+        product_cost_price: mergedData.product_cost_price ? Number(mergedData.product_cost_price) : 0,
+        product_selling_price: Number(mergedData.product_selling_price),
+        product_offer_price: mergedData.is_offer_available && mergedData.product_offer_price ? Number(mergedData.product_offer_price) : null,
+        product_description: mergedData.product_description.trim(),
+        is_product_in_stock: Boolean(mergedData.is_product_in_stock),
+        is_offer_available: Boolean(mergedData.is_offer_available),
+        show_in_menu: Boolean(mergedData.show_in_menu),
       };
 
-      const data = await updateProductApi(productId, currentUser._id, updates);
+      const sellerId = currentUser?.store_id || currentUser?._id;
+      const res = await updateProductApi(productId, payload, sellerId);
 
-      toast.success(data.message || "Product updated successfully");
-
-      setProduct((prev) => ({
-        ...prev,
-        ...updates,
-      }));
-      setIsEditing(false);
-    } catch (error) {
-      toast.error(error.message || "Failed to update product");
+      if (res && res.success) {
+        toast.success("Product updated successfully!");
+        setProduct((prev) => ({ ...prev, ...payload }));
+        setIsEditing(false);
+      } else {
+        toast.error(res?.message || "Failed to update product");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Failed to update product");
     } finally {
       setSaving(false);
     }
@@ -156,7 +167,7 @@ function ProductDetailPage() {
   const handleDelete = () => {
     openModal(MODAL_TYPES.CONFIRM, {
       title: "Delete Product?",
-      message: `Are you sure you want to delete "${product.product_name || "this product"}"? This action cannot be undone.`,
+      message: `Are you sure you want to delete "${product?.product_name || "this product"}"? This will permanently remove it from your inventory.`,
       confirmText: "Delete",
       cancelText: "Cancel",
       type: "danger",
@@ -172,12 +183,35 @@ function ProductDetailPage() {
     });
   };
 
-  if (!product) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500 font-semibold animate-pulse">
+      <div className="flex flex-col items-center justify-center min-h-[450px] gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <div className="text-gray-500 font-semibold text-xs animate-pulse">
           Loading product details...
         </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[450px] p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 border border-amber-200 shadow-xs">
+          <PackageX size={28} />
+        </div>
+        <h2 className="text-lg font-bold text-gray-800">Product Not Found</h2>
+        <p className="text-xs text-gray-500 mt-1 max-w-sm">
+          The requested product could not be located or may have been removed.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer border-none"
+        >
+          <ArrowLeft size={14} />
+          <span>Go Back</span>
+        </button>
       </div>
     );
   }
@@ -218,6 +252,7 @@ function ProductDetailPage() {
               />
             </div>
           </div>
+
           <div>
             <ProductDescriptionCard
               isEditing={isEditing}
@@ -228,7 +263,7 @@ function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Right Side: Pricing & IDs (colspan 4) */}
+        {/* Right Side: Pricing & Metadata (colspan 4) */}
         <div className="lg:col-span-4 space-y-5">
           <div>
             <ProductPricingCard
@@ -238,6 +273,7 @@ function ProductDetailPage() {
               product={product}
             />
           </div>
+
           <div>
             <ProductIdInfo product={product} />
           </div>
