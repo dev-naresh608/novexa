@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { config } from "../../configs/config.js";
+import Order from "../order/order.model.js";
 
 let stripeClient = null;
 
@@ -44,7 +45,13 @@ export const handleCreateCheckout = async (req, res) => {
     const { product, items, products, priceDetails, orderId, customerId } =
       req.body;
 
+    const requestOrigin =
+      req.headers.origin ||
+      req.get("origin") ||
+      (req.headers.referer ? new URL(req.headers.referer).origin : null);
+
     const clientUrl =
+      requestOrigin ||
       config.stripe?.client_url ||
       config.STRIPE?.client_url ||
       process.env.CLIENT_URL ||
@@ -137,7 +144,7 @@ export const handleCreateCheckout = async (req, res) => {
       }
     }
 
-    // Case 2: Single product checkout payload (from user code sample)
+    // Case 2: Single product checkout payload
     if (line_items.length === 0 && product) {
       const name = product.product_name || product.name || "Product";
       const price = Number(
@@ -187,8 +194,8 @@ export const handleCreateCheckout = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: `${normalizedClientUrl}/active-orders?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${normalizedClientUrl}/cart?payment=cancelled`,
+      success_url: `${normalizedClientUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId || ""}`,
+      cancel_url: `${normalizedClientUrl}/payment/cancel?order_id=${orderId || ""}`,
       metadata: {
         orderId: orderId ? String(orderId) : "",
         customerId: customerId ? String(customerId) : "",
@@ -206,6 +213,67 @@ export const handleCreateCheckout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Unable to create checkout session",
+    });
+  }
+};
+
+export const handleVerifySession = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Session ID is required",
+      });
+    }
+
+    const stripe = getStripe();
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        message: "Stripe payment gateway is not configured.",
+      });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Stripe checkout session not found",
+      });
+    }
+
+    const isPaid = session.payment_status === "paid";
+    const orderId = session.metadata?.orderId;
+    let order = null;
+
+    if (orderId) {
+      order = await Order.findById(orderId);
+      if (order && isPaid) {
+        order.payment_method = "stripe_online";
+        if (order.order_status === "pending") {
+          order.order_status = "confirmed";
+        }
+        order.payment_status = "paid";
+        order.stripe_payment_id = session.payment_intent || session.id;
+        await order.save();
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      paid: isPaid,
+      status: session.payment_status,
+      amountTotal: session.amount_total ? session.amount_total / 100 : 0,
+      currency: session.currency,
+      customerEmail: session.customer_details?.email,
+      order,
+    });
+  } catch (error) {
+    console.error("Stripe verify session error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unable to verify Stripe checkout session",
     });
   }
 };

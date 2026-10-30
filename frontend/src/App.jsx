@@ -3,6 +3,8 @@ import {
   PersonalInfo,
   Setting,
   Payments,
+  PaymentSuccess,
+  PaymentCancel,
   Orders,
   OrderDetail,
   CartPage,
@@ -217,6 +219,10 @@ function App() {
               element={<CategoryWiseRedirect />}
             />
             <Route path="cart" element={<CartPage />}></Route>
+            <Route path="payment/success" element={<PaymentSuccess />} />
+            <Route path="success" element={<PaymentSuccess />} />
+            <Route path="payment/cancel" element={<PaymentCancel />} />
+            <Route path="cancel" element={<PaymentCancel />} />
             <Route path="stores" element={<AllStores />}></Route>
             <Route path="/stores/menu/:restId" element={<AllProducts />} />
             <Route path="/stores/allproducts/:restId" element={<AllProducts />} />
