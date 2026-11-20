@@ -72,6 +72,9 @@ const orderSchema = new mongoose.Schema(
     order_status: {
       type: String,
       enum: [
+        // Online (Stripe) orders sit here until payment is confirmed, so they
+        // stay out of seller/driver queues that only look at ACTIVE statuses.
+        "awaiting_payment",
         "pending",
         "preparing",
         "confirmed",
@@ -94,6 +97,20 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "cash",
     },
+    payment_status: {
+      type: String,
+      enum: ["pending", "paid", "failed", "cancelled", "refunded"],
+      default: "pending",
+    },
+    stripe_session_id: {
+      type: String,
+    },
+    stripe_payment_id: {
+      type: String,
+    },
+    paid_at: {
+      type: Date,
+    },
     price_detail: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
@@ -106,6 +123,7 @@ orderSchema.index({ customer_id: 1, createdAt: -1 });
 orderSchema.index({ store_id: 1, createdAt: -1 });
 orderSchema.index({ driver_id: 1, createdAt: -1 });
 orderSchema.index({ order_status: 1, createdAt: -1 });
+orderSchema.index({ stripe_session_id: 1 }, { sparse: true });
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

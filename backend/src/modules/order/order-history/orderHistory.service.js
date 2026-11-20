@@ -1,12 +1,23 @@
 import Order from "../order.model.js";
-import Product from "../../product/product.model.js";
 import Seller from "../../seller/seller.model.js";
 import Cart from "../../cart/cart.model.js";
-import { createNotificationSvc } from "../../notification/notification.service.js";
+import { priceOrderItems } from "../order.pricing.js";
+import { notifyOrderPlacedSvc } from "../order.notifications.js";
+import { isStripeConfigured } from "../../payment/stripe.client.js";
+import { reconcileAwaitingPaymentOrders } from "../../payment/stripe.service.js";
 
 export const addOrderSvc = async (o) => {
   try {
     const { name: customer_name, phone: customer_phone } = o.order_address || {};
+    const isOnlinePayment = o.paymentMethod === "online";
+
+    if (isOnlinePayment && !isStripeConfigured()) {
+      return {
+        success: false,
+        message:
+          "Online payment is not available right now. Please choose Cash on Delivery.",
+      };
+    }
 
     // Resolve seller store ID (o.storeId could be User._id or Seller._id)
     let sellerStoreId = o.storeId;
@@ -27,6 +38,17 @@ export const addOrderSvc = async (o) => {
       };
     }
 
+    // Never trust prices/totals from the client — re-price from the DB
+    const { items, priceDetails } = await priceOrderItems(o.items, [
+      sellerStoreId,
+      o.storeId,
+    ]);
+
+    // Settle earlier online orders this customer abandoned on Stripe
+    if (isOnlinePayment && o.customerId) {
+      await reconcileAwaitingPaymentOrders(o.customerId);
+    }
+
     const order = await Order.create({
       customer_id: o.customerId,
       store_id: sellerStoreId,
@@ -36,47 +58,22 @@ export const addOrderSvc = async (o) => {
       customer_name: customer_name || "Customer",
       customer_phone: customer_phone || "",
       customer_email: o.email || "",
-      order_items: o.items || [],
-      order_status: o.orderStatus || "pending",
-      createdAt: o.createdAt || new Date(),
-      payment_method: o.paymentMethod || "cashOnDelivery",
-      price_detail: o.priceDetails || {},
+      order_items: items,
+      // Online orders stay hidden from the seller until Stripe confirms payment
+      order_status: isOnlinePayment ? "awaiting_payment" : "pending",
+      createdAt: new Date(),
+      payment_method: isOnlinePayment ? "online" : o.paymentMethod || "cashOnDelivery",
+      payment_status: "pending",
+      price_detail: priceDetails,
     });
 
-    // Clear user cart in DB after successful order placement
-    if (o.customerId) {
-      await Cart.deleteMany({ customer_id: o.customerId });
-      
-      // Create notification for customer
-      await createNotificationSvc({
-        recipient: o.customerId,
-        title: "Order Placed Successfully",
-        message: `Your order #${order._id.toString().slice(-6)} has been placed with ${o.store_name || "the store"}. Total: ₹${o.priceDetails?.finalPrice || order.price_detail?.finalPrice || 0}.`,
-        type: "order",
-        link: `/orders/${order._id}`,
-        metadata: { orderId: order._id, status: order.order_status },
-      });
-    }
-
-    // Create notification for Seller / Store
-    let sellerUserId = sellerStoreId;
-    if (sellerRecord && sellerRecord.user_id) {
-      sellerUserId = sellerRecord.user_id;
-    } else if (sellerStoreId) {
-      const fetchedSeller = await Seller.findById(sellerStoreId);
-      if (fetchedSeller && fetchedSeller.user_id) {
-        sellerUserId = fetchedSeller.user_id;
+    // For online payments the cart is cleared and everyone is notified only
+    // after the payment succeeds (see payment/stripe.service.js).
+    if (!isOnlinePayment) {
+      if (o.customerId) {
+        await Cart.deleteMany({ customer_id: o.customerId });
       }
-    }
-    if (sellerUserId) {
-      await createNotificationSvc({
-        recipient: sellerUserId,
-        title: "🛒 New Incoming Order!",
-        message: `New order #${order._id.toString().slice(-6)} received from ${customer_name}. Total: ₹${o.priceDetails?.finalPrice || order.price_detail?.finalPrice || 0}.`,
-        type: "order",
-        link: `/active-orders`,
-        metadata: { orderId: order._id, status: order.order_status },
-      });
+      await notifyOrderPlacedSvc(order);
     }
 
     return {

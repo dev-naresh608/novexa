@@ -1,18 +1,41 @@
-import React from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import {
   AlertTriangle,
   ShoppingCart,
   Store,
-  ArrowLeft,
-  RotateCcw,
   Home,
   HelpCircle,
 } from "lucide-react";
+import { cancelPaymentApi } from "../services/payment.api";
 
 export default function PaymentCancel() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const orderId = searchParams.get("order_id");
+  const { isCheckingAuth, isAuthenticated } = useSelector((state) => state.auth);
+  const cancelRequestedRef = useRef(false);
+
+  // Cancel the unpaid order (and expire its Stripe session) once the login
+  // session has been restored after the redirect back from Stripe.
+  useEffect(() => {
+    if (!orderId || isCheckingAuth || !isAuthenticated) return;
+    if (cancelRequestedRef.current) return;
+    cancelRequestedRef.current = true;
+
+    cancelPaymentApi(orderId)
+      .then((data) => {
+        if (data?.paid) {
+          toast.success("Your payment went through — your order has been placed!");
+          navigate("/active-orders", { replace: true });
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to cancel unpaid order:", error);
+      });
+  }, [orderId, isCheckingAuth, isAuthenticated, navigate]);
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center p-4 max-w-xl mx-auto font-sans">
@@ -31,7 +54,7 @@ export default function PaymentCancel() {
             Checkout Was Cancelled
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
-            Your payment session was cancelled and no amount was charged to your card. You can try again whenever you are ready.
+            Your payment was cancelled and no amount was charged. You can try again whenever you are ready.
           </p>
         </div>
 
@@ -42,10 +65,10 @@ export default function PaymentCancel() {
             <span>What happens next?</span>
           </div>
           <p className="leading-relaxed text-gray-500">
-            • Your grocery items remain in your store and you can complete your purchase using Online Payment or Cash on Delivery.
+            • Your items are still in your cart — you can complete your purchase using Online Payment or Cash on Delivery.
           </p>
           <p className="leading-relaxed text-gray-500">
-            • If you were charged by your bank, Stripe will automatically reverse the transaction.
+            • The unpaid order has been cancelled automatically, so the store won't receive it.
           </p>
         </div>
 

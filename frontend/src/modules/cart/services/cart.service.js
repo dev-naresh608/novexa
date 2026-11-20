@@ -4,7 +4,37 @@ import { validateOrder } from "../utils/cartValidation";
 import { fetchUnreadNotificationsApi } from "@/modules/notification/services/notification.api.service";
 import { setUnreadData } from "@/modules/notification/store/notificationSlice";
 import { closeCartDrawer, clearCartState } from "../store/cartSlice";
-import api from "@/configs/api";
+import {
+  createCheckoutSessionApi,
+  cancelPaymentApi,
+} from "@/modules/payment/services/payment.api";
+
+/**
+ * Sends the customer to Stripe Checkout for an order that is awaiting payment.
+ * The cart is intentionally NOT cleared here — that happens only after the
+ * payment is confirmed, so cancelling on Stripe brings the customer back to
+ * the same cart.
+ */
+const startOnlinePayment = async (orderId) => {
+  try {
+    toast.info("Redirecting to secure Stripe checkout...");
+    const data = await createCheckoutSessionApi(orderId);
+    if (!data?.url) {
+      throw new Error("Stripe did not return a checkout URL");
+    }
+    window.location.assign(data.url);
+    // Keep the button in its loading state while the browser navigates away
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+  } catch (error) {
+    console.error("Stripe session creation error:", error);
+    // Don't leave an unpaid order behind; the cart is still intact
+    cancelPaymentApi(orderId).catch(() => {});
+    toast.error(
+      error.response?.data?.message ||
+        "Could not start online payment. Please try again or choose Cash on Delivery.",
+    );
+  }
+};
 
 export const onCartPlaceOrder = async (
   currentUser,
@@ -46,19 +76,16 @@ export const onCartPlaceOrder = async (
       return;
     }
 
-    const createdAt = new Date();
+    // Prices are re-calculated on the server; only product ids + qty are trusted
     const orderData = {
       items: currentUser?.myCart,
-      createdAt,
       paymentMethod,
       storeId,
-      isOrderActive: true,
       customerId: currentUser._id || currentUser?.id,
       store_name: store.store_name,
       email: currentUser.email,
       store_address: store.store_address,
       order_address: address,
-      orderStatus: "pending",
       priceDetails: orderPriceDetails,
     };
 
@@ -71,6 +98,17 @@ export const onCartPlaceOrder = async (
     }
 
     const createdOrder = response.order || orderData;
+
+    // Online payment: go to Stripe first; cart & notifications are handled
+    // once the payment is confirmed on the success page / webhook.
+    if (paymentMethod === "online") {
+      if (!createdOrder?._id) {
+        toast.error("Could not create your order. Please try again.");
+        return;
+      }
+      await startOnlinePayment(createdOrder._id);
+      return;
+    }
 
     // Immediately close cart drawer if open and reset cart state
     if (dispatch) {
@@ -116,33 +154,12 @@ export const onCartPlaceOrder = async (
       console.error("Failed to update notification state on order placement:", notifErr);
     }
 
-    // If payment method is Online, initiate Stripe checkout session
-    if (paymentMethod === "online") {
-      try {
-        toast.info("Opening Stripe checkout page...");
-        const checkoutRes = await api.post("/payment/create-checkout-session", {
-          items: currentUser?.myCart,
-          priceDetails: orderPriceDetails,
-          orderId: createdOrder?._id,
-          customerId: currentUser?._id || currentUser?.id,
-        });
-
-        if (checkoutRes.data?.url) {
-          window.location.href = checkoutRes.data.url;
-          return;
-        }
-      } catch (stripeErr) {
-        console.error("Stripe session creation error:", stripeErr);
-        toast.warn("Could not initiate online payment, order recorded with Cash fallback");
-      }
-    }
-
     toast.success(response.message || "Order placed successfully! 🛒🎉");
 
     // Smooth navigation to active-orders page
     navigate("/active-orders", { replace: true });
   } catch (error) {
-    toast.error("Failed to place order");
+    toast.error(error.response?.data?.message || "Failed to place order");
     console.error("Place Order Error:", error);
   }
 };

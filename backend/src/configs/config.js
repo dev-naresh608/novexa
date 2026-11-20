@@ -18,23 +18,38 @@ if (missingEnv.length > 0) {
   );
 }
 
-if (!process.env.STRIPE_SECRET_KEY) {
+// Strip whitespace and accidental surrounding quotes that often sneak in when
+// keys are pasted into hosting dashboards (Render, Railway, etc.).
+const cleanEnv = (value) =>
+  typeof value === "string"
+    ? value.trim().replace(/^["']|["']$/g, "").trim()
+    : "";
+
+const stripeSecretKey = cleanEnv(process.env.STRIPE_SECRET_KEY);
+
+if (!stripeSecretKey) {
   console.warn(
-    "⚠️ STRIPE_SECRET_KEY is not set. Stripe online checkout will be disabled until added in environment variables."
+    "⚠️ STRIPE_SECRET_KEY is not set. Stripe online checkout will be disabled until added in environment variables.",
+  );
+} else if (!/^(sk|rk)_(test|live)_/.test(stripeSecretKey)) {
+  console.warn(
+    "⚠️ STRIPE_SECRET_KEY does not look like a Stripe secret key (expected it to start with sk_test_ or sk_live_). Did you paste the publishable key (pk_...) by mistake?",
   );
 }
 
-const clientUrl =
-  process.env.CLIENT_URL &&
-  process.env.CLIENT_URL !== "jobhihe" &&
-  process.env.CLIENT_URL.startsWith("http")
-    ? process.env.CLIENT_URL.replace(/\/$/, "")
-    : process.env.FRONTEND_URL || "http://localhost:3000";
+const pickHttpUrl = (...candidates) => {
+  for (const candidate of candidates) {
+    const value = cleanEnv(candidate);
+    if (/^https?:\/\//.test(value)) return value.replace(/\/+$/, "");
+  }
+  return "http://localhost:3000";
+};
 
 const stripeConfig = {
-  secret_key: process.env.STRIPE_SECRET_KEY,
-  client_url: clientUrl,
-  currency: process.env.STRIPE_CURRENCY || "inr",
+  secretKey: stripeSecretKey,
+  webhookSecret: cleanEnv(process.env.STRIPE_WEBHOOK_SECRET),
+  clientUrl: pickHttpUrl(process.env.CLIENT_URL, process.env.FRONTEND_URL),
+  currency: (cleanEnv(process.env.STRIPE_CURRENCY) || "inr").toLowerCase(),
 };
 
 export const config = {
@@ -65,5 +80,4 @@ export const config = {
     openRouterApiKey: process.env.OPEN_ROUTER_SERVICE_API_KEY,
   },
   stripe: stripeConfig,
-  STRIPE: stripeConfig,
 };

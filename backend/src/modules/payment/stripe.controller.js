@@ -1,279 +1,228 @@
-import Stripe from "stripe";
+import mongoose from "mongoose";
 import { config } from "../../configs/config.js";
 import Order from "../order/order.model.js";
+import { isAllowedClientOrigin } from "../../utils/origin.js";
+import { getStripe } from "./stripe.client.js";
+import {
+  createCheckoutSessionForOrder,
+  markOrderPaidFromSession,
+  markOrderPaymentCancelled,
+  cancelAwaitingPaymentOrder,
+  getOrderIdFromSession,
+} from "./stripe.service.js";
 
-let stripeClient = null;
+const STRIPE_NOT_CONFIGURED_MESSAGE =
+  "Online payment is not available right now: STRIPE_SECRET_KEY is missing or invalid on the server. Please use Cash on Delivery.";
 
-const getStripe = () => {
-  const stripeKey =
-    config.stripe?.secret_key ||
-    config.STRIPE?.secret_key ||
-    process.env.STRIPE_SECRET_KEY;
+const sendStripeError = (res, error, fallbackMessage) => {
+  console.error(`${fallbackMessage}:`, error?.message || error);
 
-  if (!stripeKey) {
-    return null;
+  if (error?.status === 400) {
+    return res.status(400).json({ success: false, message: error.message });
   }
 
-  if (!stripeClient) {
-    stripeClient = new Stripe(stripeKey);
-  }
-  return stripeClient;
-};
-
-const isValidHttpsUrl = (url) => {
-  try {
-    return (
-      typeof url === "string" &&
-      (url.startsWith("https://") || url.startsWith("http://"))
-    );
-  } catch {
-    return false;
-  }
-};
-
-export const handleCreateCheckout = async (req, res) => {
-  try {
-    const stripe = getStripe();
-    if (!stripe) {
+  switch (error?.type) {
+    // e.g. amount below Stripe's minimum, unsupported currency, bad params
+    case "StripeInvalidRequestError":
+      return res.status(400).json({ success: false, message: error.message });
+    case "StripeAuthenticationError":
+    case "StripePermissionError":
       return res.status(503).json({
         success: false,
         message:
-          "Stripe is not configured. Please add STRIPE_SECRET_KEY to your server environment variables.",
+          "Online payment is not available right now: the server's Stripe API key was rejected. Please use Cash on Delivery.",
       });
-    }
-
-    const { product, items, products, priceDetails, orderId, customerId } =
-      req.body;
-
-    const requestOrigin =
-      req.headers.origin ||
-      req.get("origin") ||
-      (req.headers.referer ? new URL(req.headers.referer).origin : null);
-
-    const clientUrl =
-      requestOrigin ||
-      config.stripe?.client_url ||
-      config.STRIPE?.client_url ||
-      process.env.CLIENT_URL ||
-      process.env.FRONTEND_URL ||
-      "http://localhost:3000";
-
-    const normalizedClientUrl = clientUrl.startsWith("http")
-      ? clientUrl.replace(/\/$/, "")
-      : "http://localhost:3000";
-
-    const currency = (
-      req.body.currency ||
-      config.stripe?.currency ||
-      "inr"
-    ).toLowerCase();
-
-    const line_items = [];
-
-    // Case 1: Multiple items from Cart (Novexa's main flow)
-    const cartItems = items || products || [];
-    if (Array.isArray(cartItems) && cartItems.length > 0) {
-      for (const item of cartItems) {
-        const name =
-          item.product_name ||
-          item.name ||
-          item.title ||
-          "Grocery Item";
-
-        const price = Number(
-          item.product_offer_price ||
-            item.product_selling_price ||
-            item.price ||
-            0,
-        );
-
-        const qty = Number(item.product_qty || item.qty || item.quantity || 1);
-
-        if (!name || isNaN(price) || price <= 0 || isNaN(qty) || qty < 1) {
-          continue;
-        }
-
-        const imageUrl = item.product_url || item.image;
-        const images = isValidHttpsUrl(imageUrl) ? [imageUrl] : [];
-
-        line_items.push({
-          price_data: {
-            currency,
-            product_data: {
-              name,
-              description: item.product_weight
-                ? `Weight: ${item.product_weight} ${item.product_weight_type || ""}`
-                : item.product_description || undefined,
-              images: images.length > 0 ? images : undefined,
-            },
-            unit_amount: Math.round(price * 100),
-          },
-          quantity: qty,
-        });
-      }
-
-      // Add delivery charge if present
-      const deliveryCharge = Number(priceDetails?.deliveryCharge || 0);
-      if (deliveryCharge > 0) {
-        line_items.push({
-          price_data: {
-            currency,
-            product_data: {
-              name: "Delivery Charge",
-              description: "Fast doorstep delivery",
-            },
-            unit_amount: Math.round(deliveryCharge * 100),
-          },
-          quantity: 1,
-        });
-      }
-
-      // Add GST & Taxes if present
-      const taxPrice = Number(priceDetails?.taxPrice || 0);
-      if (taxPrice > 0) {
-        line_items.push({
-          price_data: {
-            currency,
-            product_data: {
-              name: "GST & Taxes (2%)",
-            },
-            unit_amount: Math.round(taxPrice * 100),
-          },
-          quantity: 1,
-        });
-      }
-    }
-
-    // Case 2: Single product checkout payload
-    if (line_items.length === 0 && product) {
-      const name = product.product_name || product.name || "Product";
-      const price = Number(
-        product.product_offer_price ||
-          product.product_selling_price ||
-          product.price ||
-          0,
-      );
-      const qty = Number(
-        product.product_qty || product.qty || product.quantity || 1,
-      );
-
-      if (!name || isNaN(price) || price <= 0 || isNaN(qty) || qty < 1) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid product details",
-        });
-      }
-
-      const imageUrl =
-        product.product_url ||
-        (Array.isArray(product.images) ? product.images[0] : product.images);
-      const images = isValidHttpsUrl(imageUrl) ? [imageUrl] : [];
-
-      line_items.push({
-        price_data: {
-          currency,
-          product_data: {
-            name,
-            description: product.product_description || product.description,
-            images: images.length > 0 ? images : undefined,
-          },
-          unit_amount: Math.round(price * 100),
-        },
-        quantity: qty,
-      });
-    }
-
-    if (line_items.length === 0) {
-      return res.status(400).json({
+    case "StripeConnectionError":
+    case "StripeAPIError":
+    case "StripeRateLimitError":
+      return res.status(502).json({
         success: false,
-        message: "No valid products found for checkout",
+        message: "Could not reach Stripe. Please try again in a moment.",
+      });
+    default:
+      return res.status(500).json({ success: false, message: fallbackMessage });
+  }
+};
+
+const toPublicOrder = (order) =>
+  order
+    ? {
+        _id: order._id,
+        order_status: order.order_status,
+        payment_status: order.payment_status,
+        payment_method: order.payment_method,
+        store_name: order.store_name,
+        price_detail: order.price_detail,
+      }
+    : null;
+
+/** POST /api/payment/create-checkout-session  { orderId } (auth required) */
+export const handleCreateCheckout = async (req, res) => {
+  try {
+    if (!getStripe()) {
+      return res.status(503).json({ success: false, message: STRIPE_NOT_CONFIGURED_MESSAGE });
+    }
+
+    const { orderId } = req.body || {};
+    if (!mongoose.isValidObjectId(orderId)) {
+      return res.status(400).json({ success: false, message: "A valid orderId is required" });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+    if (String(order.customer_id) !== String(req.user?.sub)) {
+      return res.status(403).json({ success: false, message: "You can only pay for your own orders" });
+    }
+    if (order.payment_method !== "online") {
+      return res.status(400).json({ success: false, message: "This order is not set up for online payment" });
+    }
+    if (order.payment_status === "paid") {
+      return res.status(409).json({ success: false, message: "This order has already been paid" });
+    }
+    if (order.order_status !== "awaiting_payment") {
+      return res.status(409).json({
+        success: false,
+        message: "This order can no longer be paid online. Please place a new order.",
       });
     }
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      line_items,
-      mode: "payment",
-      success_url: `${normalizedClientUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId || ""}`,
-      cancel_url: `${normalizedClientUrl}/payment/cancel?order_id=${orderId || ""}`,
-      metadata: {
-        orderId: orderId ? String(orderId) : "",
-        customerId: customerId ? String(customerId) : "",
-      },
-    });
+    const origin = req.get("origin");
+    const clientUrl = isAllowedClientOrigin(origin) ? origin : config.stripe.clientUrl;
+
+    const session = await createCheckoutSessionForOrder(order, clientUrl);
 
     return res.status(200).json({
       success: true,
       url: session.url,
       sessionId: session.id,
-      session,
     });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Unable to create checkout session",
-    });
+    return sendStripeError(res, error, "Unable to start online payment");
   }
 };
 
+/** GET /api/payment/verify-session/:sessionId */
 export const handleVerifySession = async (req, res) => {
   try {
     const { sessionId } = req.params;
-    if (!sessionId) {
-      return res.status(400).json({
-        success: false,
-        message: "Session ID is required",
-      });
+    if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId || "")) {
+      return res.status(400).json({ success: false, message: "Invalid payment session id" });
     }
 
     const stripe = getStripe();
     if (!stripe) {
-      return res.status(503).json({
-        success: false,
-        message: "Stripe payment gateway is not configured.",
-      });
+      return res.status(503).json({ success: false, message: STRIPE_NOT_CONFIGURED_MESSAGE });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (!session) {
-      return res.status(404).json({
-        success: false,
-        message: "Stripe checkout session not found",
-      });
-    }
+    const paid = session.payment_status === "paid";
 
-    const isPaid = session.payment_status === "paid";
-    const orderId = session.metadata?.orderId;
-    let order = null;
-
-    if (orderId) {
-      order = await Order.findById(orderId);
-      if (order && isPaid) {
-        order.payment_method = "stripe_online";
-        if (order.order_status === "pending") {
-          order.order_status = "confirmed";
-        }
-        order.payment_status = "paid";
-        order.stripe_payment_id = session.payment_intent || session.id;
-        await order.save();
-      }
-    }
+    const order = paid
+      ? await markOrderPaidFromSession(session)
+      : await Order.findById(getOrderIdFromSession(session));
 
     return res.status(200).json({
       success: true,
-      paid: isPaid,
-      status: session.payment_status,
+      paid,
+      paymentStatus: session.payment_status,
+      sessionStatus: session.status,
       amountTotal: session.amount_total ? session.amount_total / 100 : 0,
       currency: session.currency,
-      customerEmail: session.customer_details?.email,
-      order,
+      customerEmail: session.customer_details?.email || null,
+      order: toPublicOrder(order),
     });
   } catch (error) {
-    console.error("Stripe verify session error:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Unable to verify Stripe checkout session",
+    if (error?.code === "resource_missing") {
+      return res.status(404).json({ success: false, message: "Payment session not found" });
+    }
+    return sendStripeError(res, error, "Unable to verify payment");
+  }
+};
+
+/** POST /api/payment/cancel/:orderId (auth required) */
+export const handleCancelPayment = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!mongoose.isValidObjectId(orderId)) {
+      return res.status(400).json({ success: false, message: "Invalid order id" });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+    if (String(order.customer_id) !== String(req.user?.sub)) {
+      return res.status(403).json({ success: false, message: "You can only cancel your own orders" });
+    }
+
+    const result = await cancelAwaitingPaymentOrder(order);
+
+    return res.status(200).json({
+      success: true,
+      paid: result.paid,
+      cancelled: result.cancelled,
+      order: toPublicOrder(result.order),
     });
+  } catch (error) {
+    return sendStripeError(res, error, "Unable to cancel payment");
+  }
+};
+
+/**
+ * POST /api/payment/webhook — optional, enabled when STRIPE_WEBHOOK_SECRET is set.
+ * Confirms payments even if the customer closes the tab before returning.
+ * Mounted in app.js with express.raw() so the signature can be verified.
+ */
+export const handleStripeWebhook = async (req, res) => {
+  const stripe = getStripe();
+  const webhookSecret = config.stripe.webhookSecret;
+  if (!stripe || !webhookSecret) {
+    return res.status(503).json({ success: false, message: "Stripe webhook is not configured" });
+  }
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      req.headers["stripe-signature"],
+      webhookSecret,
+    );
+  } catch (error) {
+    console.error("Stripe webhook signature verification failed:", error.message);
+    return res.status(400).json({ success: false, message: `Webhook Error: ${error.message}` });
+  }
+
+  try {
+    const session = event.data?.object;
+
+    switch (event.type) {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded":
+        if (session.payment_status === "paid") {
+          await markOrderPaidFromSession(session);
+        }
+        break;
+      case "checkout.session.expired":
+        await markOrderPaymentCancelled(getOrderIdFromSession(session), {
+          sessionId: session.id,
+        });
+        break;
+      case "checkout.session.async_payment_failed":
+        await markOrderPaymentCancelled(getOrderIdFromSession(session), {
+          sessionId: session.id,
+          failed: true,
+        });
+        break;
+      default:
+        break;
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (error) {
+    console.error("Stripe webhook handling error:", error);
+    // Non-2xx makes Stripe retry the event later
+    return res.status(500).json({ success: false, message: "Webhook handling failed" });
   }
 };

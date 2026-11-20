@@ -13,6 +13,11 @@ const ACTIVE_STATUSES = [
   "out_for_delivery",
 ];
 
+const UNPAID_ONLINE_ORDER_CONDITIONS = [
+  { order_status: "awaiting_payment" },
+  { payment_status: { $in: ["cancelled", "failed"] } },
+];
+
 export const handleGetAllOrders = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -45,6 +50,8 @@ export const handleGetAllOrders = async (req, res) => {
         }
         filter = {
           $or: [{ store_id: userId }, { store_id: sellerStoreId }],
+          // Online orders whose payment never completed never reached the seller
+          $nor: UNPAID_ONLINE_ORDER_CONDITIONS,
         };
         break;
       }

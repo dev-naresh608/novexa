@@ -15,7 +15,8 @@ import notificationRouter from "./modules/notification/notification.routes.js";
 import wishlistRouter from "./modules/customer/wishlist.routes.js";
 import profileRouter from "./modules/profile/profile.routes.js";
 import driverRouter from "./modules/driver/driver.routes.js";
-import { stripeRouter } from "./modules/payment/index.js";
+import { stripeRouter, handleStripeWebhook } from "./modules/payment/index.js";
+import { isAllowedClientOrigin } from "./utils/origin.js";
 
 const app = express();
 
@@ -23,31 +24,12 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Middlewares
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "https://novexa-indol.vercel.app",
-  process.env.FRONTEND_URL,
-  process.env.CLIENT_URL,
-].filter(Boolean);
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, server-to-server, curl)
+      // Allow requests with no origin (mobile apps, server-to-server, curl, Stripe webhooks)
       if (!origin) return callback(null, true);
-
-      // Check if origin matches allowed list or novexa preview vercel domains or localhost
-      const isAllowed =
-        allowedOrigins.includes(origin) ||
-        /^https:\/\/novexa(-[a-z0-9]+)?\.vercel\.app$/.test(origin) ||
-        origin.startsWith("http://localhost:") ||
-        origin.startsWith("http://127.0.0.1:");
-
-      if (isAllowed) {
-        return callback(null, true);
-      }
-      return callback(null, false);
+      return callback(null, isAllowedClientOrigin(origin));
     },
     credentials: true,
   }),
@@ -61,6 +43,14 @@ app.use((req, res, next) => {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   next();
 });
+
+// Stripe webhook needs the raw request body to verify its signature, so it
+// must be registered before express.json() parses the body.
+app.post(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook,
+);
 
 app.use(
   express.json({

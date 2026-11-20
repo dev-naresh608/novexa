@@ -1,5 +1,9 @@
 const orderStatusConfig = () => {
   return {
+    awaiting_payment: {
+      label: "Awaiting Payment",
+      pillStyle: "bg-gray-100 text-gray-700 border-gray-200",
+    },
     pending: {
       label: "Pending",
       pillStyle: "bg-yellow-100 text-yellow-800 border-yellow-200",

@@ -29,6 +29,9 @@ export const getActiveOrdersSvc = async (userId, role) => {
             "cancelled",
           ],
         },
+        // Abandoned/failed online payments are not real orders — they only
+        // show up in order history.
+        payment_status: { $nin: ["cancelled", "failed"] },
       };
       break;
     }
