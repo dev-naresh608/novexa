@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { Avatar, AVATAR_ANIMATIONS } from "./avatar";
 import MascotSpeechBubble from "./MascotSpeechBubble";
 import MascotMoodTray from "./MascotMoodTray";
-import { playMascotSound, isSoundEnabled, setSoundEnabled } from "./mascotSounds";
 import { Sparkles, MessageSquare, Minus, Maximize2 } from "lucide-react";
 import "./avatar.css";
 
@@ -108,9 +107,6 @@ export const MascotCompanion = () => {
   const [isDocked, setIsDocked] = useState(false); // Smooth edge-docking state
   const [isSleeping, setIsSleeping] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Sound preference state: user's manual preference is strictly preserved
-  const [soundPref, setSoundPref] = useState(() => isSoundEnabled());
 
   // Dynamic Draggable Position State (restored from localStorage, strictly clamped to bottom)
   const [position, setPosition] = useState(() => {
@@ -233,21 +229,6 @@ export const MascotCompanion = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Centralized Sound Player:
-  // - If minimized -> AUTOMATICALLY OFF (0 sound)
-  // - If user muted (soundPref === false) -> AUTOMATICALLY OFF
-  // - When unminimized -> sound immediately restores to user's saved soundPref
-  const playSound = useCallback(
-    (type, isSpeechSound = false) => {
-      if (isMinimized) return; // Completely silent when minimized
-      if (!soundPref) return; // Silent if user muted
-      if (isSpeechSound && !showBubble) return; // Silent if speech hints are closed
-
-      playMascotSound(type);
-    },
-    [isMinimized, soundPref, showBubble]
-  );
-
   // Safe animation trigger via ref (silenced completely when minimized)
   const playAnimation = useCallback(
     (animName, text = null, durationMs = 2800, isPersistent = false) => {
@@ -352,13 +333,12 @@ export const MascotCompanion = () => {
     if (hasMountedRef.current || isMinimized) return;
     hasMountedRef.current = true;
 
-    playSound("wake");
     playAnimation(
       "waking",
       "Good day! Novie is ready to assist your shopping! ✨",
       2400
     );
-  }, [playAnimation, isMinimized, playSound]);
+  }, [playAnimation, isMinimized]);
 
   // 2. React to route changes / sections navigation (silent when minimized)
   useEffect(() => {
@@ -390,10 +370,9 @@ export const MascotCompanion = () => {
   const wakeUpFromSleep = useCallback(() => {
     if (isSleeping && !isMinimized) {
       setIsSleeping(false);
-      playSound("wake");
       playAnimation("waking", "I'm back! Let's find some groceries! ✨", 2200);
     }
-  }, [isSleeping, playAnimation, isMinimized, playSound]);
+  }, [isSleeping, playAnimation, isMinimized]);
 
   useEffect(() => {
     if (prefersReducedMotion || isMinimized) return;
@@ -413,7 +392,6 @@ export const MascotCompanion = () => {
         drowsyTimerRef.current = setTimeout(() => {
           if (isMinimized) return;
           setIsSleeping(true);
-          playSound("sleep");
           playAnimation(
             "sleeping",
             "Zzz... taking a power nap. Move your mouse or tap me to wake me up! 😴",
@@ -435,7 +413,7 @@ export const MascotCompanion = () => {
       if (drowsyTimerRef.current) clearTimeout(drowsyTimerRef.current);
       events.forEach((evt) => window.removeEventListener(evt, resetIdleTimer));
     };
-  }, [isSleeping, playAnimation, wakeUpFromSleep, prefersReducedMotion, isMinimized, playSound]);
+  }, [isSleeping, playAnimation, wakeUpFromSleep, prefersReducedMotion, isMinimized]);
 
   // 4. Ambient Lively Mood Changer
   useEffect(() => {
@@ -510,11 +488,6 @@ export const MascotCompanion = () => {
       if (isMinimized) return;
       const { animation, speechText, durationMs } = e.detail || {};
       if (animation) {
-        if (animation === "celebrate") playSound("celebrate");
-        else if (animation === "confused") playSound("confused");
-        else if (animation === "angry") playSound("angry");
-        else playSound("pop");
-
         setIsDocked(false);
         playAnimation(animation, speechText, durationMs || 3000);
       }
@@ -539,7 +512,6 @@ export const MascotCompanion = () => {
         setIsDocked(false);
         setSpeechMessage(message);
         setShowBubble(true);
-        playSound("click", true);
         if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
         speechTimerRef.current = setTimeout(() => {
           setShowBubble(false);
@@ -556,7 +528,7 @@ export const MascotCompanion = () => {
       window.removeEventListener("novexa:mascot:expression", handleExpressionEvent);
       window.removeEventListener("novexa:mascot:say", handleSayEvent);
     };
-  }, [playAnimation, isMinimized, playSound]);
+  }, [playAnimation, isMinimized]);
 
   // Drag handlers for free dragging across the screen
   const handleDragStart = (clientX, clientY) => {
@@ -638,7 +610,6 @@ export const MascotCompanion = () => {
       return;
     }
 
-    playSound("pop");
     const nextMood = CLICK_MOODS[quoteIndexRef.current % CLICK_MOODS.length];
     const quote = FUN_QUOTES[quoteIndexRef.current % FUN_QUOTES.length];
     quoteIndexRef.current += 1;
@@ -648,30 +619,13 @@ export const MascotCompanion = () => {
 
   // Next Tip action inside speech bubble
   const handleNextTip = () => {
-    playSound("click", true);
     const quote = FUN_QUOTES[quoteIndexRef.current % FUN_QUOTES.length];
     quoteIndexRef.current += 1;
     playAnimation("happy", quote, 3000);
   };
 
-  // Toggle Sound preference (persists user manual preference)
-  const handleToggleSound = () => {
-    const nextState = !soundPref;
-    setSoundPref(nextState);
-    setSoundEnabled(nextState);
-    if (nextState && !isMinimized) {
-      playMascotSound("pop");
-    }
-  };
-
-  // Select mood from playground (with loud sound and persistent playback)
+  // Select mood from playground (persistent playback)
   const handleSelectMood = (mood) => {
-    if (mood === "celebrate") playSound("celebrate");
-    else if (mood === "confused") playSound("confused");
-    else if (mood === "sleeping") playSound("sleep");
-    else if (mood === "angry") playSound("angry");
-    else playSound("pop");
-
     const moodSpeech =
       mood === "angry"
         ? "Grrr! Novie is super angry! 😡💥"
@@ -735,8 +689,6 @@ export const MascotCompanion = () => {
               onClick={() => {
                 setIsMinimized(false);
                 setIsDocked(false);
-                // Unminimizing restores sound preference as it was!
-                if (soundPref) playMascotSound("wake");
                 playAnimation("happy", "I'm back! Let's explore Novexa! 🌟", 2200);
               }}
               title="Expand Novie Mascot"
@@ -759,7 +711,6 @@ export const MascotCompanion = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    playSound("click");
                     setIsDocked(false);
                     setShowMoodTray((prev) => {
                       const next = !prev;
@@ -783,7 +734,6 @@ export const MascotCompanion = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    playSound("click");
                     setIsDocked(false);
                     setShowBubble((prev) => {
                       const next = !prev;
@@ -828,7 +778,6 @@ export const MascotCompanion = () => {
                 }}
                 onClick={handleMascotClick}
                 onDoubleClick={() => {
-                  playSound("celebrate");
                   playAnimation("celebrate", "Double tap! You're awesome! 🎉🌟", 3200);
                 }}
                 title="Drag Novie to place anywhere along left, right or bottom walls! Click to interact!"
@@ -886,7 +835,6 @@ export const MascotCompanion = () => {
           direction={modalPos.direction}
           style={modalPos.style}
           onReset={() => {
-            playSound("pop");
             playAnimation("idle", "Back to calm and steady idle! 💫", 2000);
           }}
           onClose={() => {
@@ -901,8 +849,6 @@ export const MascotCompanion = () => {
         <MascotSpeechBubble
           message={speechMessage}
           mood={currentMood}
-          isSoundOn={soundPref}
-          onToggleSound={handleToggleSound}
           onClose={() => setShowBubble(false)}
           onNextTip={handleNextTip}
           isSleeping={isSleeping}

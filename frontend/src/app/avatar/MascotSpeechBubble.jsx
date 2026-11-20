@@ -1,11 +1,9 @@
 import React from "react";
-import { Volume2, VolumeX, X, Lightbulb } from "lucide-react";
+import { X, Lightbulb } from "lucide-react";
 
 export const MascotSpeechBubble = ({
   message,
   mood,
-  isSoundOn,
-  onToggleSound,
   onClose,
   onNextTip,
   isSleeping,
@@ -70,17 +68,6 @@ export const MascotSpeechBubble = ({
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Sound toggle */}
-          <button
-            type="button"
-            onClick={onToggleSound}
-            title={isSoundOn ? "Mute sounds" : "Enable sounds"}
-            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-            aria-label={isSoundOn ? "Mute sounds" : "Enable sounds"}
-          >
-            {isSoundOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
-          </button>
-
           {/* Dismiss button */}
           <button
             type="button"
